@@ -4,6 +4,7 @@ from . import config
 from . import utils
 from . import brisket
 
+from .brisket import parse_toml_paramfile
 from .models.model_galaxy import model_galaxy
 from .input.galaxy import galaxy
 from .fitting.fit import fit

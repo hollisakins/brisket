@@ -1,21 +1,21 @@
 
-[fit] # the "fit" category parameters related to the desired output and format
-    ID = 756434
+fit = dict(
+    ID': 756434,
+    method': 'MultiNest', # 'lm' or 'MultiNest' or 'nautilus'
+    n_live': 100, 
+    n_posterior': 500, 
+    out_wav_units': 'um', 
+    out_sed_units': 'uJy', # nJy, uJy, mJy, Jy, or ergscma
 
-    method = 'MultiNest' # 'lm' or 'MultiNest' or 'nautilus'
-    n_live = 100
-    n_posterior = 500
-
-    out_wav_units = 'um'
-    out_sed_units = 'uJy' # nJy, uJy, mJy, Jy, or ergscma
-
-    [fit.photometry]
-        file = '/data/COSMOS-Web/catalogs/COSMOS-Web_supercatalog_pm_v0.7.fits'
-        phot_columns = ['f_auto_f115w','f_auto_f150w','f_auto_f277w','f_auto_f444w']
-        phot_err_columns = ['e_auto_f115w','e_auto_f150w','e_auto_f277w','e_auto_f444w']
-        filt_list = ['f115w','f150w','f277w','f444w']
-        phot_units = 'uJy'
-
+)
+    },
+    'photometry':{
+        'file': '/data/COSMOS-Web/catalogs/COSMOS-Web_supercatalog_pm_v0.7.fits',
+        'phot_columns': ['f_auto_f115w','f_auto_f150w','f_auto_f277w','f_auto_f444w'],
+        'phot_err_columns': ['e_auto_f115w','e_auto_f150w','e_auto_f277w','e_auto_f444w'],
+        'filt_list': ['f115w','f150w','f277w','f444w'],
+        'phot_units': 'uJy',
+    },
     # [fit.spectroscopy]
     #     file = 'spectra/msa_id_0_spec_x1d.fits' # spectra are typically stored in an individual file per-object
     #     # BRISKET will look in the 0th and 1st FITS extensions for a BinTableHDU
@@ -26,6 +26,9 @@
     #     spec_units = "ergscma" # nJy, uJy, mJy, Jy, or ergscma
     #     R_curve = 'prism' # optional -- convolve model with "line spread function" defined by a resolution curve
     #     f_LSF = 1.5 # optional -- scaling parameter for the line spread function
+
+
+
 
 [base] # basic physical parameters that apply to the entire model
     redshift = {low=3, high=8, prior='Gaussian', mu=5, sigma=0.5}
@@ -87,4 +90,4 @@
         
 
     # [Xray]
-    
+}

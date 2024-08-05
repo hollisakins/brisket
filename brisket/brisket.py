@@ -33,6 +33,7 @@ def parse_toml_paramfile(toml_file):
         kwargs = {}
         load_phot = None
         if 'photometry' in param['fit']:
+            ID = param['fit']['ID']
             catalog = fits.getdata(param['fit']['photometry']['file'])
             catalog = catalog[catalog['ID']==ID]
             phot = np.array([catalog[col][0] for col in param['fit']['photometry']['phot_columns']])
@@ -55,7 +56,45 @@ def parse_toml_paramfile(toml_file):
         ### parse units out of param file
         del param['fit']
 
-    kwargs['logger'] = logger
+
+        fit_instructions = {}
+        for group in param:
+            for key in param[group]:
+                if type(param[group][key]) in [str,int,float]: # adopt the fixed value directly 
+                    fit_instructions[key] = param[group][key]
+
+                elif 'low' in param[group][key]:
+                    fit_instructions[key] = (param[group][key]['low'], param[group][key]['high'])
+                    if 'prior' in param[group][key]:
+                        if param[group][key]['prior'] != 'Uniform':
+                            fit_instructions[key + '_prior'] = param[group][key]['prior']
+                            for p in param[group][key]:
+                                if not p in ['prior','low','high']:
+                                    fit_instructions[key + f'_prior_{p}'] = param[group][key][p]
+                            # fit_instructions[key + '_prior'] = param[key]['prior']
+                else: # sub-group
+                    subgroup = key
+                    for key in param[group][subgroup]:
+                        if type(param[group][key]) in [str,int,float]:
+                            fit_instructions[subgroup][key] = param[group][subgroup]
+                        elif 'low' in param[group][subgroup][key]:
+                            fit_instructions[key] = (param[group][subgroup][key]['low'], param[group][subgroup][key]['high'])
+                            if 'prior' in param[group][subgroup][key]:
+                                if param[group][subgroup][key]['prior'] != 'Uniform':
+                                    fit_instructions[key + '_prior'] = param[group][subgroup][key]['prior']
+                                    for p in param[group][subgroup][key]:
+                                        if not p in ['prior','low','high']:
+                                            fit_instructions[key + f'_prior_{p}'] = param[group][subgroup][key][p]
+                    pass
+
+
+        print(param)
+        print(fit_instructions)
+
+
+
+    # kwargs['logger'] = logger
+
 
 
 
