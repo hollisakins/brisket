@@ -1,0 +1,2 @@
+13:26:06 :: test :: DEBUG    :: args Namespace(param='test', run='test', outdir=None, verbose=False)
+13:26:06 :: test :: INFO     :: Beginning model generation for run test from param file test

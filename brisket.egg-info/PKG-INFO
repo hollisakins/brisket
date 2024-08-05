@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: brisket
+Version: 0.1.0
+Summary: BRISKET SED fitter
+Author: Hollis Akins
+License: MIT
+Requires-Dist: astropy
+Requires-Dist: numpy
+Requires-Dist: matplotlib
+Requires-Dist: scipy
+Requires-Dist: tqdm
