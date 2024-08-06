@@ -1,28 +1,28 @@
-20:18:25 :: test2 :: DEBUG    :: args Namespace(param='param_mod.toml', run='test2', outdir=None, verbose=True)
-20:18:25 :: test2 :: INFO     :: Beginning model generation for run test2 from param file param_mod.toml
-20:18:25 :: test2 :: DEBUG    :: Importing BRISKET
-20:18:25 :: test2 :: DEBUG    :: Parsing filt_list from param file
-20:18:25 :: test2 :: INFO     :: Loading filters
-20:18:25 :: test2 :: INFO     :: --------------------------------------------------------------------------------
-20:18:25 :: test2 :: INFO     ::            Nickname -> Filter ID: Description
-20:18:25 :: test2 :: INFO     ::                jwst_nircam_f115w: JWST NIRCam F115W from SVO filter profile service
-20:18:25 :: test2 :: INFO     ::                jwst_nircam_f150w: JWST NIRCam F150W from SVO filter profile service
-20:18:25 :: test2 :: INFO     :: --------------------------------------------------------------------------------
-20:18:25 :: test2 :: INFO     :: Loading parameter dictionary
-20:18:25 :: test2 :: INFO     :: Calculating optimal wavelength sampling for the model...
-20:18:25 :: test2 :: INFO     :: Resampling the filter curves onto model wavelength grid...
-20:18:25 :: test2 :: INFO     :: Initializing star-formation history module             (sfh: constant)
-20:18:25 :: test2 :: INFO     :: Initializing stellar module                              (model: BC03)
-20:18:25 :: test2 :: DEBUG    :: Resampling stellar models to model wavelength grid
-20:18:25 :: test2 :: DEBUG    :: Resampling the stellar grids to the configured age sampling
-20:18:25 :: test2 :: INFO     :: Initializing nebular emission module                     (model: BC03)
-20:18:25 :: test2 :: DEBUG    :: Setting up nebular emission grid
-20:18:27 :: test2 :: INFO     :: Initializing dust attenuation module                  (type: Calzetti)
-20:18:27 :: test2 :: INFO     :: Skipping dust emission module
-20:18:27 :: test2 :: INFO     :: Initializing dust attenuation module                       (type: QSO)
-20:18:27 :: test2 :: DEBUG    :: Computing stellar spectrum
-20:18:27 :: test2 :: DEBUG    :: Interpolating nebular emission line grid
-20:18:27 :: test2 :: DEBUG    :: Interpolating nebular continuum grid
-20:18:27 :: test2 :: DEBUG    :: Converting wavelength units from angstroms to um
-20:18:27 :: test2 :: DEBUG    :: Converting flux units to f_nu (uJy)
-20:18:27 :: test2 :: INFO     :: Saving model output to brisket/test2/test2.fits
+09:35:50 :: test2 :: DEBUG    :: args Namespace(param='param_mod.toml', run='test2', outdir=None, verbose=True)
+09:35:50 :: test2 :: INFO     :: Beginning model generation for run test2 from param file param_mod.toml
+09:35:50 :: test2 :: DEBUG    :: Importing BRISKET
+09:35:50 :: test2 :: DEBUG    :: Parsing filt_list from param file
+09:35:50 :: test2 :: INFO     :: Loading filters
+09:35:50 :: test2 :: INFO     :: --------------------------------------------------------------------------------
+09:35:50 :: test2 :: INFO     ::            Nickname -> Filter ID: Description
+09:35:50 :: test2 :: INFO     ::                jwst_nircam_f115w: JWST NIRCam F115W from SVO filter profile service
+09:35:50 :: test2 :: INFO     ::                jwst_nircam_f150w: JWST NIRCam F150W from SVO filter profile service
+09:35:50 :: test2 :: INFO     :: --------------------------------------------------------------------------------
+09:35:50 :: test2 :: INFO     :: Loading parameter dictionary
+09:35:50 :: test2 :: INFO     :: Calculating optimal wavelength sampling for the model...
+09:35:50 :: test2 :: INFO     :: Resampling the filter curves onto model wavelength grid...
+09:35:51 :: test2 :: INFO     :: Initializing star-formation history module             (sfh: constant)
+09:35:51 :: test2 :: INFO     :: Initializing stellar module                              (model: BC03)
+09:35:51 :: test2 :: DEBUG    :: Resampling stellar models to model wavelength grid
+09:35:51 :: test2 :: DEBUG    :: Resampling the stellar grids to the configured age sampling
+09:35:51 :: test2 :: INFO     :: Initializing nebular emission module                     (model: BC03)
+09:35:51 :: test2 :: DEBUG    :: Setting up nebular emission grid
+09:35:53 :: test2 :: INFO     :: Initializing dust attenuation module                  (type: Calzetti)
+09:35:53 :: test2 :: INFO     :: Skipping dust emission module
+09:35:53 :: test2 :: INFO     :: Initializing dust attenuation module                       (type: QSO)
+09:35:53 :: test2 :: DEBUG    :: Computing stellar spectrum
+09:35:53 :: test2 :: DEBUG    :: Interpolating nebular emission line grid
+09:35:53 :: test2 :: DEBUG    :: Interpolating nebular continuum grid
+09:35:53 :: test2 :: DEBUG    :: Converting wavelength units from angstroms to um
+09:35:53 :: test2 :: DEBUG    :: Converting flux units to f_nu (uJy)
+09:35:53 :: test2 :: INFO     :: Saving model output to brisket/test2/test2.fits
