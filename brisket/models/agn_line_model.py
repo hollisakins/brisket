@@ -14,9 +14,9 @@ class agn_lines(object):
         1D array of wavelength values desired for the stellar models.
     """
 
-    def __init__(self, wavelengths, model_comp):
+    def __init__(self, wavelengths, model_comp, logger=utils.NullLogger):
         self.wavelengths = wavelengths
-        self.type = model_comp['type']
+        self.type = model_comp['nebular']['type']
 
         if self.type == 'cloudy':
             self.combined_grid, self.line_grid = self._setup_grids(model_comp['fwhm'])
@@ -26,11 +26,11 @@ class agn_lines(object):
             self.eline_fwhm = config.sdss_file[:,2]
         elif self.type == 'qsogen':
             if not 'scale_nlr' in model_comp.keys():
-                model_comp['scale_nlr'] = 0
+                model_comp['nebular']['scale_nlr'] = 0
             if not 'scale_halpha' in model_comp.keys():
-                model_comp['scale_halpha'] = 0
+                model_comp['nebular']['scale_halpha'] = 0
             if not 'scale_lya' in model_comp.keys():
-                model_comp['scale_lya'] = 0
+                model_comp['nebular']['scale_lya'] = 0
         else:
             print(self.type)
             raise Exception('nebular emission "type" must be one of "cloudy" or "sdss"')
@@ -112,12 +112,12 @@ class agn_lines(object):
             spectrum *= LHb
             return spectrum
         elif self.type=='qsogen':
-            varlin = model_comp['eline_type']
-            scalin = np.power(10., model_comp['scale_eline'])
-            scahal = np.power(10., model_comp['scale_halpha'])
-            scalya = np.power(10., model_comp['scale_lya'])
-            scanlr = np.power(10., model_comp['scale_nlr'])
-            scoiii = np.power(10., model_comp['scale_oiii'])
+            varlin = model_comp['nebular']['eline_type']
+            scalin = np.power(10., model_comp['nebular']['scale_eline'])
+            scahal = np.power(10., model_comp['nebular']['scale_halpha'])
+            scalya = np.power(10., model_comp['nebular']['scale_lya'])
+            scanlr = np.power(10., model_comp['nebular']['scale_nlr'])
+            scoiii = np.power(10., model_comp['nebular']['scale_oiii'])
             wnrm = config.qsogen_wnrm
 
             nlr = (config.qsogen_nlr + (scoiii-1) * config.qsogen_nlr_oiii) * scalin * scanlr

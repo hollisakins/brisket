@@ -124,11 +124,11 @@ class model_galaxy(object):
                 setattr(self, component, DotMap(sfh=star_formation_history(params, logger=logger), 
                                                 stellar=stellar(self.wavelengths, params, logger=logger),
                                                 nebular=nebular(self.wavelengths, params, logger=logger),
-                                                dust_attenuation=dust_attenuation(self.wavelengths, params, logger=logger),
+                                                dust_atten=dust_attenuation(self.wavelengths, params, logger=logger),
                                                 dust_emission=dust_emission(self.wavelengths, params, logger=logger)))
             if 'agn' in component:
                 setattr(self, component, DotMap(accdisk=accretion_disk(self.wavelengths, params, logger=logger), 
-                                                agn_lines=agn_lines(self.wavelengths, params, logger=logger),
+                                                nebular=agn_lines(self.wavelengths, params, logger=logger),
                                                 dust_atten=dust_attenuation(self.wavelengths, params, logger=logger)))
                     
                 
@@ -237,7 +237,7 @@ class model_galaxy(object):
                     dust_flux = 0.  # Total attenuated flux for energy balance.
                     trans = 10**(-params["dust_atten"]["Av"]*comp.dust_atten.A_cont/2.5)
                     dust_spectrum = spectrum*trans
-                    dust_flux += np.trapz(spectrum - dust_spectrum, x=comp.wavelengths)
+                    dust_flux += np.trapz(spectrum - dust_spectrum, x=self.wavelengths)
                     
                     scat = 0
                     if 'logfscat' in list(params['dust_atten']):
@@ -285,10 +285,10 @@ class model_galaxy(object):
             elif 'agn' in component: 
                 spectrum = comp.accdisk.spectrum(params)*(1+self.redshift)**2
                 # accdisk_spectrum = deepcopy(spectrum)
-                if comp.agn_lines:
+                if comp.nebular:
                     # line_names = list(self.nebular.line_names)
                     # em_lines = self.nebular.line_fluxes(model_comp['nebular'])
-                    nebular_spectrum = comp.agn_lines.spectrum(params['nebular']) * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
+                    nebular_spectrum = comp.nebular.spectrum(params) * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
                     # blr_spectrum = self.agn_lines.blr * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
                     # nlr_spectrum = self.agn_lines.nlr * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
                     spectrum += nebular_spectrum

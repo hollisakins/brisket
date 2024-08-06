@@ -7,9 +7,10 @@ import argparse, logging, toml
 import sys, os, shutil
 from . import config
 from . import utils
+from .filters import filter_set
 import numpy as np
 
-def parse_toml_paramfile(toml_file):
+def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
     param = toml.load(toml_file)
     kwargs = {}
     if 'mod' in param:
@@ -21,7 +22,7 @@ def parse_toml_paramfile(toml_file):
         
         if 'filt_list' in param['mod']:
             logger.debug(f'Parsing filt_list from param file')
-            fs = brisket.filters.filter_set(param['mod']['filt_list'], logger=logger)
+            fs = filter_set(param['mod']['filt_list'], logger=logger)
             kwargs['filt_list'] = fs
         else:
             logger.debug('No photometric model output requested')
@@ -56,44 +57,49 @@ def parse_toml_paramfile(toml_file):
         ### parse units out of param file
         del param['fit']
 
+        def reword_priors(name, data):
+            out = {}
+            out[name] = (data['low'], data['high'])
+            if 'prior' in data:
+                if data['prior'] != 'Uniform':
+                    out[name + '_prior'] = data['prior']
+                    for p in data:
+                        if not p in ['prior','low','high']:
+                            out[name + f'_prior_{p}'] = data[p]
+            return out
+
+            
+        print(param)
 
         fit_instructions = {}
         for group in param:
+            fit_instructions[group] = {}
             for key in param[group]:
-                if type(param[group][key]) in [str,int,float]: # adopt the fixed value directly 
-                    fit_instructions[key] = param[group][key]
-
-                elif 'low' in param[group][key]:
-                    fit_instructions[key] = (param[group][key]['low'], param[group][key]['high'])
-                    if 'prior' in param[group][key]:
-                        if param[group][key]['prior'] != 'Uniform':
-                            fit_instructions[key + '_prior'] = param[group][key]['prior']
-                            for p in param[group][key]:
-                                if not p in ['prior','low','high']:
-                                    fit_instructions[key + f'_prior_{p}'] = param[group][key][p]
-                            # fit_instructions[key + '_prior'] = param[key]['prior']
-                else: # sub-group
+                # If the value is a number or string, just adopt the fixed value directly 
+                if type(param[group][key]) in [str,int,float,list]: 
+                    fit_instructions[group][key] = param[group][key]
+                # If the value is a dict, that means we have a sub-group, e.g. nebular model within galaxy model
+                elif type(param[group][key]) == dict: 
                     subgroup = key
+                    fit_instructions[group][subgroup] = {}
                     for key in param[group][subgroup]:
-                        if type(param[group][key]) in [str,int,float]:
-                            fit_instructions[subgroup][key] = param[group][subgroup]
-                        elif 'low' in param[group][subgroup][key]:
-                            fit_instructions[key] = (param[group][subgroup][key]['low'], param[group][subgroup][key]['high'])
-                            if 'prior' in param[group][subgroup][key]:
-                                if param[group][subgroup][key]['prior'] != 'Uniform':
-                                    fit_instructions[key + '_prior'] = param[group][subgroup][key]['prior']
-                                    for p in param[group][subgroup][key]:
-                                        if not p in ['prior','low','high']:
-                                            fit_instructions[key + f'_prior_{p}'] = param[group][subgroup][key][p]
-                    pass
+                        if type(param[group][subgroup][key]) in [str,int,float]:
+                            fit_instructions[group][subgroup][key] = param[group][subgroup][key]
+                        else:
+                            fit_instructions[group][subgroup].update(reword_priors(key, param[group][subgroup][key]))
+                # The only other option is the TOML inline table data type, which is similar to a dict but not exactly a dict
+                # This we use for the specification of priors for free parameters 
+                else: # TOML inline table, specification of free parameter
+                    fit_instructions[group].update(reword_priors(key, param[group][key]))
+
+        fit_instructions.update(fit_instructions['base'])
+        del fit_instructions['base']
+        param = fit_instructions
+
+    kwargs['logger'] = logger
+    return param, kwargs
 
 
-        print(param)
-        print(fit_instructions)
-
-
-
-    # kwargs['logger'] = logger
 
 
 
@@ -153,7 +159,7 @@ def mod():
     logger.debug(f'Importing BRISKET')
     import brisket 
 
-    param, kwargs = parse_toml_paramfile(param)
+    param, kwargs = parse_toml_paramfile(param, logger=logger)
 
     gal = brisket.model_galaxy(param, **kwargs)
     gal.save_output(os.path.join(outdir, f'{run}.fits'), overwrite=True)

@@ -59,9 +59,9 @@
 
     [galaxy1.dust_atten] 
         type = "Calzetti" # "Calzetti", "Cardelli", "SMC", "Salim", "CF00"
-        Av   = [1,5]
+        Av   = {low=1,high=5,prior='log_10'}
         eta  = 1
-        logfscat = [-3,-1]
+        logfscat = {low=-3,high=-1}
         
 # [agn]
 #     # type = "full"

@@ -18,7 +18,7 @@ class accretion_disk(object):
         dictionary or parameters for AGN accretion disk module.
     """
 
-    def __init__(self, wavelengths, parameters):
+    def __init__(self, wavelengths, parameters, logger=utils.NullLogger):
         self.wavelengths = wavelengths
         self.type = parameters['type']
 
