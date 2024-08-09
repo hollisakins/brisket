@@ -46,24 +46,24 @@ def make_dirs(run="."):
     working_dir = os.getcwd()
     """ Make local Bagpipes directory structure in working dir. """
 
-    if not os.path.exists(working_dir + "/pipes"):
-        os.mkdir(working_dir + "/pipes")
+    if not os.path.exists(working_dir + "/brisket"):
+        os.mkdir(working_dir + "/brisket")
 
-    if not os.path.exists(working_dir + "/pipes/plots"):
-        os.mkdir(working_dir + "/pipes/plots")
+    if not os.path.exists(working_dir + "/brisket/plots"):
+        os.mkdir(working_dir + "/brisket/plots")
 
-    if not os.path.exists(working_dir + "/pipes/posterior"):
-        os.mkdir(working_dir + "/pipes/posterior")
+    if not os.path.exists(working_dir + "/brisket/posterior"):
+        os.mkdir(working_dir + "/brisket/posterior")
 
-    if not os.path.exists(working_dir + "/pipes/cats"):
-        os.mkdir(working_dir + "/pipes/cats")
+    if not os.path.exists(working_dir + "/brisket/cats"):
+        os.mkdir(working_dir + "/brisket/cats")
 
     if run != ".":
-        if not os.path.exists("pipes/posterior/" + run):
-            os.mkdir("pipes/posterior/" + run)
+        if not os.path.exists("brisket/posterior/" + run):
+            os.mkdir("brisket/posterior/" + run)
 
-        if not os.path.exists("pipes/plots/" + run):
-            os.mkdir("pipes/plots/" + run)
+        if not os.path.exists("brisket/plots/" + run):
+            os.mkdir("brisket/plots/" + run)
 
 
 def make_bins(midpoints, make_rhs=False):

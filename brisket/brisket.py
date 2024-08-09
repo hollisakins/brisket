@@ -12,8 +12,8 @@ import numpy as np
 
 def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
     param = toml.load(toml_file)
-    kwargs = {}
     if 'mod' in param:
+        kwargs = {}
         # if 'spec_wavs' in param['mod']:
         #     kwargs['spec_wavs'] = spec_wavs
         #     logger.debug('Using spectral wavelengths from param file:', kwargs['spec_wavs'])
@@ -28,20 +28,27 @@ def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
             logger.debug('No photometric model output requested')
 
         del param['mod']
+        
+        kwargs['logger'] = logger
+        return param, kwargs
 
     if 'fit' in param:
         from astropy.io import fits
-        kwargs = {}
+        gal_kwargs, fit_kwargs = {}, {}
+        ID = param['fit']['ID']
+        gal_kwargs['ID'] = ID
+
         load_phot = None
         if 'photometry' in param['fit']:
-            ID = param['fit']['ID']
             catalog = fits.getdata(param['fit']['photometry']['file'])
             catalog = catalog[catalog['ID']==ID]
             phot = np.array([catalog[col][0] for col in param['fit']['photometry']['phot_columns']])
             phot_err = np.array([catalog[col][0] for col in param['fit']['photometry']['phot_err_columns']])
             load_phot = lambda ID: np.array([phot, phot_err]).T 
-            kwargs['filt_list'] = param['fit']['photometry']['filt_list']
-            kwargs['phot_units'] = utils.unit_parser(param['fit']['photometry']['phot_units'])
+            gal_kwargs['ID'] = ID
+            gal_kwargs['filt_list'] = param['fit']['photometry']['filt_list']
+            gal_kwargs['phot_units'] = utils.unit_parser(param['fit']['photometry']['phot_units'])
+        gal_kwargs['load_phot'] = load_phot
 
         load_spec = None
         if 'spectroscopy' in param['fit']:
@@ -50,8 +57,15 @@ def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
             spec = spectrum[spec_column]
             spec_err = spectrum[spec_err_column]
             load_spec = lambda ID: np.array([spec_wav, spec, spec_err]).T
-            kwargs['wav_units'] = utils.unit_parser(param['fit']['spectroscopy']['wav_units'])
-            kwargs['spec_units'] = utils.unit_parser(param['fit']['spectroscopy']['spec_units'])
+            gal_kwargs['wav_units'] = utils.unit_parser(param['fit']['spectroscopy']['wav_units'])
+            gal_kwargs['spec_units'] = utils.unit_parser(param['fit']['spectroscopy']['spec_units'])
+        gal_kwargs['load_spec'] = load_spec
+        
+        fit_kwargs['method'] = param['fit']['method']
+        fit_kwargs['n_live'] = param['fit']['n_live']
+        fit_kwargs['n_posterior'] = param['fit']['n_posterior']
+        fit_kwargs['out_wav_units'] = utils.unit_parser(param['fit']['out_wav_units'])
+        fit_kwargs['out_sed_units'] = utils.unit_parser(param['fit']['out_sed_units'])
 
         ### parse spec_wavs and filt_list out of param file
         ### parse units out of param file
@@ -68,8 +82,6 @@ def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
                             out[name + f'_prior_{p}'] = data[p]
             return out
 
-            
-        print(param)
 
         fit_instructions = {}
         for group in param:
@@ -96,8 +108,7 @@ def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
         del fit_instructions['base']
         param = fit_instructions
 
-    kwargs['logger'] = logger
-    return param, kwargs
+        return param, gal_kwargs, fit_kwargs
 
 
 
@@ -185,22 +196,20 @@ def fit():
     os.makedirs(outdir, exist_ok=True)
     shutil.copy2(param, outdir)
     logger = setup_logger(outdir, run, args.verbose)
+    
 
-    ID = param['fit']['ID']
+    logger.info(f'Beginning fitting run {run} from param file {param}')
+    param, gal_kwargs, fit_kwargs = parse_toml_paramfile(param)
+    ID = gal_kwargs['ID']; del gal_kwargs['ID']
 
     import brisket
-    gal = brisket.galaxy(ID, 
-                 load_phot=load_phot, # instead of a catalog file
-                 load_spec=load_spec,
-                 **kwargs)
-    print(gal.photometry)   
-    
-    
-    fit_params = copy(param['fit'])
-    del param['fit']
-    fit = brisket.fit(gal, param, run=run, n_posterior=fit_params['n_posterior'])
+    logger.debug(f'Importing BRISKET')
+    gal = brisket.galaxy(ID, **gal_kwargs)
 
-    print(fit.fit_instructions)
+    fit = brisket.fit(gal, param, run=run, n_posterior=fit_kwargs['n_posterior'], logger=logger)
+    fit.fit(verbose=args.verbose, n_live=fit_kwargs['n_live'])
+
+    # print(fit.fit_instructions)
     # fit.fit(verbose=args.verbose, n_live=fit_params['n_live'])
 
 

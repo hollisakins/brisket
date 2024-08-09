@@ -93,7 +93,7 @@ class model_galaxy(object):
         ######################################################################################
         
         ########################## Configure base-level parameters. ##########################
-        self.redshift = parameters['base']['redshift']
+        self.redshift = parameters['redshift']
         self.igm = igm(self.wavelengths)#, parameters['base']['igm'])
         # Compute IGM transmission at the given redshift
         self.igm_trans = self.igm.trans(self.redshift)
@@ -114,8 +114,7 @@ class model_galaxy(object):
                                 before making this model.""")
 
         # initialize each component
-        self.components = list(parameters.keys())
-        self.components.remove('base')
+        self.components = [c for c in list(parameters.keys()) if 'galaxy' in c or 'agn' in c]
         for component in self.components:
             params = parameters[component]
             params['redshift'] = self.redshift
@@ -131,8 +130,7 @@ class model_galaxy(object):
                                                 nebular=agn_lines(self.wavelengths, params, logger=logger),
                                                 dust_atten=dust_attenuation(self.wavelengths, params, logger=logger)))
                     
-                
-            
+
         self.compute_sed(parameters) 
             
         ######################### Handle unit-conversions for output #########################
@@ -161,33 +159,34 @@ class model_galaxy(object):
 
 
 
-    # def update(self, parameters):
-    #     """ Update the model outputs (spectra, photometry) to reflect 
-    #     new parameter values in the parameters dictionary. Note that 
-    #     only the changing of numerical values is supported."""
-    #     for component in self.components:
-    #         comp = getattr(self, component)
-    #         if 'galaxy' in component:
-    #             comp.sfh.update(parameters)
-    #             if comp.dust_atten:
-    #                 comp.dust_atten.update(parameters["dust_atten"])
+    def update(self, parameters):
+        """ Update the model outputs (spectra, photometry) to reflect 
+        new parameter values in the parameters dictionary. Note that 
+        only the changing of numerical values is supported."""
+        for component in self.components:
+            comp = getattr(self, component)
+            if 'galaxy' in component:
+                comp.sfh.update(parameters[component])
+                if comp.dust_atten:
+                    comp.dust_atten.update(parameters[component]["dust_atten"])
 
-    #         # If the SFH is unphysical do not caclulate the full spectrum
-    #         if comp.sfh.unphysical:
-    #             warnings.warn("The requested model includes stars which formed "
-    #                         "before the Big Bang, no spectrum generated.",
-    #                         RuntimeWarning)
+                # # If the SFH is unphysical do not caclulate the full spectrum
+                # if comp.sfh.unphysical:
+                #     warnings.warn("The requested model includes stars which formed "
+                #                 "before the Big Bang, no spectrum generated.",
+                #                 RuntimeWarning)
 
-    #             self.spectrum_full = np.zeros_like(self.wavelengths)
-    #             # self.uvj = np.zeros(3)
-    #         else:
-    #             self._calculate_full_spectrum(component, parameters)
-    #             # self._calculate_uvj_mags()
+                #     self.spectrum_full = np.zeros_like(self.wavelengths)
+                #     # self.uvj = np.zeros(3)
+                # else:
+                #     self.compute_sed(parameters[component])
+                #     # self._calculate_uvj_mags()
         
-    #     elif 'agn' in component:
-    #         if self.dust_atten:
-    #             self.dust_atten.update(parameters["dust_atten"])
-    #         self._calculate_full_spectrum(component, parameters)
+            elif 'agn' in component:
+                if self.dust_atten:
+                    self.dust_atten.update(parameters[component]["dust_atten"])
+        
+        self.compute_sed(parameters)
 
 
     def compute_sed(self, parameters):

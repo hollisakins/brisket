@@ -52,6 +52,7 @@ class star_formation_history:
         self.logger = logger
         self.hubble_time = config.age_at_z(0)
 
+        print(model_components)
         model = model_components['model']
         self.logger.info(f"Initializing star-formation history module".ljust(50) + f"(sfh: {model_components['sfh']})".rjust(20))
         

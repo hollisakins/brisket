@@ -1,9 +1,11 @@
 from __future__ import print_function, division, absolute_import
 
+from contextlib import redirect_stdout
 import numpy as np
 import os
 import time
 import warnings
+import sys
 import deepdish as dd
 
 from copy import deepcopy
@@ -59,33 +61,34 @@ class fit(object):
     """
 
     def __init__(self, galaxy, fit_instructions, run=".", time_calls=False,
-                 n_posterior=500):
+                 n_posterior=500, logger=utils.NullLogger):
 
         self.run = run
         self.galaxy = galaxy
         self.fit_instructions = deepcopy(fit_instructions)
         self.n_posterior = n_posterior
+        self.logger = logger
 
         # Set up the directory structure for saving outputs.
         if rank == 0:
             utils.make_dirs(run=run)
 
         # The base name for output files.
-        self.fname = "pipes/posterior/" + run + "/" + str(self.galaxy.ID) + "_"
+        self.fname = f'brisket/posterior/{run}/{self.galaxy.ID}_'
 
         # A dictionary containing properties of the model to be saved.
         self.results = {"fit_instructions": self.fit_instructions}
 
         # If a posterior file already exists load it.
-        if os.path.exists(self.fname[:-1] + ".h5"):
-            self.results = dd.io.load(self.fname[:-1] + ".h5")
+        if os.path.exists(f'{self.fname[:-1]}.h5'):
+            self.results = dd.io.load(f'{self.fname[:-1]}.h5')
             self.posterior = posterior(self.galaxy, run=run,
                                        n_samples=n_posterior)
-            self.fit_instructions = dd.io.load(self.fname[:-1] + ".h5",
+            self.fit_instructions = dd.io.load(f'{self.fname[:-1]}.h5',
                                                group="/fit_instructions")
 
             if rank == 0:
-                print("\nResults loaded from " + self.fname[:-1] + ".h5\n")
+                self.logger.info(f'Results loaded from {self.fname[:-1]}.h5')
 
         # Set up the model which is to be fitted to the data.
         self.fitted_model = fitted_model(galaxy, self.fit_instructions,
@@ -107,19 +110,22 @@ class fit(object):
 
         if "lnz" in list(self.results):
             if rank == 0:
-                print("Fitting not performed as results have already been"
-                      + " loaded from " + self.fname[:-1] + ".h5. To start"
-                      + " over delete this file or change run.\n")
-
+                self.logger.info(f'Fitting not performed as results have already been loaded from {self.fname[:-1]}.h5. To start over delete this file or change run.')
+            self._print_results()
             return
 
         if rank == 0 or not use_MPI:
-            print('\nBagpipes: fitting object {self.galaxy.ID} \n')
+            self.logger.info(f'Fitting object {self.galaxy.ID}')
 
             start_time = time.time()
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
+            # if self.logger != utils.NullLogger:
+            # print(self.logger.handlers)
+            # print(self.logger.handlers[0].baseFilename)
+            # with open(self.logger.handlers[0].baseFilename, "a") as f:
+                # with redirect_stdout(f):
             pmn.run(self.fitted_model.lnlike,
                     self.fitted_model.prior.transform,
                     self.fitted_model.ndim, n_live_points=n_live,
@@ -129,8 +135,12 @@ class fit(object):
 
         if rank == 0 or not use_MPI:
             runtime = time.time() - start_time
+            if runtime > 60:
+                runtime = f'{int(np.floor(runtime/60))}m{runtime-np.floor(runtime/60)*60:.1f}s'
+            else: 
+                runtime = f'{runtime:.1f} seconds'
 
-            print("\nCompleted in " + str("%.1f" % runtime) + " seconds.\n")
+            self.logger.info(f'Completed in {runtime}.')
 
             # Load MultiNest outputs and save basic quantities to file.
             samples2d = np.loadtxt(self.fname + "post_equal_weights.dat")
@@ -160,36 +170,29 @@ class fit(object):
     def _print_results(self):
         """ Print the 16th, 50th, 84th percentiles of the posterior. """
 
-        print("{:<25}".format("Parameter")
-              + "{:>31}".format("Posterior percentiles"))
-
-        print("{:<25}".format(""),
-              "{:>10}".format("16th"),
-              "{:>10}".format("50th"),
-              "{:>10}".format("84th"))
-
-        print("-"*58)
-
+        # self.logger.info(f"{'Parameter':<25}{'Posterior percentiles':>31}")
+        self.logger.info(f"{'Parameter':<25} {'16th':>10} {'50th':>10} {'84th':>10}")
+        self.logger.info("-"*58)
         for i in range(self.fitted_model.ndim):
-            print("{:<25}".format(self.fitted_model.params[i]),
-                  "{:>10.3f}".format(self.results["conf_int"][0, i]),
-                  "{:>10.3f}".format(self.results["median"][i]),
-                  "{:>10.3f}".format(self.results["conf_int"][1, i]))
+            s = f"{self.fitted_model.params[i]:<25}"
+            if self.results['conf_int'][0, i]<0: s += f" {self.results['conf_int'][0, i]:>9.3f}"
+            else: s += f"  {self.results['conf_int'][0, i]:>10.3f}"
+            s += f" {self.results['median'][i]:>10.3f}"
+            s += f" {self.results['conf_int'][1, i]:>10.3f}"
+            self.logger.info(s)
 
-        print("\n")
+    # def plot_corner(self, show=False, save=True):
+    #     return plotting.plot_corner(self, show=show, save=save)
 
-    def plot_corner(self, show=False, save=True):
-        return plotting.plot_corner(self, show=show, save=save)
+    # def plot_1d_posterior(self, show=False, save=True):
+    #     return plotting.plot_1d_posterior(self, show=show, save=save)
 
-    def plot_1d_posterior(self, show=False, save=True):
-        return plotting.plot_1d_posterior(self, show=show, save=save)
+    # def plot_sfh_posterior(self, show=False, save=True, colorscheme="bw"):
+    #     return plotting.plot_sfh_posterior(self, show=show, save=save,
+    #                                        colorscheme=colorscheme)
 
-    def plot_sfh_posterior(self, show=False, save=True, colorscheme="bw"):
-        return plotting.plot_sfh_posterior(self, show=show, save=save,
-                                           colorscheme=colorscheme)
+    # def plot_spectrum_posterior(self, show=False, save=True):
+    #     return plotting.plot_spectrum_posterior(self, show=show, save=save)
 
-    def plot_spectrum_posterior(self, show=False, save=True):
-        return plotting.plot_spectrum_posterior(self, show=show, save=save)
-
-    def plot_calibration(self, show=False, save=True):
-        return plotting.plot_calibration(self, show=show, save=save)
+    # def plot_calibration(self, show=False, save=True):
+    #     return plotting.plot_calibration(self, show=show, save=save)

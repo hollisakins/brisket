@@ -40,12 +40,6 @@ class fitted_model(object):
         self._set_constants()
         self._process_fit_instructions()
 
-        print(self.params)
-        print(self.limits)
-        print(self.pdfs)
-        print(self.hyper_params)
-        print(self.mirror_pars)
-
         self.prior = prior(self.limits, self.pdfs, self.hyper_params)
         self.model_galaxy = None
 
@@ -82,6 +76,10 @@ class fitted_model(object):
         indices = np.argsort(all_keys)
         all_vals = [all_vals[i] for i in indices]
         all_keys.sort()
+        
+        # for i in range(len(all_keys)):
+        #     print(i, all_keys[i], all_vals[i])
+        # quit()
 
         # Find parameters to be fitted and extract their priors.
         for i in range(len(all_vals)):
@@ -153,9 +151,9 @@ class fitted_model(object):
 
         self.model_galaxy.update(self.model_components)
 
-        # Return zero likelihood if SFH is older than the universe.
-        if self.model_galaxy.sfh.unphysical:
-            return -9.99*10**99
+        # # Return zero likelihood if SFH is older than the universe.
+        # if self.model_galaxy.sfh.unphysical:
+        #     return -9.99*10**99
 
         lnlike = 0.
 
@@ -170,7 +168,7 @@ class fitted_model(object):
 
         # Return zero likelihood if lnlike = nan (something went wrong).
         if np.isnan(lnlike):
-            print("Bagpipes: lnlike was nan, replaced with zero probability.")
+            print("lnlike was nan, replaced with zero probability.")
             return -9.99*10**99
 
         # Functionality for timing likelihood calls.
@@ -271,9 +269,15 @@ class fitted_model(object):
                 if "dirichlet" in split[1]:
                     if split[0] not in dirichlet_comps:
                         dirichlet_comps.append(split[0])
-
                 else:
                     self.model_components[split[0]][split[1]] = param[i]
+            
+            elif len(split) == 3:
+                if "dirichlet" in split[2]:
+                    if split[1] not in dirichlet_comps:
+                        dirichlet_comps.append(split[1])
+                else:
+                    self.model_components[split[0]][split[1]][split[2]] = param[i]
 
         # Set any mirror params to the value of the relevant fit param.
         for key in list(self.mirror_pars):

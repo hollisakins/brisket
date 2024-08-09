@@ -4,6 +4,7 @@ import astropy.units as u
 # from .. import plotting
 from .. import filters
 # from .spectral_indices import measure_index
+from .. import utils
 
 class galaxy:
     """ A container for observational data loaded into BRISKET.
@@ -59,7 +60,8 @@ class galaxy:
                  phot_units=u.uJy,
                  load_spec=None,
                  wav_units=u.angstrom,
-                 spec_units=u.erg/u.s/u.cm**2/u.angstrom):
+                 spec_units=u.erg/u.s/u.cm**2/u.angstrom,
+                 logger=utils.NullLogger):
     
         self.ID = ID
         self.load_phot = load_phot
