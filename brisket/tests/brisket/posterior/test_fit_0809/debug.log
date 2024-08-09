@@ -1,0 +1,820 @@
+13:07:08 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:08:32 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:12:09 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:12:46 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:12:46 [ultranest] [INFO] Sampling 100 live points from prior ...
+13:12:46 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+13:12:46 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+13:12:46 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+13:12:46 [ultranest] [INFO] Explored until L=-1e+02  
+13:12:46 [ultranest] [INFO] Likelihood function evaluations: 100
+13:12:46 [ultranest] [INFO] Writing samples and results to disk ...
+13:12:46 [ultranest] [INFO] Writing samples and results to disk ... done
+13:12:46 [ultranest] [DEBUG] did a run_iter pass!
+13:12:46 [ultranest] [INFO]   logZ = -112.3 +- 7.784e-15
+13:12:46 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+13:12:46 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.11 nat, need <0.50 nat)
+13:12:46 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+13:12:46 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (82/83 iterations) have 1
+13:12:46 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+13:12:46 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+13:12:46 [ultranest] [INFO] done iterating.
+13:14:06 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:14:06 [ultranest] [DEBUG] Testing resume consistency: [         -inf -112.30521567    0.            0.37078703    0.860686
+    9.11236109    7.360686  ]: u=[0.37078703 0.860686  ] -> p=[9.11236109 7.360686  ] -> L=-112.30521567367383 
+13:14:06 [ultranest] [INFO] Resuming from 100 stored points
+13:14:06 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+13:14:06 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+13:14:06 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+13:14:06 [ultranest] [INFO] Explored until L=-1e+02  
+13:14:06 [ultranest] [INFO] Likelihood function evaluations: 1
+13:14:06 [ultranest] [INFO] Writing samples and results to disk ...
+13:14:06 [ultranest] [INFO] Writing samples and results to disk ... done
+13:14:06 [ultranest] [DEBUG] did a run_iter pass!
+13:14:06 [ultranest] [INFO]   logZ = -112.3 +- 8.605e-15
+13:14:06 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+13:14:06 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.45+-0.11 nat, need <0.50 nat)
+13:14:06 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+13:14:06 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (83/84 iterations) have 1
+13:14:06 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+13:14:06 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+13:14:06 [ultranest] [INFO] done iterating.
+13:15:33 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:15:33 [ultranest] [DEBUG] Testing resume consistency: [         -inf -112.30521567    0.            0.37078703    0.860686
+    9.11236109    7.360686  ]: u=[0.37078703 0.860686  ] -> p=[9.11236109 7.360686  ] -> L=-112.30521567367383 
+13:15:33 [ultranest] [WARNING] Trying to resume from previous run, but likelihood function gives different result: [0.37078703 0.860686  ] gave -112.30521567367383, now -409.91289481895603
+13:16:25 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=True, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:16:25 [ultranest] [DEBUG] Testing resume consistency: [         -inf -112.30521567    0.            0.37078703    0.860686
+    9.11236109    7.360686  ]: u=[0.37078703 0.860686  ] -> p=[9.11236109 7.360686  ] -> L=-112.30521567367383 
+13:16:25 [ultranest] [WARNING] Trying to resume from previous run, but likelihood function gives different result: [0.37078703 0.860686  ] gave -112.30521567367383, now -974.0345407932247
+13:17:43 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=False, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:17:43 [ultranest] [INFO] Sampling 100 live points from prior ...
+13:17:43 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+13:17:43 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+13:17:43 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+13:17:43 [ultranest] [INFO] Explored until L=-6e+03  
+13:17:43 [ultranest] [INFO] Likelihood function evaluations: 100
+13:17:43 [ultranest] [INFO] Writing samples and results to disk ...
+13:17:43 [ultranest] [INFO] Writing samples and results to disk ... done
+13:17:43 [ultranest] [DEBUG] did a run_iter pass!
+13:17:43 [ultranest] [INFO]   logZ = -6081 +- 9.245e-13
+13:17:43 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+13:17:43 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.16 nat, need <0.50 nat)
+13:17:43 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+13:17:43 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (45/46 iterations) have 1
+13:17:43 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+13:17:43 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+13:17:43 [ultranest] [INFO] done iterating.
+13:18:25 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=False, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:18:25 [ultranest] [INFO] Sampling 100 live points from prior ...
+13:18:25 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+13:18:25 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+13:18:25 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+13:18:25 [ultranest] [INFO] Explored until L=-6e+04  
+13:18:25 [ultranest] [INFO] Likelihood function evaluations: 100
+13:18:25 [ultranest] [INFO] Writing samples and results to disk ...
+13:18:25 [ultranest] [INFO] Writing samples and results to disk ... done
+13:18:25 [ultranest] [DEBUG] did a run_iter pass!
+13:18:25 [ultranest] [INFO]   logZ = -5.511e+04 +- 1.792e-11
+13:18:25 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+13:18:25 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.44+-0.10 nat, need <0.50 nat)
+13:18:25 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+13:18:25 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (48/49 iterations) have 1
+13:18:25 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+13:18:25 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+13:18:25 [ultranest] [INFO] done iterating.
+13:19:19 [ultranest] [DEBUG] ReactiveNestedSampler: dims=3+0, resume=True, log_dir=ultranest/test_run, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:19:19 [ultranest] [DEBUG] Testing resume consistency: [-5.69263144e+01 -5.69186889e+01  0.00000000e+00  2.49539142e-01
+  7.66662871e-01  7.30392052e-01  4.99815657e+02  1.99521000e+01
+  4.11148906e+00]: u=[0.24953914 0.76666287 0.73039205] -> p=[499.81565691  19.95210005   4.11148906] -> L=-56.91868894621192 
+13:19:19 [ultranest] [WARNING] Trying to resume from previous run, but likelihood function gives different result: [0.24953914 0.76666287 0.73039205] gave -56.91868894621192, now -48.151911348694334
+13:19:24 [ultranest] [DEBUG] ReactiveNestedSampler: dims=3+0, resume=False, log_dir=ultranest/test_run, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:19:26 [ultranest] [INFO] Sampling 400 live points from prior ...
+13:19:26 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=400
+13:19:26 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=400, cluster_num_live_points=40
+13:19:26 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 400.0), (inf, 400.0)]
+13:19:26 [ultranest] [DEBUG] iteration=0, ncalls=401, regioncalls=40, ndraw=40, logz=-inf, remainder_fraction=100.0000%, Lmin=-43903.94, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=40, ncalls=442, regioncalls=1680, ndraw=40, logz=-1568.17, remainder_fraction=100.0000%, Lmin=-1516.81, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=80, ncalls=487, regioncalls=3480, ndraw=40, logz=-523.18, remainder_fraction=100.0000%, Lmin=-516.85, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=120, ncalls=532, regioncalls=5280, ndraw=40, logz=-400.91, remainder_fraction=100.0000%, Lmin=-394.78, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=160, ncalls=586, regioncalls=7440, ndraw=40, logz=-385.20, remainder_fraction=100.0000%, Lmin=-380.60, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=180, ncalls=614, regioncalls=8560, ndraw=40, logz=-382.74, remainder_fraction=100.0000%, Lmin=-378.86, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=200, ncalls=640, regioncalls=9600, ndraw=40, logz=-381.59, remainder_fraction=100.0000%, Lmin=-378.25, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=240, ncalls=705, regioncalls=12200, ndraw=40, logz=-380.46, remainder_fraction=100.0000%, Lmin=-377.80, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=280, ncalls=771, regioncalls=14840, ndraw=40, logz=-379.87, remainder_fraction=100.0000%, Lmin=-377.66, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] iteration=503, ncalls=842, regioncalls=17680, ndraw=40, logz=-378.67, remainder_fraction=100.0000%, Lmin=-377.66, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] Plateau detected at L=-3.776587e+02, not replacing live point.
+13:19:26 [ultranest] [DEBUG] iteration=505, ncalls=843, regioncalls=17720, ndraw=40, logz=-378.66, remainder_fraction=100.0000%, Lmin=-377.66, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=520, ncalls=890, regioncalls=19600, ndraw=40, logz=-378.62, remainder_fraction=100.0000%, Lmin=-377.66, Lmax=-288.10
+13:19:26 [ultranest] [DEBUG] iteration=553, ncalls=1008, regioncalls=24320, ndraw=40, logz=-378.54, remainder_fraction=100.0000%, Lmin=-377.66, Lmax=-181.07
+13:19:26 [ultranest] [DEBUG] iteration=560, ncalls=1055, regioncalls=26200, ndraw=40, logz=-378.53, remainder_fraction=100.0000%, Lmin=-377.66, Lmax=-181.07
+13:19:26 [ultranest] [DEBUG] iteration=600, ncalls=1212, regioncalls=32520, ndraw=40, logz=-378.45, remainder_fraction=100.0000%, Lmin=-377.63, Lmax=-181.07
+13:19:26 [ultranest] [DEBUG] iteration=640, ncalls=1456, regioncalls=42320, ndraw=40, logz=-378.39, remainder_fraction=100.0000%, Lmin=-377.55, Lmax=-181.07
+13:19:26 [ultranest] [DEBUG] clustering found some stray points [need_accept=False] (array([1, 2]), array([213,   1]))
+13:19:27 [ultranest] [DEBUG] iteration=680, ncalls=1698, regioncalls=52000, ndraw=40, logz=-378.34, remainder_fraction=100.0000%, Lmin=-377.48, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=720, ncalls=2091, regioncalls=67760, ndraw=40, logz=-378.30, remainder_fraction=100.0000%, Lmin=-377.35, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=760, ncalls=2450, regioncalls=82160, ndraw=40, logz=-378.26, remainder_fraction=100.0000%, Lmin=-377.15, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=800, ncalls=2995, regioncalls=104000, ndraw=40, logz=-378.21, remainder_fraction=100.0000%, Lmin=-376.77, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=840, ncalls=3428, regioncalls=121360, ndraw=40, logz=-378.16, remainder_fraction=100.0000%, Lmin=-376.18, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] clustering found some stray points [need_accept=False] (array([1, 2]), array([213,   1]))
+13:19:27 [ultranest] [DEBUG] iteration=880, ncalls=3926, regioncalls=141280, ndraw=40, logz=-377.96, remainder_fraction=100.0000%, Lmin=-373.87, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=920, ncalls=4431, regioncalls=161520, ndraw=40, logz=-376.99, remainder_fraction=100.0000%, Lmin=-371.54, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=937, ncalls=4623, regioncalls=169200, ndraw=40, logz=-376.20, remainder_fraction=100.0000%, Lmin=-370.37, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=960, ncalls=4920, regioncalls=181080, ndraw=40, logz=-375.20, remainder_fraction=100.0000%, Lmin=-369.21, Lmax=-116.67
+13:19:27 [ultranest] [DEBUG] iteration=1000, ncalls=5453, regioncalls=202480, ndraw=40, logz=-372.51, remainder_fraction=100.0000%, Lmin=-365.96, Lmax=-102.41
+13:19:27 [ultranest] [DEBUG] iteration=1033, ncalls=5844, regioncalls=218160, ndraw=40, logz=-368.63, remainder_fraction=100.0000%, Lmin=-361.02, Lmax=-102.41
+13:19:27 [ultranest] [DEBUG] iteration=1040, ncalls=5904, regioncalls=220600, ndraw=40, logz=-367.72, remainder_fraction=100.0000%, Lmin=-360.48, Lmax=-102.41
+13:19:27 [ultranest] [DEBUG] iteration=1080, ncalls=6439, regioncalls=242160, ndraw=40, logz=-363.03, remainder_fraction=100.0000%, Lmin=-355.85, Lmax=-102.41
+13:19:27 [ultranest] [DEBUG] iteration=1081, ncalls=6461, regioncalls=243080, ndraw=40, logz=-362.93, remainder_fraction=100.0000%, Lmin=-355.73, Lmax=-84.59
+13:19:27 [ultranest] [DEBUG] iteration=1120, ncalls=6946, regioncalls=262760, ndraw=40, logz=-357.85, remainder_fraction=100.0000%, Lmin=-349.67, Lmax=-84.59
+13:19:27 [ultranest] [DEBUG] iteration=1129, ncalls=7052, regioncalls=267120, ndraw=40, logz=-356.48, remainder_fraction=100.0000%, Lmin=-348.80, Lmax=-84.59
+13:19:27 [ultranest] [DEBUG] iteration=1160, ncalls=7350, regioncalls=279160, ndraw=40, logz=-352.59, remainder_fraction=100.0000%, Lmin=-344.79, Lmax=-84.59
+13:19:27 [ultranest] [DEBUG] iteration=1177, ncalls=7557, regioncalls=287640, ndraw=40, logz=-350.55, remainder_fraction=100.0000%, Lmin=-342.81, Lmax=-84.59
+13:19:27 [ultranest] [DEBUG] iteration=1200, ncalls=7753, regioncalls=295640, ndraw=40, logz=-347.28, remainder_fraction=100.0000%, Lmin=-338.54, Lmax=-84.59
+13:19:27 [ultranest] [DEBUG] iteration=1225, ncalls=7921, regioncalls=302600, ndraw=40, logz=-342.76, remainder_fraction=100.0000%, Lmin=-334.14, Lmax=-70.14
+13:19:27 [ultranest] [DEBUG] iteration=1240, ncalls=8036, regioncalls=307440, ndraw=40, logz=-339.87, remainder_fraction=100.0000%, Lmin=-331.41, Lmax=-70.14
+13:19:27 [ultranest] [DEBUG] iteration=1273, ncalls=8281, regioncalls=317800, ndraw=40, logz=-333.54, remainder_fraction=100.0000%, Lmin=-324.18, Lmax=-70.14
+13:19:27 [ultranest] [DEBUG] iteration=1280, ncalls=8304, regioncalls=318800, ndraw=40, logz=-331.89, remainder_fraction=100.0000%, Lmin=-322.81, Lmax=-70.14
+13:19:28 [ultranest] [DEBUG] iteration=1320, ncalls=8496, regioncalls=326920, ndraw=40, logz=-324.22, remainder_fraction=100.0000%, Lmin=-315.57, Lmax=-70.14
+13:19:28 [ultranest] [DEBUG] iteration=1321, ncalls=8497, regioncalls=327000, ndraw=40, logz=-324.09, remainder_fraction=100.0000%, Lmin=-315.34, Lmax=-70.14
+13:19:28 [ultranest] [DEBUG] iteration=1360, ncalls=8689, regioncalls=335240, ndraw=40, logz=-316.60, remainder_fraction=100.0000%, Lmin=-307.13, Lmax=-67.89
+13:19:28 [ultranest] [DEBUG] iteration=1369, ncalls=8751, regioncalls=338000, ndraw=40, logz=-314.81, remainder_fraction=100.0000%, Lmin=-304.46, Lmax=-67.89
+13:19:28 [ultranest] [DEBUG] iteration=1400, ncalls=8842, regioncalls=341960, ndraw=40, logz=-305.03, remainder_fraction=100.0000%, Lmin=-294.80, Lmax=-67.89
+13:19:28 [ultranest] [DEBUG] iteration=1417, ncalls=8916, regioncalls=345280, ndraw=40, logz=-299.38, remainder_fraction=100.0000%, Lmin=-289.64, Lmax=-67.89
+13:19:28 [ultranest] [DEBUG] iteration=1440, ncalls=8983, regioncalls=348120, ndraw=40, logz=-292.73, remainder_fraction=100.0000%, Lmin=-283.15, Lmax=-67.89
+13:19:28 [ultranest] [DEBUG] iteration=1465, ncalls=9073, regioncalls=352080, ndraw=40, logz=-286.13, remainder_fraction=100.0000%, Lmin=-275.77, Lmax=-67.89
+13:19:28 [ultranest] [DEBUG] iteration=1480, ncalls=9130, regioncalls=354520, ndraw=40, logz=-280.25, remainder_fraction=100.0000%, Lmin=-270.24, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1513, ncalls=9266, regioncalls=360560, ndraw=40, logz=-270.04, remainder_fraction=100.0000%, Lmin=-259.88, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1520, ncalls=9282, regioncalls=361400, ndraw=40, logz=-267.75, remainder_fraction=100.0000%, Lmin=-256.88, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1560, ncalls=9445, regioncalls=368480, ndraw=40, logz=-254.22, remainder_fraction=100.0000%, Lmin=-243.81, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1561, ncalls=9456, regioncalls=369000, ndraw=40, logz=-253.98, remainder_fraction=100.0000%, Lmin=-243.60, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1600, ncalls=9605, regioncalls=375800, ndraw=40, logz=-243.34, remainder_fraction=100.0000%, Lmin=-231.64, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1640, ncalls=9752, regioncalls=381880, ndraw=40, logz=-229.78, remainder_fraction=100.0000%, Lmin=-218.78, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1680, ncalls=9954, regioncalls=390640, ndraw=40, logz=-218.54, remainder_fraction=100.0000%, Lmin=-207.36, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1720, ncalls=10143, regioncalls=399000, ndraw=40, logz=-208.33, remainder_fraction=100.0000%, Lmin=-197.59, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1753, ncalls=10294, regioncalls=405600, ndraw=40, logz=-200.96, remainder_fraction=100.0000%, Lmin=-189.48, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1760, ncalls=10317, regioncalls=406560, ndraw=40, logz=-198.86, remainder_fraction=100.0000%, Lmin=-187.22, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1800, ncalls=10437, regioncalls=411440, ndraw=40, logz=-188.53, remainder_fraction=100.0000%, Lmin=-177.46, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1840, ncalls=10581, regioncalls=417200, ndraw=40, logz=-177.33, remainder_fraction=100.0000%, Lmin=-165.48, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1880, ncalls=10709, regioncalls=422360, ndraw=40, logz=-166.99, remainder_fraction=100.0000%, Lmin=-154.79, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1920, ncalls=10883, regioncalls=429320, ndraw=40, logz=-157.04, remainder_fraction=100.0000%, Lmin=-145.02, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1960, ncalls=11035, regioncalls=435440, ndraw=40, logz=-150.59, remainder_fraction=100.0000%, Lmin=-138.50, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=1993, ncalls=11203, regioncalls=442280, ndraw=40, logz=-144.34, remainder_fraction=100.0000%, Lmin=-132.42, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=2000, ncalls=11266, regioncalls=444800, ndraw=40, logz=-143.17, remainder_fraction=100.0000%, Lmin=-131.01, Lmax=-49.02
+13:19:28 [ultranest] [DEBUG] iteration=2040, ncalls=11463, regioncalls=452680, ndraw=40, logz=-135.57, remainder_fraction=100.0000%, Lmin=-123.41, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2041, ncalls=11464, regioncalls=452760, ndraw=40, logz=-135.42, remainder_fraction=100.0000%, Lmin=-123.37, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2080, ncalls=11670, regioncalls=461000, ndraw=40, logz=-126.79, remainder_fraction=100.0000%, Lmin=-114.36, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2120, ncalls=11933, regioncalls=471520, ndraw=40, logz=-120.30, remainder_fraction=100.0000%, Lmin=-108.04, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2160, ncalls=12156, regioncalls=480560, ndraw=40, logz=-114.35, remainder_fraction=100.0000%, Lmin=-101.95, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2185, ncalls=12333, regioncalls=487760, ndraw=40, logz=-110.86, remainder_fraction=100.0000%, Lmin=-97.69, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2200, ncalls=12368, regioncalls=489280, ndraw=40, logz=-108.89, remainder_fraction=100.0000%, Lmin=-96.33, Lmax=-48.43
+13:19:28 [ultranest] [DEBUG] iteration=2240, ncalls=12435, regioncalls=492520, ndraw=40, logz=-104.65, remainder_fraction=100.0000%, Lmin=-91.77, Lmax=-46.89
+13:19:28 [ultranest] [DEBUG] iteration=2280, ncalls=12504, regioncalls=495760, ndraw=40, logz=-100.35, remainder_fraction=100.0000%, Lmin=-87.57, Lmax=-46.89
+13:19:29 [ultranest] [DEBUG] iteration=2320, ncalls=12577, regioncalls=499600, ndraw=40, logz=-95.91, remainder_fraction=100.0000%, Lmin=-82.86, Lmax=-46.89
+13:19:29 [ultranest] [DEBUG] iteration=2329, ncalls=12606, regioncalls=501000, ndraw=40, logz=-95.17, remainder_fraction=100.0000%, Lmin=-82.30, Lmax=-46.89
+13:19:29 [ultranest] [DEBUG] iteration=2360, ncalls=12657, regioncalls=503160, ndraw=40, logz=-92.59, remainder_fraction=100.0000%, Lmin=-79.22, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2377, ncalls=12689, regioncalls=504720, ndraw=40, logz=-90.77, remainder_fraction=100.0000%, Lmin=-77.48, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2400, ncalls=12728, regioncalls=506440, ndraw=40, logz=-89.03, remainder_fraction=100.0000%, Lmin=-75.91, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2425, ncalls=12768, regioncalls=508240, ndraw=40, logz=-87.11, remainder_fraction=100.0000%, Lmin=-74.09, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2440, ncalls=12784, regioncalls=508960, ndraw=40, logz=-86.00, remainder_fraction=100.0000%, Lmin=-72.57, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2473, ncalls=12845, regioncalls=511600, ndraw=40, logz=-83.82, remainder_fraction=100.0000%, Lmin=-70.50, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2480, ncalls=12854, regioncalls=512040, ndraw=40, logz=-83.41, remainder_fraction=100.0000%, Lmin=-70.28, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2520, ncalls=12916, regioncalls=514640, ndraw=40, logz=-81.33, remainder_fraction=100.0000%, Lmin=-68.14, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2560, ncalls=12996, regioncalls=517960, ndraw=40, logz=-79.44, remainder_fraction=100.0000%, Lmin=-66.21, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2600, ncalls=13080, regioncalls=522000, ndraw=40, logz=-77.79, remainder_fraction=100.0000%, Lmin=-64.35, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2617, ncalls=13121, regioncalls=524040, ndraw=40, logz=-77.08, remainder_fraction=100.0000%, Lmin=-63.59, Lmax=-46.83
+13:19:29 [ultranest] [DEBUG] iteration=2640, ncalls=13157, regioncalls=525560, ndraw=40, logz=-76.20, remainder_fraction=100.0000%, Lmin=-62.68, Lmax=-46.82
+13:19:29 [ultranest] [DEBUG] iteration=2665, ncalls=13207, regioncalls=527680, ndraw=40, logz=-75.07, remainder_fraction=99.9999%, Lmin=-61.14, Lmax=-46.82
+13:19:29 [ultranest] [DEBUG] iteration=2680, ncalls=13233, regioncalls=528880, ndraw=40, logz=-74.38, remainder_fraction=99.9998%, Lmin=-60.68, Lmax=-46.82
+13:19:29 [ultranest] [DEBUG] iteration=2713, ncalls=13298, regioncalls=531760, ndraw=40, logz=-73.14, remainder_fraction=99.9991%, Lmin=-59.25, Lmax=-46.82
+13:19:29 [ultranest] [DEBUG] iteration=2720, ncalls=13309, regioncalls=532200, ndraw=40, logz=-72.86, remainder_fraction=99.9988%, Lmin=-58.89, Lmax=-46.82
+13:19:29 [ultranest] [DEBUG] iteration=2760, ncalls=13365, regioncalls=534560, ndraw=40, logz=-71.29, remainder_fraction=99.9948%, Lmin=-57.36, Lmax=-46.68
+13:19:29 [ultranest] [DEBUG] iteration=2761, ncalls=13366, regioncalls=534640, ndraw=40, logz=-71.26, remainder_fraction=99.9946%, Lmin=-57.30, Lmax=-46.68
+13:19:29 [ultranest] [DEBUG] iteration=2800, ncalls=13427, regioncalls=537080, ndraw=40, logz=-69.99, remainder_fraction=99.9803%, Lmin=-55.89, Lmax=-46.68
+13:19:29 [ultranest] [DEBUG] iteration=2840, ncalls=13510, regioncalls=540600, ndraw=40, logz=-68.83, remainder_fraction=99.9423%, Lmin=-54.84, Lmax=-46.32
+13:19:29 [ultranest] [DEBUG] iteration=2857, ncalls=13553, regioncalls=542400, ndraw=40, logz=-68.44, remainder_fraction=99.9101%, Lmin=-54.43, Lmax=-46.32
+13:19:29 [ultranest] [DEBUG] iteration=2880, ncalls=13586, regioncalls=543880, ndraw=40, logz=-67.91, remainder_fraction=99.8577%, Lmin=-53.79, Lmax=-46.32
+13:19:29 [ultranest] [DEBUG] iteration=2920, ncalls=13649, regioncalls=546680, ndraw=40, logz=-67.05, remainder_fraction=99.7171%, Lmin=-52.86, Lmax=-46.10
+13:19:29 [ultranest] [DEBUG] iteration=2960, ncalls=13741, regioncalls=550920, ndraw=40, logz=-66.28, remainder_fraction=99.3111%, Lmin=-52.08, Lmax=-46.10
+13:19:29 [ultranest] [DEBUG] iteration=3000, ncalls=13821, regioncalls=555160, ndraw=40, logz=-65.67, remainder_fraction=98.7325%, Lmin=-51.46, Lmax=-46.10
+13:19:29 [ultranest] [DEBUG] iteration=3001, ncalls=13822, regioncalls=555320, ndraw=40, logz=-65.65, remainder_fraction=98.7167%, Lmin=-51.46, Lmax=-46.10
+13:19:29 [ultranest] [DEBUG] iteration=3040, ncalls=13878, regioncalls=557680, ndraw=40, logz=-65.14, remainder_fraction=97.9941%, Lmin=-50.77, Lmax=-46.04
+13:19:29 [ultranest] [DEBUG] iteration=3049, ncalls=13902, regioncalls=558800, ndraw=40, logz=-65.02, remainder_fraction=97.7302%, Lmin=-50.66, Lmax=-46.04
+13:19:29 [ultranest] [DEBUG] iteration=3080, ncalls=13953, regioncalls=560920, ndraw=40, logz=-64.62, remainder_fraction=96.6481%, Lmin=-50.20, Lmax=-46.04
+13:19:29 [ultranest] [DEBUG] iteration=3120, ncalls=14023, regioncalls=564120, ndraw=40, logz=-64.16, remainder_fraction=94.6392%, Lmin=-49.58, Lmax=-46.04
+13:19:29 [ultranest] [DEBUG] iteration=3145, ncalls=14064, regioncalls=566080, ndraw=40, logz=-63.89, remainder_fraction=92.5681%, Lmin=-49.35, Lmax=-46.04
+13:19:29 [ultranest] [DEBUG] iteration=3160, ncalls=14103, regioncalls=567680, ndraw=40, logz=-63.73, remainder_fraction=91.4178%, Lmin=-49.17, Lmax=-46.04
+13:19:29 [ultranest] [DEBUG] iteration=3200, ncalls=14189, regioncalls=571320, ndraw=40, logz=-63.39, remainder_fraction=87.6471%, Lmin=-48.83, Lmax=-46.00
+13:19:29 [ultranest] [DEBUG] iteration=3240, ncalls=14255, regioncalls=574280, ndraw=40, logz=-63.10, remainder_fraction=83.3054%, Lmin=-48.54, Lmax=-46.00
+13:19:29 [ultranest] [DEBUG] iteration=3241, ncalls=14256, regioncalls=574360, ndraw=40, logz=-63.09, remainder_fraction=83.1603%, Lmin=-48.53, Lmax=-46.00
+13:19:29 [ultranest] [DEBUG] iteration=3280, ncalls=14339, regioncalls=577680, ndraw=40, logz=-62.85, remainder_fraction=79.4503%, Lmin=-48.25, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3289, ncalls=14363, regioncalls=578680, ndraw=40, logz=-62.80, remainder_fraction=78.2967%, Lmin=-48.16, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3320, ncalls=14436, regioncalls=581640, ndraw=40, logz=-62.63, remainder_fraction=74.5489%, Lmin=-47.94, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3337, ncalls=14484, regioncalls=583680, ndraw=40, logz=-62.55, remainder_fraction=72.1033%, Lmin=-47.84, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3360, ncalls=14520, regioncalls=585120, ndraw=40, logz=-62.44, remainder_fraction=68.4845%, Lmin=-47.66, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3385, ncalls=14561, regioncalls=586800, ndraw=40, logz=-62.33, remainder_fraction=64.7442%, Lmin=-47.58, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3400, ncalls=14587, regioncalls=587840, ndraw=40, logz=-62.27, remainder_fraction=62.2921%, Lmin=-47.49, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3433, ncalls=14652, regioncalls=590560, ndraw=40, logz=-62.15, remainder_fraction=57.3022%, Lmin=-47.35, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3440, ncalls=14665, regioncalls=591160, ndraw=40, logz=-62.12, remainder_fraction=56.4575%, Lmin=-47.33, Lmax=-45.92
+13:19:29 [ultranest] [DEBUG] iteration=3480, ncalls=14734, regioncalls=594280, ndraw=40, logz=-62.00, remainder_fraction=50.6465%, Lmin=-47.17, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3481, ncalls=14739, regioncalls=594560, ndraw=40, logz=-62.00, remainder_fraction=50.5404%, Lmin=-47.17, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3520, ncalls=14794, regioncalls=596800, ndraw=40, logz=-61.90, remainder_fraction=45.1920%, Lmin=-47.04, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3560, ncalls=14887, regioncalls=600760, ndraw=40, logz=-61.81, remainder_fraction=39.9776%, Lmin=-46.92, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3577, ncalls=14931, regioncalls=602560, ndraw=40, logz=-61.77, remainder_fraction=38.0199%, Lmin=-46.86, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3600, ncalls=14966, regioncalls=603960, ndraw=40, logz=-61.73, remainder_fraction=35.4721%, Lmin=-46.81, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3625, ncalls=15003, regioncalls=605480, ndraw=40, logz=-61.69, remainder_fraction=32.8446%, Lmin=-46.75, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3640, ncalls=15030, regioncalls=606600, ndraw=40, logz=-61.66, remainder_fraction=31.3071%, Lmin=-46.71, Lmax=-45.91
+13:19:29 [ultranest] [DEBUG] iteration=3680, ncalls=15124, regioncalls=610840, ndraw=40, logz=-61.61, remainder_fraction=27.4738%, Lmin=-46.62, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3720, ncalls=15206, regioncalls=615040, ndraw=40, logz=-61.56, remainder_fraction=23.9844%, Lmin=-46.53, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3721, ncalls=15207, regioncalls=615120, ndraw=40, logz=-61.56, remainder_fraction=23.9280%, Lmin=-46.53, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3760, ncalls=15273, regioncalls=617800, ndraw=40, logz=-61.52, remainder_fraction=20.8323%, Lmin=-46.45, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3800, ncalls=15344, regioncalls=621480, ndraw=40, logz=-61.48, remainder_fraction=17.8700%, Lmin=-46.38, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3817, ncalls=15371, regioncalls=623000, ndraw=40, logz=-61.47, remainder_fraction=16.7455%, Lmin=-46.37, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3840, ncalls=15403, regioncalls=624280, ndraw=40, logz=-61.45, remainder_fraction=15.2267%, Lmin=-46.34, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3880, ncalls=15475, regioncalls=627280, ndraw=40, logz=-61.42, remainder_fraction=12.9995%, Lmin=-46.29, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3913, ncalls=15549, regioncalls=630480, ndraw=40, logz=-61.41, remainder_fraction=11.3898%, Lmin=-46.25, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3920, ncalls=15558, regioncalls=630920, ndraw=40, logz=-61.40, remainder_fraction=11.0642%, Lmin=-46.25, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3960, ncalls=15613, regioncalls=633240, ndraw=40, logz=-61.38, remainder_fraction=9.4104%, Lmin=-46.21, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=3961, ncalls=15615, regioncalls=633360, ndraw=40, logz=-61.38, remainder_fraction=9.3690%, Lmin=-46.21, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4000, ncalls=15685, regioncalls=636640, ndraw=40, logz=-61.37, remainder_fraction=7.9549%, Lmin=-46.18, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4009, ncalls=15703, regioncalls=637600, ndraw=40, logz=-61.37, remainder_fraction=7.6644%, Lmin=-46.17, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4040, ncalls=15768, regioncalls=640520, ndraw=40, logz=-61.36, remainder_fraction=6.7208%, Lmin=-46.15, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4057, ncalls=15796, regioncalls=641760, ndraw=40, logz=-61.35, remainder_fraction=6.2585%, Lmin=-46.14, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4080, ncalls=15837, regioncalls=643480, ndraw=40, logz=-61.34, remainder_fraction=5.6716%, Lmin=-46.12, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4105, ncalls=15874, regioncalls=645000, ndraw=40, logz=-61.34, remainder_fraction=5.0783%, Lmin=-46.10, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4120, ncalls=15902, regioncalls=646160, ndraw=40, logz=-61.34, remainder_fraction=4.7625%, Lmin=-46.09, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4160, ncalls=15969, regioncalls=649080, ndraw=40, logz=-61.33, remainder_fraction=4.0000%, Lmin=-46.07, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4200, ncalls=16043, regioncalls=652680, ndraw=40, logz=-61.32, remainder_fraction=3.3488%, Lmin=-46.05, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4240, ncalls=16117, regioncalls=656840, ndraw=40, logz=-61.31, remainder_fraction=2.8071%, Lmin=-46.03, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4249, ncalls=16131, regioncalls=657560, ndraw=40, logz=-61.31, remainder_fraction=2.6968%, Lmin=-46.03, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4280, ncalls=16179, regioncalls=659600, ndraw=40, logz=-61.31, remainder_fraction=2.3499%, Lmin=-46.02, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4320, ncalls=16253, regioncalls=663600, ndraw=40, logz=-61.31, remainder_fraction=1.9602%, Lmin=-46.00, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4345, ncalls=16294, regioncalls=666040, ndraw=40, logz=-61.30, remainder_fraction=1.7507%, Lmin=-46.00, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4360, ncalls=16317, regioncalls=667040, ndraw=40, logz=-61.30, remainder_fraction=1.6365%, Lmin=-45.99, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4393, ncalls=16366, regioncalls=669360, ndraw=40, logz=-61.30, remainder_fraction=1.4088%, Lmin=-45.98, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4400, ncalls=16379, regioncalls=669920, ndraw=40, logz=-61.30, remainder_fraction=1.3649%, Lmin=-45.98, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4440, ncalls=16453, regioncalls=673040, ndraw=40, logz=-61.30, remainder_fraction=1.1368%, Lmin=-45.97, Lmax=-45.91
+13:19:30 [ultranest] [DEBUG] iteration=4441, ncalls=16454, regioncalls=673120, ndraw=40, logz=-61.30, remainder_fraction=1.1316%, Lmin=-45.97, Lmax=-45.91
+13:19:30 [ultranest] [INFO] Explored until L=-5e+01  
+13:19:30 [ultranest] [INFO] Likelihood function evaluations: 16500
+13:19:30 [ultranest] [INFO] Writing samples and results to disk ...
+13:19:31 [ultranest] [INFO] Writing samples and results to disk ... done
+13:19:31 [ultranest] [DEBUG] did a run_iter pass!
+13:19:31 [ultranest] [INFO]   logZ = -61.3 +- 0.1927
+13:19:31 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 1011.8, need >400)
+13:19:31 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.11 nat, need <0.50 nat)
+13:19:31 [ultranest] [INFO] Evidency uncertainty strategy is satisfied (dlogz=0.19, need <0.5)
+13:19:31 [ultranest] [INFO]   logZ error budget: single: 0.25 bs:0.19 tail:0.01 total:0.19 required:<0.50
+13:19:31 [ultranest] [INFO] done iterating.
+13:29:24 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=False, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:29:24 [ultranest] [INFO] Sampling 100 live points from prior ...
+13:29:24 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+13:29:24 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+13:29:24 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+13:29:24 [ultranest] [INFO] Explored until L=-4e+02  
+13:29:24 [ultranest] [INFO] Likelihood function evaluations: 100
+13:29:24 [ultranest] [INFO] Writing samples and results to disk ...
+13:29:24 [ultranest] [INFO] Writing samples and results to disk ... done
+13:29:24 [ultranest] [DEBUG] did a run_iter pass!
+13:29:24 [ultranest] [INFO]   logZ = -406.3 +- 1.431e-13
+13:29:24 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+13:29:24 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.45+-0.15 nat, need <0.50 nat)
+13:29:24 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+13:29:24 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (63/64 iterations) have 1
+13:29:24 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+13:29:24 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+13:29:24 [ultranest] [INFO] done iterating.
+13:34:10 [ultranest] [DEBUG] ReactiveNestedSampler: dims=2+0, resume=False, log_dir=brisket/posterior/test_fit_0809, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+13:34:11 [ultranest] [INFO] Sampling 100 live points from prior ...
+13:34:11 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+13:34:11 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+13:34:11 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+13:34:11 [ultranest] [INFO] Explored until L=-1e+02  
+13:34:11 [ultranest] [INFO] Likelihood function evaluations: 100
+13:34:11 [ultranest] [INFO] Writing samples and results to disk ...
+13:34:11 [ultranest] [INFO] Writing samples and results to disk ... done
+13:34:11 [ultranest] [DEBUG] did a run_iter pass!
+13:34:11 [ultranest] [INFO]   logZ = -114.8 +- 2.502e-14
+13:34:11 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+13:34:11 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.13 nat, need <0.50 nat)
+13:34:11 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+13:34:11 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (80/81 iterations) have 1
+13:34:11 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+13:34:11 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+13:34:11 [ultranest] [INFO] done iterating.
+14:06:59 [ultranest] [DEBUG] ReactiveNestedSampler: dims=3+0, resume=False, log_dir=ultranest/test_run, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+14:07:00 [ultranest] [INFO] Sampling 400 live points from prior ...
+14:07:00 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=400
+14:07:00 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=400, cluster_num_live_points=40
+14:07:00 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 400.0), (inf, 400.0)]
+14:07:00 [ultranest] [DEBUG] iteration=0, ncalls=401, regioncalls=40, ndraw=40, logz=-inf, remainder_fraction=100.0000%, Lmin=-149896.30, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=40, ncalls=442, regioncalls=1680, ndraw=40, logz=-2509.75, remainder_fraction=100.0000%, Lmin=-2483.76, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=80, ncalls=488, regioncalls=3520, ndraw=40, logz=-904.05, remainder_fraction=100.0000%, Lmin=-895.39, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=90, ncalls=499, regioncalls=3960, ndraw=40, logz=-793.17, remainder_fraction=100.0000%, Lmin=-759.53, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=120, ncalls=534, regioncalls=5360, ndraw=40, logz=-588.70, remainder_fraction=100.0000%, Lmin=-579.64, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=160, ncalls=583, regioncalls=7320, ndraw=40, logz=-517.57, remainder_fraction=100.0000%, Lmin=-511.77, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=200, ncalls=635, regioncalls=9400, ndraw=40, logz=-511.19, remainder_fraction=100.0000%, Lmin=-507.37, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=240, ncalls=700, regioncalls=12000, ndraw=40, logz=-509.41, remainder_fraction=100.0000%, Lmin=-506.41, Lmax=-255.19
+14:07:00 [ultranest] [DEBUG] iteration=280, ncalls=757, regioncalls=14280, ndraw=40, logz=-508.62, remainder_fraction=100.0000%, Lmin=-506.20, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] iteration=320, ncalls=826, regioncalls=17040, ndraw=40, logz=-508.19, remainder_fraction=100.0000%, Lmin=-506.20, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] Plateau detected at L=-5.061978e+02, not replacing live point.
+14:07:00 [ultranest] [DEBUG] iteration=447, ncalls=830, regioncalls=17200, ndraw=40, logz=-507.48, remainder_fraction=100.0000%, Lmin=-506.20, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] iteration=480, ncalls=957, regioncalls=22280, ndraw=40, logz=-507.36, remainder_fraction=100.0000%, Lmin=-506.20, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] iteration=520, ncalls=1116, regioncalls=28640, ndraw=40, logz=-507.25, remainder_fraction=100.0000%, Lmin=-506.19, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] iteration=560, ncalls=1315, regioncalls=36600, ndraw=40, logz=-507.16, remainder_fraction=100.0000%, Lmin=-506.16, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] iteration=571, ncalls=1386, regioncalls=39440, ndraw=40, logz=-507.14, remainder_fraction=100.0000%, Lmin=-506.15, Lmax=-197.92
+14:07:00 [ultranest] [DEBUG] iteration=600, ncalls=1571, regioncalls=46880, ndraw=40, logz=-507.09, remainder_fraction=100.0000%, Lmin=-506.11, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=640, ncalls=1800, regioncalls=56040, ndraw=40, logz=-507.02, remainder_fraction=100.0000%, Lmin=-506.06, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=680, ncalls=2047, regioncalls=65920, ndraw=40, logz=-506.97, remainder_fraction=100.0000%, Lmin=-505.96, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=720, ncalls=2340, regioncalls=77640, ndraw=40, logz=-506.92, remainder_fraction=100.0000%, Lmin=-505.79, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=760, ncalls=2698, regioncalls=92000, ndraw=40, logz=-506.87, remainder_fraction=100.0000%, Lmin=-505.63, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=800, ncalls=3076, regioncalls=107120, ndraw=40, logz=-506.81, remainder_fraction=100.0000%, Lmin=-505.25, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=840, ncalls=3573, regioncalls=127040, ndraw=40, logz=-506.75, remainder_fraction=100.0000%, Lmin=-504.87, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=880, ncalls=3989, regioncalls=143720, ndraw=40, logz=-506.66, remainder_fraction=100.0000%, Lmin=-504.16, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=881, ncalls=4000, regioncalls=144160, ndraw=40, logz=-506.66, remainder_fraction=100.0000%, Lmin=-504.15, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=920, ncalls=4452, regioncalls=162240, ndraw=40, logz=-506.47, remainder_fraction=100.0000%, Lmin=-502.48, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=943, ncalls=4603, regioncalls=168280, ndraw=40, logz=-506.10, remainder_fraction=100.0000%, Lmin=-501.31, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=960, ncalls=4765, regioncalls=174800, ndraw=40, logz=-505.68, remainder_fraction=100.0000%, Lmin=-500.60, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=1000, ncalls=5286, regioncalls=195640, ndraw=40, logz=-504.27, remainder_fraction=100.0000%, Lmin=-498.64, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=1005, ncalls=5315, regioncalls=196800, ndraw=40, logz=-504.05, remainder_fraction=100.0000%, Lmin=-498.38, Lmax=-197.92
+14:07:01 [ultranest] [DEBUG] iteration=1040, ncalls=5696, regioncalls=212200, ndraw=40, logz=-502.14, remainder_fraction=100.0000%, Lmin=-496.05, Lmax=-151.39
+14:07:01 [ultranest] [DEBUG] iteration=1080, ncalls=6172, regioncalls=231280, ndraw=40, logz=-499.20, remainder_fraction=100.0000%, Lmin=-492.77, Lmax=-82.17
+14:07:01 [ultranest] [DEBUG] iteration=1120, ncalls=6706, regioncalls=252640, ndraw=40, logz=-495.31, remainder_fraction=100.0000%, Lmin=-488.24, Lmax=-82.17
+14:07:01 [ultranest] [DEBUG] iteration=1160, ncalls=7275, regioncalls=275400, ndraw=40, logz=-491.08, remainder_fraction=100.0000%, Lmin=-483.90, Lmax=-82.17
+14:07:01 [ultranest] [DEBUG] iteration=1200, ncalls=7956, regioncalls=302680, ndraw=40, logz=-487.81, remainder_fraction=100.0000%, Lmin=-480.36, Lmax=-82.17
+14:07:01 [ultranest] [DEBUG] iteration=1240, ncalls=8466, regioncalls=323080, ndraw=40, logz=-482.16, remainder_fraction=100.0000%, Lmin=-474.50, Lmax=-82.17
+14:07:01 [ultranest] [DEBUG] iteration=1253, ncalls=8641, regioncalls=330080, ndraw=40, logz=-479.90, remainder_fraction=100.0000%, Lmin=-471.88, Lmax=-82.17
+14:07:02 [ultranest] [DEBUG] iteration=1280, ncalls=8835, regioncalls=337960, ndraw=40, logz=-476.45, remainder_fraction=100.0000%, Lmin=-468.78, Lmax=-82.17
+14:07:02 [ultranest] [DEBUG] iteration=1320, ncalls=9205, regioncalls=352880, ndraw=40, logz=-470.86, remainder_fraction=100.0000%, Lmin=-462.77, Lmax=-82.17
+14:07:02 [ultranest] [DEBUG] iteration=1360, ncalls=9587, regioncalls=368400, ndraw=40, logz=-462.45, remainder_fraction=100.0000%, Lmin=-454.13, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1377, ncalls=9691, regioncalls=372640, ndraw=40, logz=-459.05, remainder_fraction=100.0000%, Lmin=-450.14, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1400, ncalls=9828, regioncalls=378360, ndraw=40, logz=-454.59, remainder_fraction=100.0000%, Lmin=-446.34, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1440, ncalls=10152, regioncalls=391560, ndraw=40, logz=-445.38, remainder_fraction=100.0000%, Lmin=-436.63, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1480, ncalls=10455, regioncalls=403960, ndraw=40, logz=-438.39, remainder_fraction=100.0000%, Lmin=-429.64, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1501, ncalls=10594, regioncalls=409760, ndraw=40, logz=-432.49, remainder_fraction=100.0000%, Lmin=-422.90, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1520, ncalls=10670, regioncalls=412960, ndraw=40, logz=-427.25, remainder_fraction=100.0000%, Lmin=-417.95, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1560, ncalls=10883, regioncalls=421880, ndraw=40, logz=-416.16, remainder_fraction=100.0000%, Lmin=-406.05, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1600, ncalls=11051, regioncalls=429040, ndraw=40, logz=-402.13, remainder_fraction=100.0000%, Lmin=-392.27, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1625, ncalls=11197, regioncalls=435360, ndraw=40, logz=-388.26, remainder_fraction=100.0000%, Lmin=-377.18, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1640, ncalls=11243, regioncalls=437440, ndraw=40, logz=-382.30, remainder_fraction=100.0000%, Lmin=-372.52, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1680, ncalls=11400, regioncalls=444680, ndraw=40, logz=-365.91, remainder_fraction=100.0000%, Lmin=-355.38, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1687, ncalls=11422, regioncalls=445640, ndraw=40, logz=-363.31, remainder_fraction=100.0000%, Lmin=-353.26, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1720, ncalls=11523, regioncalls=450400, ndraw=40, logz=-352.21, remainder_fraction=100.0000%, Lmin=-342.09, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1749, ncalls=11653, regioncalls=456360, ndraw=40, logz=-336.60, remainder_fraction=100.0000%, Lmin=-326.20, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1760, ncalls=11703, regioncalls=458720, ndraw=40, logz=-332.68, remainder_fraction=100.0000%, Lmin=-320.86, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1800, ncalls=11855, regioncalls=465640, ndraw=40, logz=-317.51, remainder_fraction=100.0000%, Lmin=-306.55, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1811, ncalls=11913, regioncalls=468240, ndraw=40, logz=-313.66, remainder_fraction=100.0000%, Lmin=-302.89, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1840, ncalls=12031, regioncalls=473440, ndraw=40, logz=-303.85, remainder_fraction=100.0000%, Lmin=-291.39, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1873, ncalls=12175, regioncalls=479720, ndraw=40, logz=-292.10, remainder_fraction=100.0000%, Lmin=-281.13, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1880, ncalls=12200, regioncalls=480760, ndraw=40, logz=-289.96, remainder_fraction=100.0000%, Lmin=-279.05, Lmax=-51.75
+14:07:02 [ultranest] [DEBUG] iteration=1920, ncalls=12384, regioncalls=488680, ndraw=40, logz=-281.68, remainder_fraction=100.0000%, Lmin=-270.97, Lmax=-51.50
+14:07:02 [ultranest] [DEBUG] iteration=1960, ncalls=12592, regioncalls=497640, ndraw=40, logz=-267.70, remainder_fraction=100.0000%, Lmin=-256.73, Lmax=-51.50
+14:07:02 [ultranest] [DEBUG] iteration=1997, ncalls=12763, regioncalls=504960, ndraw=40, logz=-255.20, remainder_fraction=100.0000%, Lmin=-243.50, Lmax=-51.50
+14:07:02 [ultranest] [DEBUG] iteration=2000, ncalls=12778, regioncalls=505600, ndraw=40, logz=-254.17, remainder_fraction=100.0000%, Lmin=-242.40, Lmax=-51.50
+14:07:02 [ultranest] [DEBUG] iteration=2040, ncalls=12931, regioncalls=511880, ndraw=40, logz=-241.23, remainder_fraction=100.0000%, Lmin=-229.41, Lmax=-51.50
+14:07:02 [ultranest] [DEBUG] iteration=2080, ncalls=13041, regioncalls=516320, ndraw=40, logz=-229.49, remainder_fraction=100.0000%, Lmin=-217.93, Lmax=-51.50
+14:07:02 [ultranest] [DEBUG] iteration=2120, ncalls=13196, regioncalls=522520, ndraw=40, logz=-217.31, remainder_fraction=100.0000%, Lmin=-205.62, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2160, ncalls=13308, regioncalls=527120, ndraw=40, logz=-204.88, remainder_fraction=100.0000%, Lmin=-193.12, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2200, ncalls=13484, regioncalls=534200, ndraw=40, logz=-192.71, remainder_fraction=100.0000%, Lmin=-180.63, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2240, ncalls=13696, regioncalls=542800, ndraw=40, logz=-183.28, remainder_fraction=100.0000%, Lmin=-171.58, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] clustering found some stray points [need_accept=False] (array([1, 2]), array([275,   1]))
+14:07:03 [ultranest] [DEBUG] iteration=2245, ncalls=13710, regioncalls=543440, ndraw=40, logz=-181.93, remainder_fraction=100.0000%, Lmin=-170.15, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2280, ncalls=13865, regioncalls=549640, ndraw=40, logz=-174.65, remainder_fraction=100.0000%, Lmin=-163.06, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2307, ncalls=13977, regioncalls=554160, ndraw=40, logz=-170.53, remainder_fraction=100.0000%, Lmin=-157.86, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2320, ncalls=14029, regioncalls=556520, ndraw=40, logz=-166.62, remainder_fraction=100.0000%, Lmin=-154.28, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2360, ncalls=14198, regioncalls=564200, ndraw=40, logz=-158.67, remainder_fraction=100.0000%, Lmin=-146.71, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2369, ncalls=14245, regioncalls=566400, ndraw=40, logz=-157.47, remainder_fraction=100.0000%, Lmin=-145.46, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2400, ncalls=14289, regioncalls=568600, ndraw=40, logz=-151.58, remainder_fraction=100.0000%, Lmin=-139.46, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2431, ncalls=14345, regioncalls=571120, ndraw=40, logz=-146.85, remainder_fraction=100.0000%, Lmin=-134.45, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2440, ncalls=14356, regioncalls=571600, ndraw=40, logz=-145.19, remainder_fraction=100.0000%, Lmin=-132.72, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2480, ncalls=14426, regioncalls=574600, ndraw=40, logz=-139.75, remainder_fraction=100.0000%, Lmin=-127.51, Lmax=-51.50
+14:07:03 [ultranest] [DEBUG] iteration=2520, ncalls=14495, regioncalls=577600, ndraw=40, logz=-134.47, remainder_fraction=100.0000%, Lmin=-121.72, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2555, ncalls=14586, regioncalls=581680, ndraw=40, logz=-128.82, remainder_fraction=100.0000%, Lmin=-116.45, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2560, ncalls=14594, regioncalls=582120, ndraw=40, logz=-128.24, remainder_fraction=100.0000%, Lmin=-115.69, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2600, ncalls=14652, regioncalls=584640, ndraw=40, logz=-122.86, remainder_fraction=100.0000%, Lmin=-110.58, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2640, ncalls=14717, regioncalls=587880, ndraw=40, logz=-118.59, remainder_fraction=100.0000%, Lmin=-105.71, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2679, ncalls=14782, regioncalls=591040, ndraw=40, logz=-114.63, remainder_fraction=100.0000%, Lmin=-101.74, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2680, ncalls=14783, regioncalls=591120, ndraw=40, logz=-114.50, remainder_fraction=100.0000%, Lmin=-101.59, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2720, ncalls=14840, regioncalls=593400, ndraw=40, logz=-109.60, remainder_fraction=100.0000%, Lmin=-97.12, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2741, ncalls=14871, regioncalls=594760, ndraw=40, logz=-107.42, remainder_fraction=100.0000%, Lmin=-94.40, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2760, ncalls=14902, regioncalls=596040, ndraw=40, logz=-104.77, remainder_fraction=100.0000%, Lmin=-91.72, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2800, ncalls=14960, regioncalls=598440, ndraw=40, logz=-101.15, remainder_fraction=100.0000%, Lmin=-88.34, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2803, ncalls=14963, regioncalls=598600, ndraw=40, logz=-100.93, remainder_fraction=100.0000%, Lmin=-88.13, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2840, ncalls=15021, regioncalls=601000, ndraw=40, logz=-98.11, remainder_fraction=100.0000%, Lmin=-85.38, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2865, ncalls=15071, regioncalls=603160, ndraw=40, logz=-96.51, remainder_fraction=100.0000%, Lmin=-83.82, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2880, ncalls=15103, regioncalls=604480, ndraw=40, logz=-95.68, remainder_fraction=100.0000%, Lmin=-82.96, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2920, ncalls=15176, regioncalls=607880, ndraw=40, logz=-93.31, remainder_fraction=100.0000%, Lmin=-80.23, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2927, ncalls=15186, regioncalls=608400, ndraw=40, logz=-92.89, remainder_fraction=100.0000%, Lmin=-79.99, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2960, ncalls=15242, regioncalls=610720, ndraw=40, logz=-90.91, remainder_fraction=100.0000%, Lmin=-77.81, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=2989, ncalls=15301, regioncalls=613160, ndraw=40, logz=-88.95, remainder_fraction=100.0000%, Lmin=-75.66, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3000, ncalls=15318, regioncalls=613840, ndraw=40, logz=-88.29, remainder_fraction=100.0000%, Lmin=-75.15, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3040, ncalls=15378, regioncalls=616320, ndraw=40, logz=-86.05, remainder_fraction=100.0000%, Lmin=-72.57, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3051, ncalls=15400, regioncalls=617320, ndraw=40, logz=-85.33, remainder_fraction=100.0000%, Lmin=-71.93, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3080, ncalls=15449, regioncalls=619360, ndraw=40, logz=-83.69, remainder_fraction=100.0000%, Lmin=-70.30, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3113, ncalls=15501, regioncalls=621520, ndraw=40, logz=-81.94, remainder_fraction=100.0000%, Lmin=-68.59, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3120, ncalls=15512, regioncalls=622120, ndraw=40, logz=-81.65, remainder_fraction=100.0000%, Lmin=-68.18, Lmax=-50.47
+14:07:03 [ultranest] [DEBUG] iteration=3160, ncalls=15574, regioncalls=624800, ndraw=40, logz=-79.84, remainder_fraction=100.0000%, Lmin=-66.45, Lmax=-50.27
+14:07:03 [ultranest] [DEBUG] iteration=3175, ncalls=15606, regioncalls=626120, ndraw=40, logz=-79.27, remainder_fraction=99.9999%, Lmin=-65.78, Lmax=-50.27
+14:07:03 [ultranest] [DEBUG] iteration=3200, ncalls=15636, regioncalls=627320, ndraw=40, logz=-78.24, remainder_fraction=99.9998%, Lmin=-64.48, Lmax=-50.27
+14:07:03 [ultranest] [DEBUG] iteration=3237, ncalls=15695, regioncalls=629800, ndraw=40, logz=-76.83, remainder_fraction=99.9994%, Lmin=-63.22, Lmax=-50.27
+14:07:03 [ultranest] [DEBUG] iteration=3240, ncalls=15698, regioncalls=629920, ndraw=40, logz=-76.72, remainder_fraction=99.9994%, Lmin=-63.16, Lmax=-50.27
+14:07:03 [ultranest] [DEBUG] iteration=3280, ncalls=15755, regioncalls=632240, ndraw=40, logz=-75.50, remainder_fraction=99.9978%, Lmin=-62.04, Lmax=-50.27
+14:07:03 [ultranest] [DEBUG] iteration=3299, ncalls=15784, regioncalls=633440, ndraw=40, logz=-74.99, remainder_fraction=99.9965%, Lmin=-61.28, Lmax=-50.23
+14:07:03 [ultranest] [DEBUG] iteration=3320, ncalls=15825, regioncalls=635120, ndraw=40, logz=-74.33, remainder_fraction=99.9937%, Lmin=-60.57, Lmax=-50.23
+14:07:03 [ultranest] [DEBUG] iteration=3360, ncalls=15897, regioncalls=638160, ndraw=40, logz=-73.26, remainder_fraction=99.9816%, Lmin=-59.48, Lmax=-50.23
+14:07:03 [ultranest] [DEBUG] iteration=3361, ncalls=15898, regioncalls=638240, ndraw=40, logz=-73.23, remainder_fraction=99.9810%, Lmin=-59.47, Lmax=-50.23
+14:07:03 [ultranest] [DEBUG] iteration=3400, ncalls=15978, regioncalls=641440, ndraw=40, logz=-72.32, remainder_fraction=99.9506%, Lmin=-58.64, Lmax=-50.21
+14:07:03 [ultranest] [DEBUG] iteration=3440, ncalls=16049, regioncalls=644560, ndraw=40, logz=-71.52, remainder_fraction=99.8859%, Lmin=-57.82, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3480, ncalls=16125, regioncalls=647800, ndraw=40, logz=-70.77, remainder_fraction=99.7571%, Lmin=-57.02, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3485, ncalls=16133, regioncalls=648160, ndraw=40, logz=-70.68, remainder_fraction=99.7331%, Lmin=-56.89, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3520, ncalls=16200, regioncalls=651360, ndraw=40, logz=-70.14, remainder_fraction=99.5277%, Lmin=-56.52, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3547, ncalls=16243, regioncalls=653320, ndraw=40, logz=-69.78, remainder_fraction=99.3012%, Lmin=-56.06, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3560, ncalls=16265, regioncalls=654240, ndraw=40, logz=-69.61, remainder_fraction=99.1511%, Lmin=-55.84, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3600, ncalls=16334, regioncalls=657120, ndraw=40, logz=-69.11, remainder_fraction=98.6363%, Lmin=-55.30, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3609, ncalls=16353, regioncalls=657920, ndraw=40, logz=-69.00, remainder_fraction=98.4507%, Lmin=-55.16, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3640, ncalls=16401, regioncalls=660560, ndraw=40, logz=-68.66, remainder_fraction=97.7630%, Lmin=-54.90, Lmax=-50.21
+14:07:04 [ultranest] [DEBUG] iteration=3680, ncalls=16471, regioncalls=663800, ndraw=40, logz=-68.29, remainder_fraction=96.7581%, Lmin=-54.40, Lmax=-50.20
+14:07:04 [ultranest] [DEBUG] iteration=3720, ncalls=16548, regioncalls=667240, ndraw=40, logz=-67.93, remainder_fraction=95.3621%, Lmin=-54.06, Lmax=-50.20
+14:07:04 [ultranest] [DEBUG] iteration=3733, ncalls=16575, regioncalls=668480, ndraw=40, logz=-67.82, remainder_fraction=94.8706%, Lmin=-53.94, Lmax=-50.15
+14:07:04 [ultranest] [DEBUG] iteration=3760, ncalls=16626, regioncalls=670600, ndraw=40, logz=-67.62, remainder_fraction=93.7999%, Lmin=-53.78, Lmax=-50.15
+14:07:04 [ultranest] [DEBUG] iteration=3795, ncalls=16678, regioncalls=672760, ndraw=40, logz=-67.39, remainder_fraction=91.8593%, Lmin=-53.50, Lmax=-50.15
+14:07:04 [ultranest] [DEBUG] iteration=3800, ncalls=16686, regioncalls=673080, ndraw=40, logz=-67.35, remainder_fraction=91.6340%, Lmin=-53.47, Lmax=-50.15
+14:07:04 [ultranest] [DEBUG] iteration=3840, ncalls=16743, regioncalls=675400, ndraw=40, logz=-67.11, remainder_fraction=89.0479%, Lmin=-53.13, Lmax=-50.15
+14:07:04 [ultranest] [DEBUG] iteration=3857, ncalls=16778, regioncalls=676840, ndraw=40, logz=-67.01, remainder_fraction=87.8489%, Lmin=-52.97, Lmax=-50.15
+14:07:04 [ultranest] [DEBUG] iteration=3880, ncalls=16819, regioncalls=678480, ndraw=40, logz=-66.87, remainder_fraction=86.2569%, Lmin=-52.79, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=3919, ncalls=16884, regioncalls=681120, ndraw=40, logz=-66.66, remainder_fraction=82.7930%, Lmin=-52.55, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=3920, ncalls=16887, regioncalls=681240, ndraw=40, logz=-66.66, remainder_fraction=82.7089%, Lmin=-52.54, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=3960, ncalls=16939, regioncalls=683440, ndraw=40, logz=-66.47, remainder_fraction=78.8693%, Lmin=-52.37, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=3981, ncalls=16962, regioncalls=684520, ndraw=40, logz=-66.38, remainder_fraction=76.6992%, Lmin=-52.24, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=4000, ncalls=16995, regioncalls=685880, ndraw=40, logz=-66.30, remainder_fraction=74.8351%, Lmin=-52.18, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=4040, ncalls=17058, regioncalls=688440, ndraw=40, logz=-66.15, remainder_fraction=71.0306%, Lmin=-51.96, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=4080, ncalls=17119, regioncalls=691120, ndraw=40, logz=-66.02, remainder_fraction=66.9950%, Lmin=-51.82, Lmax=-50.14
+14:07:04 [ultranest] [DEBUG] iteration=4120, ncalls=17196, regioncalls=694520, ndraw=40, logz=-65.90, remainder_fraction=62.6908%, Lmin=-51.64, Lmax=-50.12
+14:07:04 [ultranest] [DEBUG] iteration=4160, ncalls=17270, regioncalls=698640, ndraw=40, logz=-65.79, remainder_fraction=58.3137%, Lmin=-51.52, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4167, ncalls=17284, regioncalls=699320, ndraw=40, logz=-65.77, remainder_fraction=57.7281%, Lmin=-51.49, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4200, ncalls=17336, regioncalls=701480, ndraw=40, logz=-65.69, remainder_fraction=54.2219%, Lmin=-51.34, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4240, ncalls=17399, regioncalls=704200, ndraw=40, logz=-65.60, remainder_fraction=49.7278%, Lmin=-51.22, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4280, ncalls=17461, regioncalls=707280, ndraw=40, logz=-65.52, remainder_fraction=45.3859%, Lmin=-51.10, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4291, ncalls=17481, regioncalls=708400, ndraw=40, logz=-65.50, remainder_fraction=44.3096%, Lmin=-51.07, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4320, ncalls=17535, regioncalls=710720, ndraw=40, logz=-65.45, remainder_fraction=41.3884%, Lmin=-51.02, Lmax=-50.07
+14:07:04 [ultranest] [DEBUG] iteration=4353, ncalls=17586, regioncalls=713000, ndraw=40, logz=-65.40, remainder_fraction=38.3057%, Lmin=-50.93, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4360, ncalls=17595, regioncalls=713360, ndraw=40, logz=-65.39, remainder_fraction=37.6786%, Lmin=-50.92, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4400, ncalls=17661, regioncalls=716000, ndraw=40, logz=-65.33, remainder_fraction=34.0879%, Lmin=-50.82, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4415, ncalls=17691, regioncalls=717240, ndraw=40, logz=-65.31, remainder_fraction=32.7934%, Lmin=-50.78, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4440, ncalls=17730, regioncalls=718800, ndraw=40, logz=-65.28, remainder_fraction=30.6421%, Lmin=-50.73, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4477, ncalls=17787, regioncalls=721120, ndraw=40, logz=-65.24, remainder_fraction=27.6104%, Lmin=-50.68, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4480, ncalls=17791, regioncalls=721280, ndraw=40, logz=-65.24, remainder_fraction=27.3783%, Lmin=-50.67, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4520, ncalls=17848, regioncalls=723600, ndraw=40, logz=-65.20, remainder_fraction=24.6155%, Lmin=-50.62, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4539, ncalls=17874, regioncalls=724680, ndraw=40, logz=-65.18, remainder_fraction=23.3292%, Lmin=-50.61, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4560, ncalls=17906, regioncalls=726080, ndraw=40, logz=-65.16, remainder_fraction=21.9614%, Lmin=-50.57, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4600, ncalls=17977, regioncalls=729080, ndraw=40, logz=-65.13, remainder_fraction=19.5815%, Lmin=-50.52, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4601, ncalls=17978, regioncalls=729160, ndraw=40, logz=-65.13, remainder_fraction=19.5143%, Lmin=-50.52, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4640, ncalls=18033, regioncalls=731360, ndraw=40, logz=-65.10, remainder_fraction=17.4294%, Lmin=-50.47, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4663, ncalls=18069, regioncalls=732840, ndraw=40, logz=-65.09, remainder_fraction=16.2384%, Lmin=-50.44, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4680, ncalls=18088, regioncalls=733600, ndraw=40, logz=-65.08, remainder_fraction=15.4188%, Lmin=-50.43, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4720, ncalls=18144, regioncalls=735920, ndraw=40, logz=-65.06, remainder_fraction=13.5845%, Lmin=-50.39, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4760, ncalls=18199, regioncalls=738440, ndraw=40, logz=-65.04, remainder_fraction=11.9917%, Lmin=-50.36, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4787, ncalls=18254, regioncalls=741280, ndraw=40, logz=-65.03, remainder_fraction=10.9727%, Lmin=-50.34, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4800, ncalls=18268, regioncalls=741880, ndraw=40, logz=-65.02, remainder_fraction=10.5232%, Lmin=-50.33, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4840, ncalls=18332, regioncalls=744520, ndraw=40, logz=-65.01, remainder_fraction=9.2371%, Lmin=-50.30, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4880, ncalls=18385, regioncalls=747000, ndraw=40, logz=-65.00, remainder_fraction=8.1104%, Lmin=-50.28, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4911, ncalls=18445, regioncalls=750080, ndraw=40, logz=-64.99, remainder_fraction=7.3099%, Lmin=-50.26, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4920, ncalls=18457, regioncalls=750680, ndraw=40, logz=-64.99, remainder_fraction=7.0949%, Lmin=-50.25, Lmax=-50.05
+14:07:04 [ultranest] [DEBUG] iteration=4960, ncalls=18505, regioncalls=752720, ndraw=40, logz=-64.98, remainder_fraction=6.2093%, Lmin=-50.24, Lmax=-50.05
+14:07:05 [ultranest] [DEBUG] iteration=5000, ncalls=18567, regioncalls=755440, ndraw=40, logz=-64.97, remainder_fraction=5.4335%, Lmin=-50.22, Lmax=-50.05
+14:07:05 [ultranest] [DEBUG] iteration=5040, ncalls=18638, regioncalls=758800, ndraw=40, logz=-64.96, remainder_fraction=4.7466%, Lmin=-50.21, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5080, ncalls=18703, regioncalls=762560, ndraw=40, logz=-64.95, remainder_fraction=4.1415%, Lmin=-50.19, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5097, ncalls=18730, regioncalls=764080, ndraw=40, logz=-64.95, remainder_fraction=3.9062%, Lmin=-50.19, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5120, ncalls=18758, regioncalls=765200, ndraw=40, logz=-64.95, remainder_fraction=3.6096%, Lmin=-50.18, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5160, ncalls=18821, regioncalls=767720, ndraw=40, logz=-64.94, remainder_fraction=3.1450%, Lmin=-50.17, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5200, ncalls=18895, regioncalls=770840, ndraw=40, logz=-64.94, remainder_fraction=2.7424%, Lmin=-50.15, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5221, ncalls=18927, regioncalls=772200, ndraw=40, logz=-64.94, remainder_fraction=2.5482%, Lmin=-50.15, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5240, ncalls=18960, regioncalls=773600, ndraw=40, logz=-64.94, remainder_fraction=2.3872%, Lmin=-50.14, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5280, ncalls=19038, regioncalls=776800, ndraw=40, logz=-64.93, remainder_fraction=2.0779%, Lmin=-50.14, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5320, ncalls=19113, regioncalls=780680, ndraw=40, logz=-64.93, remainder_fraction=1.8082%, Lmin=-50.13, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5345, ncalls=19168, regioncalls=783400, ndraw=40, logz=-64.93, remainder_fraction=1.6568%, Lmin=-50.12, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5360, ncalls=19191, regioncalls=784360, ndraw=40, logz=-64.93, remainder_fraction=1.5711%, Lmin=-50.12, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5400, ncalls=19248, regioncalls=786800, ndraw=40, logz=-64.93, remainder_fraction=1.3645%, Lmin=-50.11, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5407, ncalls=19259, regioncalls=787280, ndraw=40, logz=-64.93, remainder_fraction=1.3311%, Lmin=-50.11, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5440, ncalls=19311, regioncalls=789400, ndraw=40, logz=-64.92, remainder_fraction=1.1848%, Lmin=-50.10, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5469, ncalls=19368, regioncalls=791720, ndraw=40, logz=-64.92, remainder_fraction=1.0697%, Lmin=-50.10, Lmax=-50.04
+14:07:05 [ultranest] [DEBUG] iteration=5480, ncalls=19382, regioncalls=792320, ndraw=40, logz=-64.92, remainder_fraction=1.0287%, Lmin=-50.10, Lmax=-50.04
+14:07:05 [ultranest] [INFO] Explored until L=-5e+01  
+14:07:05 [ultranest] [INFO] Likelihood function evaluations: 19395
+14:07:05 [ultranest] [INFO] Writing samples and results to disk ...
+14:07:06 [ultranest] [INFO] Writing samples and results to disk ... done
+14:07:06 [ultranest] [DEBUG] did a run_iter pass!
+14:07:06 [ultranest] [INFO]   logZ = -64.96 +- 0.1331
+14:07:06 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 1328.9, need >400)
+14:07:06 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.47+-0.09 nat, need <0.50 nat)
+14:07:06 [ultranest] [INFO] Evidency uncertainty strategy is satisfied (dlogz=0.13, need <0.5)
+14:07:06 [ultranest] [INFO]   logZ error budget: single: 0.22 bs:0.13 tail:0.01 total:0.13 required:<0.50
+14:07:06 [ultranest] [INFO] done iterating.

@@ -2,7 +2,7 @@
 [fit] # the "fit" category parameters related to the desired output and format
     ID = 756434
 
-    method = 'MultiNest' # 'lm' or 'MultiNest' or 'nautilus'
+    sampler = 'ultranest' # 'ultranest' or 'multinest' or 'nautilus'
     n_live = 100
     n_posterior = 500
 
@@ -70,6 +70,7 @@
 #     beta1 = -2
 #     beta2 = -2
 #     wav1 = 3880
+    
 #     [agn.nebular]
 #         type = "qsogen" # "manual", "sdss", "Temple21"
 #         eline_type = 0
@@ -83,7 +84,11 @@
 #         type = "QSO" # "Calzetti", "Cardelli", "SMC", "Salim", "CF00", "QSO"
 #         Av = 3
 #         # logfscat = -2
-        
+
+#     [agn.dust_emission]
+#         type = "Nenvoka08" 
+#         #Av = 3
+#         # logfscat = -2
 
     # [Xray]
     

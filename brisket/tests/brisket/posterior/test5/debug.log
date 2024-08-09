@@ -1,0 +1,28 @@
+14:40:32 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+14:42:17 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+14:46:31 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:02:26 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:03:22 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:04:47 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:06:16 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:26:03 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:28:07 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:28:58 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:29:31 [ultranest] [DEBUG] ReactiveNestedSampler: dims=4+0, resume=True, log_dir=brisket/posterior/test5, backend=hdf5, vectorized=False, nbootstraps=30, ndraw=128..65536
+15:29:33 [ultranest] [INFO] Sampling 100 live points from prior ...
+15:29:33 [ultranest] [DEBUG] run_iter dlogz=0.5, dKL=0.5, frac_remain=0.01, Lepsilon=0.0010, min_ess=500
+15:29:33 [ultranest] [DEBUG] max_iters=-1, max_ncalls=-1, max_num_improvement_loops=-1, min_num_live_points=100, cluster_num_live_points=40
+15:29:33 [ultranest] [DEBUG] minimal_widths_sequence: [(-inf, 100.0), (inf, 100.0)]
+15:29:33 [ultranest] [INFO] Explored until L=-7e+01  
+15:29:33 [ultranest] [INFO] Likelihood function evaluations: 100
+15:29:33 [ultranest] [INFO] Writing samples and results to disk ...
+15:29:33 [ultranest] [INFO] Writing samples and results to disk ... done
+15:29:33 [ultranest] [DEBUG] did a run_iter pass!
+15:29:33 [ultranest] [INFO]   logZ = -65.79 +- 1.244e-14
+15:29:33 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 100.0, need >500)
+15:29:33 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.47+-0.13 nat, need <0.50 nat)
+15:29:33 [ultranest] [DEBUG]   conservative estimate says at least 20 live points are needed to reach dlogz goal
+15:29:33 [ultranest] [DEBUG]   number of live points vary between 1 and 1, most (40/41 iterations) have 1
+15:29:33 [ultranest] [INFO] Evidency uncertainty strategy wants 20 minimum live points (dlogz from 0.00 to 0.00, need <0.5)
+15:29:33 [ultranest] [INFO]   logZ error budget: single: inf bs:0.00 tail:0.69 total:0.69 required:<0.50
+15:29:33 [ultranest] [INFO] done iterating.
