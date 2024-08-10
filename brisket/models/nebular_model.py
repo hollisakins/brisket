@@ -37,7 +37,6 @@ class nebular(object):
             self.logger.info("Computing independent chemical enrichment history for nebular models")
             self.neb_sfh = star_formation_history(params)
 
-
         self.metallicities = config.stellar_models[self.model]['metallicities']
         self.logU = config.nebular_models[self.model]['logU']
         self.neb_ages = config.nebular_models[self.model]['neb_ages']
@@ -81,10 +80,10 @@ class nebular(object):
         for i in range(self.metallicities.shape[0]):
             for j in range(self.logU.shape[0]):
 
-                hdu_index = self.metallicities.shape[0]*j + i + 1
-
-                raw_cont_grid = self.cont_grid[hdu_index].data
-                raw_line_grid = self.line_grid[hdu_index].data
+                hdu_index = self.metallicities.shape[0]*j + i
+                
+                raw_cont_grid = self.cont_grid[hdu_index]
+                raw_line_grid = self.line_grid[hdu_index]
 
                 line_grid[:, i, j, :] = raw_line_grid[1:, 1:].T
 

@@ -44,7 +44,7 @@ class stellar(object):
         for i in range(self.template_metallicities.shape[0]):
             for j in range(self.template_raw_stellar_ages.shape[0]):
 
-                raw_grid = self.template_raw_stellar_grid[i].data
+                raw_grid = self.template_raw_stellar_grid[i]
                 grid_raw_ages[:, i, j] = np.interp(self.wavelengths,
                                                    self.template_wavelengths,
                                                    raw_grid[j, :],

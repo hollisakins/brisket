@@ -4,9 +4,33 @@ import os
 import numpy as np
 import logging
 import astropy.units as u
+import sys
 
-NullLogger = logging.getLogger('null')
-NullLogger.addHandler(logging.NullHandler())
+NullLogger = logging.getLogger('brisket')
+NullLogger.setLevel(logging.DEBUG)
+ch = logging.StreamHandler(sys.stdout) # console handler
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)-8s :: %(message)s', "%H:%M:%S")
+ch.setFormatter(formatter)
+NullLogger.addHandler(ch)
+
+# NullLogger = logging.getLogger('null')
+# NullLogger.addHandler(logging.NullHandler())
+
+def dict_to_str(d):
+    # This is necessary for converting large arrays to strings
+    np.set_printoptions(threshold=10**7)
+    s = str(d)
+    np.set_printoptions(threshold=10**4)
+    return s
+    
+def str_to_dict(s):
+    s = s.replace("array", "np.array")
+    s = s.replace("float", "np.float")
+    s = s.replace("np.np.", "np.")
+    d = eval(s)
+    return d
+
 
 
 def parse_fit_params(parameters, logger=NullLogger):

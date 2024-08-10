@@ -83,16 +83,16 @@ try:
     # The metallicities of the stellar grids in units of Z_Solar
     stellar_models['BC03']['metallicities'] = np.array([0.005, 0.02, 0.2, 0.4, 1., 2.5, 5.])
     # The wavelengths of the grid points in Angstroms
-    stellar_models['BC03']['wavelengths'] = fits.open(grid_dir + "/" + stellar_file)[-1].data
+    stellar_models['BC03']['wavelengths'] = fits.getdata(os.path.join(grid_dir,stellar_file),ext=-1)
     # The ages of the grid points in Gyr
-    stellar_models['BC03']['raw_stellar_ages'] = fits.open(grid_dir + "/" + stellar_file)[-2].data
+    stellar_models['BC03']['raw_stellar_ages'] = fits.getdata(os.path.join(grid_dir,stellar_file),ext=-2)
     # The fraction of stellar mass still living (1 - return fraction).
     # Axis 0 runs over metallicity, axis 1 runs over age.
-    stellar_models['BC03']['live_frac'] = fits.open(grid_dir + "/" + stellar_file)[-3].data[:, 1:]
+    stellar_models['BC03']['live_frac'] = fits.getdata(os.path.join(grid_dir,stellar_file),ext=-3)[:, 1:]
     # The raw stellar grids, stored as a FITS HDUList.
     # The different HDUs are the grids at different metallicities.
     # Axis 0 of each grid runs over wavelength, axis 1 over age.
-    stellar_models['BC03']['raw_stellar_grid'] = fits.open(grid_dir + "/" + stellar_file)[1:8]
+    stellar_models['BC03']['raw_stellar_grid'] = [fits.getdata(os.path.join(grid_dir,stellar_file),ext=i,memmap=False) for i in range(1,8)]
     # Set up edge positions for metallicity bins for stellar models.
     metallicity_bins = make_bins(stellar_models['BC03']['metallicities'], make_rhs=True)[0]
     metallicity_bins[0] = 0.
@@ -111,16 +111,16 @@ try:
                               6e-3, 8e-3, 1e-2, 0.014, 0.020, 0.030,
                               0.040])/0.02
     # The wavelengths of the grid points in Angstroms
-    stellar_models['BPASS']['wavelengths'] = fits.open(grid_dir + "/" + stellar_file)[-1].data
+    stellar_models['BPASS']['wavelengths'] = fits.getdata(os.path.join(grid_dir,stellar_file),ext=-1)
     # The ages of the grid points in Gyr
-    stellar_models['BPASS']['raw_stellar_ages'] = fits.open(grid_dir + "/" + stellar_file)[-2].data
+    stellar_models['BPASS']['raw_stellar_ages'] = fits.getdata(os.path.join(grid_dir,stellar_file),ext=-2)
     # The fraction of stellar mass still living (1 - return fraction).
     # Axis 0 runs over metallicity, axis 1 runs over age.
-    stellar_models['BPASS']['live_frac'] = fits.open(grid_dir + "/" + stellar_file)[-3].data
+    stellar_models['BPASS']['live_frac'] = fits.getdata(os.path.join(grid_dir,stellar_file),ext=-3)
     # The raw stellar grids, stored as a FITS HDUList.
     # The different HDUs are the grids at different metallicities.
     # Axis 0 of each grid runs over wavelength, axis 1 over age.
-    stellar_models['BPASS']['raw_stellar_grid'] = fits.open(grid_dir + "/" + stellar_file)[1:14]
+    stellar_models['BPASS']['raw_stellar_grid'] = [fits.getdata(os.path.join(grid_dir,stellar_file),ext=i,memmap=False) for i in range(1,14)]
     # Set up edge positions for metallicity bins for stellar models.
     metallicity_bins = make_bins(stellar_models['BPASS']['metallicities'], make_rhs=True)[0]
     metallicity_bins[0] = 0.
@@ -158,9 +158,10 @@ try:
     # LogU values for the nebular emission grids.
     nebular_models['BC03']['logU'] = np.arange(-4., -0.99, 0.5)
     # Grid of line fluxes.
-    nebular_models['BC03']['line_grid'] = fits.open(grid_dir + "/" + neb_line_file)
+    nebular_models['BC03']['line_grid'] = [fits.getdata(os.path.join(grid_dir,neb_line_file),ext=i,memmap=False) for i in range(1,len(stellar_models['BC03']['metallicities']) * len(nebular_models['BC03']['logU']) + 1)]
     # Grid of nebular continuum fluxes.
-    nebular_models['BC03']['cont_grid'] = fits.open(grid_dir + "/" + neb_cont_file)
+    nebular_models['BC03']['cont_grid'] = [fits.getdata(os.path.join(grid_dir,neb_cont_file),ext=i,memmap=False) for i in range(1,len(stellar_models['BC03']['metallicities']) * len(nebular_models['BC03']['logU']) + 1)]
+    
 
 except IOError:
     print('Failed to load BC03 nebular grids, these should be placed in the brisket/models/grids/ directory.')
@@ -177,11 +178,12 @@ try:
     # LogU values for the nebular emission grids.
     nebular_models['BPASS']['logU'] = np.arange(-4., -0.99, 0.5)
     # Grid of line fluxes.
-    nebular_models['BPASS']['line_grid'] = fits.open(grid_dir + "/" + neb_line_file)
+    nebular_models['BPASS']['line_grid'] = [fits.getdata(os.path.join(grid_dir,neb_line_file),ext=i,memmap=False) for i in range(1,len(stellar_models['BPASS']['metallicities']) * len(nebular_models['BPASS']['logU']) + 1)]
     # Grid of nebular continuum fluxes.
-    nebular_models['BPASS']['cont_grid'] = fits.open(grid_dir + "/" + neb_cont_file)
+    nebular_models['BPASS']['cont_grid'] = [fits.getdata(os.path.join(grid_dir,neb_cont_file),ext=i,memmap=False) for i in range(1,len(stellar_models['BPASS']['metallicities']) * len(nebular_models['BPASS']['logU']) + 1)]
 
 except IOError:
+    raise
     print('Failed to load BPASS nebular grids, these should be placed in the brisket/models/grids/ directory.')
 
 

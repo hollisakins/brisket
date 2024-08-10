@@ -61,7 +61,7 @@ def parse_toml_paramfile(toml_file, logger=utils.NullLogger):
             gal_kwargs['spec_units'] = utils.unit_parser(param['fit']['spectroscopy']['spec_units'])
         gal_kwargs['load_spec'] = load_spec
         
-        fit_kwargs['method'] = param['fit']['method']
+        fit_kwargs['sampler'] = param['fit']['sampler']
         fit_kwargs['n_live'] = param['fit']['n_live']
         fit_kwargs['n_posterior'] = param['fit']['n_posterior']
         fit_kwargs['out_wav_units'] = utils.unit_parser(param['fit']['out_wav_units'])
@@ -207,7 +207,7 @@ def fit():
     gal = brisket.galaxy(ID, **gal_kwargs)
 
     fit = brisket.fit(gal, param, run=run, n_posterior=fit_kwargs['n_posterior'], logger=logger)
-    fit.fit(verbose=args.verbose, n_live=fit_kwargs['n_live'])
+    fit.fit(verbose=args.verbose, n_live=fit_kwargs['n_live'], sampler=fit_kwargs['sampler'])
 
     # print(fit.fit_instructions)
     # fit.fit(verbose=args.verbose, n_live=fit_params['n_live'])

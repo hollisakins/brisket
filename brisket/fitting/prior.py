@@ -68,14 +68,18 @@ class prior(object):
 
     def transform(self, cube, ndim=0, nparam=0):
         """ Transform numbers on the unit cube to the prior volume. """
-
+        if type(cube)==np.ndarray: # ultranest fails when the output overwrites the input
+            params = cube.copy()
+        else:
+            params = cube
+            
         # Call the relevant prior functions to draw random values.
         for i in range(self.ndim):
             prior_function = getattr(self, self.pdfs[i])
-            cube[i] = prior_function(cube[i], self.limits[i],
+            params[i] = prior_function(params[i], self.limits[i],
                                      self.hyper_params[i])
 
-        return cube
+        return params
 
     def uniform(self, value, limits, hyper_params):
         """ Uniform prior in x where x is the parameter. """
