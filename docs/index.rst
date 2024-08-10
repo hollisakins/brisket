@@ -42,7 +42,7 @@ Getting started
 Acknowledgements
 ----------------
 
-``BRISKET`` is fundamentally an "expansion pack" for ``BAGPIPES``, which is itself a very popular SED fitting code. ``BRISKET`` therefore owes a huge debt to Adam Carnall for his work developing ``BAGPIPES``, as well as many of the project ``BAGPIPES`` relies on:
+``brisket`` is fundamentally an "expansion pack" for ``bagpipes``, which is itself a very popular SED fitting code. ``brisket`` therefore owes a huge debt to Adam Carnall for his work developing ``bagpipes``, as well as many of the project ``bagpipes`` relies on:
 
 * The `Bruzual \& Charlot (2003) <https://arxiv.org/abs/astro-ph/0309134>`_ stellar population models.
 * The `Draine \& Li (2007) <https://arxiv.org/abs/astro-ph/0608003>`_ dust emission models.
@@ -51,14 +51,14 @@ Acknowledgements
 * The `Cloudy <https://www.nublado.org>`_ photoionization code `(Ferland et al. 2017) <https://arxiv.org/abs/1705.10877>`_.
 * The `nautilus <https://nautilus-sampler.readthedocs.io/en/stable/>`_ importance nested sampling algorithm `(Lange 2023) <https://arxiv.org/abs/2306.16923>`_.
 
-As well as several projects incorporated into ``BRISKET``:
+As well as several projects incorporated into ``brisket``:
 
 * Empirical QSO SED templates from ``qsogen`` `Temple et al. (2021) <https://arxiv.org/abs/2109.04472>`_ 
+* The `UltraNest <https://johannesbuchner.github.io/UltraNest/index.html>` nested sampling algorithm `(Buchner et al. 2021) <https://arxiv.org/abs/2101.09604>`_
 * TBD
 
  .. toctree::
-    :maxdepth: 1
-    :hidden:
+    :maxdepth: 2
 
-    index.rst
-    cli.rst
+    index
+    cli
