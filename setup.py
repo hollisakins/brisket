@@ -13,5 +13,5 @@ setup(
         },
     author='Hollis Akins',
     license='MIT',
-    install_requires=['astropy','numpy','matplotlib','scipy','tqdm'],
+    install_requires=['astropy>=6.1.2','numpy','matplotlib','scipy','tqdm'],
 )

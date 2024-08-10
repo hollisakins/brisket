@@ -3,7 +3,6 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 
 import os
-import deepdish as dd
 
 from copy import deepcopy
 
@@ -14,6 +13,9 @@ from ..models.star_formation_history import star_formation_history
 from ..models.model_galaxy import model_galaxy
 
 from .. import utils
+
+from astropy.io import fits
+from astropy.table import Table, Column
 
 
 class posterior(object):
@@ -41,18 +43,20 @@ class posterior(object):
         self.run = run
         self.n_samples = n_samples
 
-        fname = f"brisket/posterior/{self.run}/{self.galaxy.ID}.h5"
+        self.fname = f"brisket/posterior/{self.run}/{self.galaxy.ID}_brisket_results.fits"
 
         # Check to see whether the object has been fitted.
-        if not os.path.exists(fname):
+        if not os.path.exists(self.fname):
             raise IOError(f"Fit results not found for {self.galaxy.ID}.")
 
-        # Reconstruct the fitted model.
-        self.fit_instructions = dd.io.load(fname, group="/fit_instructions")
-        self.fitted_model = fitted_model(self.galaxy, self.fit_instructions)
+        with fits.open(self.fname) as f:
+            hdu = f['RESULTS']
+            # Reconstruct the fitted model.
+            self.fit_instructions = utils.str_to_dict(hdu.header['FIT_INST'])
+            # 2D array of samples for the fitted parameters only.
+            self.samples2d = deepcopy(hdu.data['samples2d'])
 
-        # 2D array of samples for the fitted parameters only.
-        self.samples2d = dd.io.load(fname, group="/samples2d")
+        self.fitted_model = fitted_model(self.galaxy, self.fit_instructions)
 
         # If fewer than n_samples exist in posterior, reduce n_samples
         if self.samples2d.shape[0] < self.n_samples:
@@ -75,7 +79,103 @@ class posterior(object):
 
 
     def compute_posterior_quantities(self):
-        pass
+
+        if "spectrum_full" in list(self.samples):
+            return
+
+        self.fitted_model._update_model_galaxy(self.samples2d[0, :])
+        
+        # all_names = ["photometry", "spectrum", "spectrum_full", "uvj",
+        #              "indices"]
+
+        # all_model_keys = dir(self.model_galaxy)
+        # quantity_names = [q for q in all_names if q in all_model_keys]
+
+        size = self.fitted_model.model_galaxy.spectrum_full.shape[0]
+        self.samples['spectrum_full'] = np.zeros((self.n_samples, size))
+        
+        # for q in quantity_names:
+        #     size = getattr(self.model_galaxy, q).shape[0]
+        #     self.samples[q] = np.zeros((self.n_samples, size))
+
+        # if self.galaxy.photometry_exists:
+        #     self.samples["chisq_phot"] = np.zeros(self.n_samples)
+
+        # if "dust_atten" in list(self.fitted_model.model_components):
+        #     size = self.model_galaxy.spectrum_full.shape[0]
+        #     self.samples["dust_curve"] = np.zeros((self.n_samples, size))
+
+        # if "calib" in list(self.fitted_model.model_components):
+        #     size = self.model_galaxy.spectrum.shape[0]
+        #     self.samples["calib"] = np.zeros((self.n_samples, size))
+
+        # if "noise" in list(self.fitted_model.model_components):
+        #     type = self.fitted_model.model_components["noise"]["type"]
+        #     if type.startswith("GP"):
+        #         size = self.model_galaxy.spectrum.shape[0]
+        #         self.samples["noise"] = np.zeros((self.n_samples, size))
+
+        for i in range(self.n_samples):
+            param = self.samples2d[self.indices[i], :]
+            self.fitted_model._update_model_galaxy(param)
+
+            self.samples['spectrum_full'][i] = self.fitted_model.model_galaxy.spectrum_full
+            
+            # if self.galaxy.photometry_exists:
+            #     self.samples["chisq_phot"][i] = self.fitted_model.chisq_phot
+
+            # if "dust_atten" in list(self.fitted_model.model_components):
+            #     dust_curve = self.fitted_model.model_galaxy.dust_atten.A_cont
+            #     self.samples["dust_curve"][i] = dust_curve
+
+            # if "calib" in list(self.fitted_model.model_components):
+            #     self.samples["calib"][i] = self.fitted_model.calib.model
+
+            # if "noise" in list(self.fitted_model.model_components):
+            #     type = self.fitted_model.model_components["noise"]["type"]
+            #     if type.startswith("GP"):
+            #         self.samples["noise"][i] = self.fitted_model.noise.mean()
+
+            # for q in quantity_names:
+            #     if q == "spectrum":
+            #         spectrum = getattr(self.fitted_model.model_galaxy, q)[:, 1]
+            #         self.samples[q][i] = spectrum
+            #         continue
+
+            #     self.samples[q][i] = getattr(self.fitted_model.model_galaxy, q)
+
+        with fits.open(self.fname) as hdul:
+            print(hdul.info())
+            
+            # MEDIAN SED | should have wav_rest, f_nu_16, f_nu_50, f_nu_84, f_lam_16, f_lam_50, f_lam_84
+            header = fits.Header({'EXTNAME':'SED_MED'})
+            columns = []
+            columns.append(fits.Column(name='wav_rest', array=self.fitted_model.model_galaxy.wavelengths, format='D'))
+            columns.append(fits.Column(name='f_lam_16', array=np.percentile(self.samples['spectrum_full'], 16, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_50', array=np.percentile(self.samples['spectrum_full'], 50, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_84', array=np.percentile(self.samples['spectrum_full'], 84, axis=0), format='D'))
+            hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), header=header)
+            hdul.append(hdu) 
+
+            print(hdul.info())
+
+            hdul.writeto(self.fname, overwrite=True)
+
+            header = fits.Header({'EXTNAME':'SED_MAP'}) # should have wav_rest, wav_obs, f_nu, f_lam, and parameters in header #### seds for each subset? 
+        
+            header = fits.Header({'EXTNAME':'PHOT'}) # should have filter, wav_obs, f_nu_obs, f_nu_obs_err, f_nu_mod (array?)
+        
+        # t1 = fits.BinTableHDU(data=fits.ColDefs(columns), 
+        #                       header=fits.Header({'EXTNAME':'SED_MAP'})) # should have wav_rest, wav_obs, f_nu, f_lam, and parameters in header #### seds for each subset? 
+
+
+        # t2 = fits.BinTableHDU(data=fits.ColDefs(columns),
+        #                       header=fits.Header({'EXTNAME':'PROPS'})) # samples from the posterior distribution for free parameters, and derived physical properties at each iteration
+        # t3 = fits.BinTableHDU(data=fits.ColDefs(columns),
+        #                       header=fits.Header({'EXTNAME':'ATTEN'})) # the posterior dust attenuation curve
+        # t4 = fits.BinTableHDU(data=fits.ColDefs(columns),
+        #                       header=fits.Header({'EXTNAME':'SFH'})) # the posterior SFH 
+
 
     # def get_basic_quantities(self):
     #     """Calculates basic posterior quantities, these are fast as they

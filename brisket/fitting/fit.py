@@ -103,8 +103,10 @@ class fit(object):
 
             file = fits.open(f'{self.fname}brisket_results.fits')['RESULTS']
             self.fit_instructions = utils.str_to_dict(file.header['FIT_INST'])
-            for k in file.data.dtype.names:
-                self.results[k] = np.array(file.data[k])
+            self.results['samples2d'] = file.data['samples2d']
+            self.results['lnlike'] = file.data['lnlike']
+            self.results['lnz'] = file.header['LNZ']
+            self.results['lnz_err'] = file.header['LNZ_ERR']
             self.results["median"] = np.median(self.results['samples2d'], axis=0)
             self.results["conf_int"] = np.percentile(self.results["samples2d"],
                                                      (16, 84), axis=0)
@@ -284,9 +286,13 @@ class fit(object):
                 os.system(f'rm -r ' + '/'.join(self.fname.split('/')[:-1]) + '/*')
             
             columns = []
-            for k in self.results.keys():
-                columns.append(fits.Column(name=k, data=self.results[k], format='D'))
-            hdu = fits.BinTableHDU.from_columns(columns, header=fits.header({'EXTNAME':'RESULTS', 'FIT_INST':utils.dict_to_str(self.fit_instructions)}))
+            columns.append(fits.Column(name='samples2d', array=self.results['samples2d'], format=f'{len(self.fitted_model.params)}D'))
+            columns.append(fits.Column(name='lnlike', array=self.results['lnlike'], format='D'))
+            hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), 
+                header=fits.Header({'EXTNAME':'RESULTS',
+                                    'FIT_INST':utils.dict_to_str(self.fit_instructions),
+                                    'LNZ':self.results['lnz'],
+                                    'LNZ_ERR':self.results['lnz_err']}))
             hdulist = fits.HDUList([fits.PrimaryHDU(), hdu])
             hdulist.writeto(f'{self.fname}brisket_results.fits')
 

@@ -140,17 +140,8 @@ class fitted_model(object):
             if self.n_calls == 0:
                 self.wall_time0 = time.time()
 
-        # Update the model_galaxy with the parameters from the sampler.
-        self._update_model_components(x)
-
-        if self.model_galaxy is None:
-            self.model_galaxy = model_galaxy(self.model_components,
-                                             filt_list=self.galaxy.filt_list,
-                                             spec_wavs=self.galaxy.spec_wavs)#,
-                                            #  index_list=self.galaxy.index_list)
-
-        self.model_galaxy.update(self.model_components)
-
+        self._update_model_galaxy(x)
+        
         # # Return zero likelihood if SFH is older than the universe.
         # if self.model_galaxy.sfh.unphysical:
         #     return -9.99*10**99
@@ -308,3 +299,13 @@ class fitted_model(object):
                            self.model_components[comp]["alpha"])
 
             self.model_components[comp]["tx"] = tx
+
+    def _update_model_galaxy(self, param):
+        self._update_model_components(param)
+
+        if self.model_galaxy is None:
+            self.model_galaxy = model_galaxy(self.model_components,
+                                             filt_list=self.galaxy.filt_list,
+                                             spec_wavs=self.galaxy.spec_wavs)
+
+        self.model_galaxy.update(self.model_components)
