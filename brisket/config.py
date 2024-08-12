@@ -128,7 +128,6 @@ try:
     stellar_models['BPASS']['metallicity_bins'] = metallicity_bins
 except IOError:
     print("Failed to load BPASS stellar grids, these should be placed in the brisket/models/grids/ directory.")
-    raise
 
 
 #These variables tell the code where to find the raw nebular emission
@@ -183,7 +182,6 @@ try:
     nebular_models['BPASS']['cont_grid'] = [fits.getdata(os.path.join(grid_dir,neb_cont_file),ext=i,memmap=False) for i in range(1,len(stellar_models['BPASS']['metallicities']) * len(nebular_models['BPASS']['logU']) + 1)]
 
 except IOError:
-    raise
     print('Failed to load BPASS nebular grids, these should be placed in the brisket/models/grids/ directory.')
 
 
@@ -218,37 +216,42 @@ igm_redshifts = np.arange(0.0, max_redshift + 0.01, 0.01)
 # Wavelength points for the IGM grid.
 igm_wavelengths = np.arange(1.0, 1225.01, 1.0)
 
-# If the IGM grid has not yet been calculated, calculate it now.
-if not os.path.exists(grid_dir + "/d_igm_grid_inoue14.fits"):
-    igm_inoue2014.make_table(igm_redshifts, igm_wavelengths)
-
-else:
-    # Check that the wavelengths and redshifts in the igm file are right
-    igm_file = fits.open(grid_dir + "/d_igm_grid_inoue14.fits")
-
-    if len(igm_file) != 4:
+try:
+    # If the IGM grid has not yet been calculated, calculate it now.
+    if not os.path.exists(grid_dir + "/d_igm_grid_inoue14.fits"):
         igm_inoue2014.make_table(igm_redshifts, igm_wavelengths)
 
     else:
-        wav_check = np.min(igm_file[2].data == igm_wavelengths)
-        z_check = np.min(igm_file[3].data == igm_redshifts)
+        # Check that the wavelengths and redshifts in the igm file are right
+        igm_file = fits.open(grid_dir + "/d_igm_grid_inoue14.fits")
 
-        if not wav_check or not z_check:
+        if len(igm_file) != 4:
             igm_inoue2014.make_table(igm_redshifts, igm_wavelengths)
 
-# 2D numpy array containing the IGM attenuation grid.
-raw_igm_grid = fits.open(grid_dir + "/d_igm_grid_inoue14.fits")[1].data
+        else:
+            wav_check = np.min(igm_file[2].data == igm_wavelengths)
+            z_check = np.min(igm_file[3].data == igm_redshifts)
+
+            if not wav_check or not z_check:
+                igm_inoue2014.make_table(igm_redshifts, igm_wavelengths)
+
+    # 2D numpy array containing the IGM attenuation grid.
+    raw_igm_grid = fits.open(grid_dir + "/d_igm_grid_inoue14.fits")[1].data
+except:
+    pass
 
 
 
 
+try:
+    qsogen_wnrm = 5500.
+    qsogen_ext_curve = f'{grid_dir}/pl_ext_comp_03.sph'
 
-qsogen_wnrm = 5500.
-qsogen_ext_curve = f'{grid_dir}/pl_ext_comp_03.sph'
-
-qsogen_blr = np.loadtxt(os.path.join(grid_dir, 't21_blr_adj_all.txt'), usecols=1)
-qsogen_blr_lya = np.loadtxt(os.path.join(grid_dir, 't21_blr_adj_lya_only.txt'), usecols=1)
-qsogen_nlr = np.loadtxt(os.path.join(grid_dir, 't21_nlr_adj_all.txt'), usecols=1)
-qsogen_nlr_oiii = np.loadtxt(os.path.join(grid_dir, 't21_nlr_adj_oiii_only.txt'), usecols=1)
-qsogen_conval = np.loadtxt(os.path.join(grid_dir, 't21_cont.txt'), usecols=1)
-qsogen_wavelengths = np.loadtxt(os.path.join(grid_dir, 't21_cont.txt'), usecols=0)
+    qsogen_blr = np.loadtxt(os.path.join(grid_dir, 't21_blr_adj_all.txt'), usecols=1)
+    qsogen_blr_lya = np.loadtxt(os.path.join(grid_dir, 't21_blr_adj_lya_only.txt'), usecols=1)
+    qsogen_nlr = np.loadtxt(os.path.join(grid_dir, 't21_nlr_adj_all.txt'), usecols=1)
+    qsogen_nlr_oiii = np.loadtxt(os.path.join(grid_dir, 't21_nlr_adj_oiii_only.txt'), usecols=1)
+    qsogen_conval = np.loadtxt(os.path.join(grid_dir, 't21_cont.txt'), usecols=1)
+    qsogen_wavelengths = np.loadtxt(os.path.join(grid_dir, 't21_cont.txt'), usecols=0)
+except:
+    print('Failed to load QSOGEN BLR/NLR models, these should be placed in the brisket/models/grids/ directory.')
