@@ -1,6 +1,8 @@
 API Reference
 =============
 
-.. toctree::
+.. autosummary::
+   :toctree: _autosummary
+   :recursive:
 
-    autoapi/brisket/index
+   brisket
