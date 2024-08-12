@@ -16,11 +16,12 @@ version = '0.1.0'
 extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    # 'sphinx.ext.autosummary',
+    # 'sphinx.ext.autodoc',
+    'sphinx_automodapi.automodapi',
     'sphinx.ext.intersphinx',
 ]
-autosummary_generate = True  # Turn on sphinx.ext.autosummary
+# autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # autodoc_typehints = 'description'
 # autoapi_dirs = ['../brisket']
 # autoapi_add_toctree_entry = False

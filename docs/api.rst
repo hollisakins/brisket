@@ -1,8 +1,4 @@
 API Reference
 =============
 
-.. autosummary::
-   :toctree: _autosummary
-   :recursive:
-
-   brisket
+.. automodapi:: brisket.fitting

@@ -38,6 +38,7 @@ max_wavelength = 1 * cm
 # Sets the maximum redshift the code is set up to calculate models for.
 max_redshift = 20.
 
+'''These variables control the wavelength sampling for the models'''
 # These variables control the wavelength sampling for models.
 # Sets the R = lambda/dlambda value for spectroscopic outputs.
 R_spec = 600.
