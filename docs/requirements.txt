@@ -1,4 +1,5 @@
 astropy
+dotmap
 spectres
 numpy
 scipy
