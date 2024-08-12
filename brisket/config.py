@@ -1,8 +1,13 @@
-# This file contains all of the configuration variables for Bagpipes.
-# This includes loading different grids of models into the code, and the
-# way the spectral sampling for models is constructed. The default values
-# are a trade-off between speed and accuracy, you may find changing them
-# negatively affects one or both of these things.
+'''
+This module contains all of the configuration variables for brisket.
+This includes specifying the cosmology, loading different grids of 
+models into the code, and the specifying the way the spectral sampling 
+for models is constructed. For the latter, the default values are a 
+trade-off between speed and accuracy, you may find changing them 
+negatively affects one or both of these things.
+'''
+
+
 from __future__ import print_function,  division,  absolute_import
 
 import os
@@ -16,44 +21,47 @@ from brisket.models.making import igm_inoue2014
 
 ########################## Set up directory structure ##########################
 install_dir = os.path.dirname(os.path.realpath(__file__))
+'''Stores the install directory for easy reference'''
 grid_dir = install_dir + "/models/grids"
+'''Stores the models/grids/ for easy reference'''
 filter_db = install_dir + '/filters/filter_db.hdf5'
+'''Stores the path to the filter database for easy reference'''
 
 # Cosmology is imported from astropy
 from astropy.cosmology import Planck18 as cosmo
 z_array = np.arange(0., 100., 0.01)
 age_array = cosmo.age(z_array).value
 def age_at_z(z):
+    '''Returns the age of the universe, in Gyr, at redshift z'''
     return cosmo.age(z).value
 def z_at_age(age):
+    '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
     return np.interp(age, age_array, z_array)
 
-# FWHM of nebular lines, in km/s
 fwhm = 500
+'''Default FWHM of nebular lines, in km/s (TODO: is this implemented?)'''
 
-
-# Sets the maximum wavelength for full spectral output
 max_wavelength = 1 * cm
+'''Maximum wavelength at which the full SED models are computed.'''
 
-# Sets the maximum redshift the code is set up to calculate models for.
 max_redshift = 20.
+'''Sets the maximum redshift the code is set up to calculate models for.'''
 
-'''These variables control the wavelength sampling for the models'''
 # These variables control the wavelength sampling for models.
-# Sets the R = lambda/dlambda value for spectroscopic outputs.
 R_spec = 600.
-# Sets the R value for photometric outputs.
+'''Sets the R = lambda/dlambda value for spectroscopic outputs.'''
 R_phot = 100.
-# Sets the R value for other spectral regions.
+'''Sets the R value for photometric regions.'''
 R_other = 50.
+'''Sets the R value for other spectral regions.'''
 
 
 
 
-""" These variables control the age sampling for the stellar and nebular
-emission models. The stellar models will be automatically rebinned onto
-the chosen age grid. The nebular models must be re-computed with Cloudy
-if these variables are changed. """
+# These variables control the age sampling for the stellar and nebular
+# emission models. The stellar models will be automatically rebinned onto
+# the chosen age grid. The nebular models must be re-computed with Cloudy
+# if these variables are changed.
 
 # Sets the default age sampling for stellar models in log10(Gyr).
 # Beware: if you change this you need to recompute the nebular models.
@@ -71,10 +79,11 @@ age_widths = age_bins[1:] - age_bins[:-1]
 age_sampling = 10**age_sampling
 
 
-""" These variables tell the code where to find the raw stellar emission
-models, as well as some of their basic properties. """
 
+# These variables tell the code where to find the raw stellar emission
+# models, as well as some of their basic properties.
 stellar_models = {}
+'''Dictionary storing the stellar model grids.'''
 
 try:
     # Name of the fits file storing the stellar models
@@ -146,6 +155,8 @@ except IOError:
     print('Failed to load cloudy_lines.txt and cloudy_linewavs.txt')
 
 nebular_models = {}
+'''Dictionary storing the nebular model grids.'''
+
 try:
     # Names of files containing the nebular grids.
     neb_cont_file = "bc03_miles_nebular_cont_grids.fits"
@@ -186,8 +197,8 @@ except IOError:
     print('Failed to load BPASS nebular grids, these should be placed in the brisket/models/grids/ directory.')
 
 
-""" These variables tell the code where to find the raw dust emission
-models, as well as some of their basic properties. """
+# These variables tell the code where to find the raw dust emission
+# models, as well as some of their basic properties.
 
 try:
     # Values of Umin for each of the Draine + Li (2007) dust emission grids.
@@ -208,8 +219,8 @@ except IOError:
     print("Failed to load dust emission grids, these should be placed in the"
           + " bagpipes/models/grids/ directory.")
 
-""" These variables tell the code where to find the raw IGM attenuation
-models, as well as some of their basic properties. """
+# These variables tell the code where to find the raw IGM attenuation
+# models, as well as some of their basic properties.
 
 # Redshift points for the IGM grid.
 igm_redshifts = np.arange(0.0, max_redshift + 0.01, 0.01)
