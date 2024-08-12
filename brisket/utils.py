@@ -6,6 +6,9 @@ import logging
 import astropy.units as u
 import sys
 
+install_dir = os.path.dirname(os.path.realpath(__file__))
+grid_dir = install_dir + "/models/grids"
+
 basicLogger = logging.getLogger('brisket')
 basicLogger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler(sys.stdout) # console handler
