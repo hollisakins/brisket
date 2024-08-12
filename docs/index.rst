@@ -63,6 +63,7 @@ As well as several projects incorporated into ``brisket``:
 
  .. toctree::
     :hidden:
+    
     Home <self>
     cli
     api
