@@ -19,7 +19,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
-    'autoapi.extension',
 ]
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # autodoc_typehints = 'description'
