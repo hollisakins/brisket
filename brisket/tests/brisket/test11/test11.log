@@ -1,0 +1,3 @@
+21:00:10 :: test11 :: INFO     :: Beginning fitting run test11 from param file param_fit_test.toml
+21:00:13 :: test11 :: DEBUG    :: Importing BRISKET
+21:00:13 :: test11 :: INFO     :: Fitting object 756434

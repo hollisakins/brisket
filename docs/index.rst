@@ -3,12 +3,16 @@ BRISKET
 
 **Bagpipes, Repurposed for Ism, Stellar, and blacK holE fitting in Texas**
 
- 
-A galaxy/quasar SED fitting code based on ``bagpipes`` by Adam Carnall.
+.. note::
+    
+    This project is in very early stages of development.
+
+``brisket`` is a galaxy/quasar SED fitting code based on ``bagpipes`` by Adam Carnall.
 ``brisket`` adopts the base code of ``bagpipes`` but expands it to provide additional modeling options, easier customizability/modularity, and more flexibility. Specifically: 
  
 * new nested parameter structure to allow multi-component models, each component with its own specification of dust/nebular parameters
-    * e.g. multi-component galaxy models with different ages *and* different dust attenuation, or composite galaxy+AGN models
+
+  * e.g. multi-component galaxy models with different ages *and* different dust attenuation, or composite galaxy+AGN models
 * new AGN models 
 * new nebular models, built for fitting emission line spectra
 * ability to specify custom SFHs or dust attenuation laws as functions passed into the parameter file directly
@@ -54,11 +58,11 @@ Acknowledgements
 As well as several projects incorporated into ``brisket``:
 
 * Empirical QSO SED templates from ``qsogen`` `Temple et al. (2021) <https://arxiv.org/abs/2109.04472>`_ 
-* The `UltraNest <https://johannesbuchner.github.io/UltraNest/index.html>` nested sampling algorithm `(Buchner et al. 2021) <https://arxiv.org/abs/2101.09604>`_
+* The `UltraNest <https://johannesbuchner.github.io/UltraNest/index.html>`_ nested sampling algorithm `(Buchner et al. 2021) <https://arxiv.org/abs/2101.09604>`_
 * TBD
 
  .. toctree::
-    :maxdepth: 2
-
-    index
+    :hidden:
+    Home <self>
     cli
+    api

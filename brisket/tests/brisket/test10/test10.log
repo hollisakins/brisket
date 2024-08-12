@@ -1,0 +1,14 @@
+20:29:19 :: test10 :: INFO     :: Beginning fitting run test10 from param file param_fit_test.toml
+20:29:23 :: test10 :: DEBUG    :: Importing BRISKET
+20:29:23 :: test10 :: INFO     :: Fitting object 756434
+20:41:43 :: test10 :: INFO     :: Completed in 12m20.8s.
+20:41:43 :: test10 :: INFO     :: Parameter                       16th       50th       84th
+20:41:43 :: test10 :: INFO     :: ----------------------------------------------------------
+20:41:43 :: test10 :: INFO     :: agn:Muv                     -24.935    -24.811    -24.707
+20:41:43 :: test10 :: INFO     :: agn:dust_atten:Av               2.854      2.984      3.130
+20:41:43 :: test10 :: INFO     :: agn:nebular:scale_eline         0.476      0.491      0.498
+20:41:43 :: test10 :: INFO     :: galaxy1:age_max                 0.011      0.018      0.315
+20:41:43 :: test10 :: INFO     :: galaxy1:dust_atten:Av           0.006      0.078      0.198
+20:41:43 :: test10 :: INFO     :: galaxy1:logMstar                7.865      8.134      8.937
+20:41:43 :: test10 :: INFO     :: galaxy1:metallicity             0.190      0.208      0.243
+20:41:43 :: test10 :: INFO     :: redshift                        7.470      7.492      7.509

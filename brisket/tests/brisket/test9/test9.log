@@ -1,0 +1,10 @@
+20:09:52 :: test9 :: INFO     :: Beginning fitting run test9 from param file param_fit_test.toml
+20:09:53 :: test9 :: DEBUG    :: Importing BRISKET
+20:09:53 :: test9 :: INFO     :: Fitting object 756434
+20:11:12 :: test9 :: INFO     :: Completed in 1m18.9s.
+20:11:12 :: test9 :: INFO     :: Parameter                       16th       50th       84th
+20:11:12 :: test9 :: INFO     :: ----------------------------------------------------------
+20:11:12 :: test9 :: INFO     :: galaxy1:dust_atten:Av           2.788      2.883      3.002
+20:11:12 :: test9 :: INFO     :: galaxy1:dust_atten:logfscat    -2.346     -2.294     -2.248
+20:11:12 :: test9 :: INFO     :: galaxy1:logMstar               10.495     10.537     10.583
+20:11:12 :: test9 :: INFO     :: redshift                        7.411      7.444      7.466

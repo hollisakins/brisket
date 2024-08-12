@@ -211,6 +211,9 @@ def fit():
 
     # print(fit.fit_instructions)
     # fit.fit(verbose=args.verbose, n_live=fit_params['n_live'])
+    # stellar only 0.0017
+    # stellar+dust+nebular 0.0021
+    # stellar+dust+AGN 0.0025
 
 
 
@@ -229,11 +232,13 @@ def filters():
                         formatter_class=formatter)
                         # epilog='More help text')
     
-    parser.add_argument('action', action='store', choices=['add','edit','remove'], help='Action to perform: add, edit, or remove a filter curve from the database')
-    parser.add_argument('filter', action='store', help='Filter file to add or filter name to edit/remove')
+    parser.add_argument('action', action='store', choices=['add','edit','remove','list'], help='Action to perform: add, edit, or remove a filter curve from the database')
+
+    
 
     ## arguments used if action==add
     if 'add' in sys.argv:
+        parser.add_argument('-f', '--filter-file', action='store', help='Filter file to add or filter name to edit/remove')
         parser.add_argument('-w', '--wav-units', action='store', choices=['angstrom', 'nm', 'um', 'mm', 'm'], help="Wavelength units in the filter file (default='angstrom')", default='angstrom', type=str)
         parser.add_argument('-d', '--description', action='store', help="Short description (e.g., relevant telescope, data source)", default='', type=str)
         parser.add_argument('-n', '--nickname', action='extend', nargs='+', help="Nickname that you can reference the filter as (e.g. f277w -> jwst_nircam_f277w). Can specify multiple ", type=str, default=[])
@@ -244,10 +249,10 @@ def filters():
             
 
     if args.action=='add':
-        filter_name = os.path.splitext(os.path.basename(args.filter))[0]
+        filter_name = os.path.splitext(os.path.basename(args.filter_file))[0]
 
         # load filter file 
-        filt = np.genfromtxt(args.filter, usecols=(0,1))
+        filt = np.genfromtxt(args.filter_file, usecols=(0,1))
 
         # if wav-units is not angstroms, convert to angstroms
 
@@ -266,7 +271,11 @@ def filters():
             ds = db.create_dataset(filter_name, data=filt)
             ds.attrs['description'] = args.description
             ds.attrs['nicknames'] = args.nickname
-            
+    
+    if args.action=='list':
+        with h5py.File(config.filter_db, mode='a') as db:
+            for filter_name in db:
+                print(f"{filter_name}: {db[filter_name].attrs['description']}")
 
 
 

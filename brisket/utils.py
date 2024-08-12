@@ -6,16 +6,16 @@ import logging
 import astropy.units as u
 import sys
 
-NullLogger = logging.getLogger('brisket')
-NullLogger.setLevel(logging.DEBUG)
+basicLogger = logging.getLogger('brisket')
+basicLogger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler(sys.stdout) # console handler
 ch.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)-8s :: %(message)s', "%H:%M:%S")
 ch.setFormatter(formatter)
-NullLogger.addHandler(ch)
+basicLogger.addHandler(ch)
 
-# NullLogger = logging.getLogger('null')
-# NullLogger.addHandler(logging.NullHandler())
+NullLogger = logging.getLogger('null')
+NullLogger.addHandler(logging.NullHandler())
 
 def dict_to_str(d):
     # This is necessary for converting large arrays to strings

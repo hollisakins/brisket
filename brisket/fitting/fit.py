@@ -27,6 +27,7 @@ except (ImportError, RuntimeError, SystemExit):
 
 try:
     from ultranest import ReactiveNestedSampler
+    from ultranest.stepsampler import SliceSampler, generate_mixture_random_direction
     ultranest_available = True
 except (ImportError, RuntimeError, SystemExit):
     print("BRISKET: Ultranest import failed, fitting will use the Nautilus sampler instead.")
@@ -208,6 +209,7 @@ class fit(object):
                               discard_exploration=discard_exploration)
 
             elif sampler == 'ultranest':
+                # os.environ['OMP_NUM_THREADS'] = '1'
                 resume = 'resume'
                 if overwrite:
                     resume = 'overwrite'
@@ -218,6 +220,8 @@ class fit(object):
                                                 log_dir='/'.join(self.fname.split('/')[:-1]), 
                                                 resume=resume, 
                                                 run_num=None)
+                u_sampler.stepsampler = SliceSampler(nsteps=len(self.fitted_model.params)*4,
+                                                     generate_direction=generate_mixture_random_direction)
                 u_sampler.run(
                     min_num_live_points=n_live,
                     dlogz=0.5, # desired accuracy on logz -- could allow to specify
@@ -295,7 +299,6 @@ class fit(object):
                                     'LNZ_ERR':self.results['lnz_err']}))
             hdulist = fits.HDUList([fits.PrimaryHDU(), hdu])
             hdulist.writeto(f'{self.fname}brisket_results.fits')
-
 
             self.results["median"] = np.median(self.results['samples2d'], axis=0)
             self.results["conf_int"] = np.percentile(self.results["samples2d"],

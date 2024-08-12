@@ -1,8 +1,10 @@
 import numpy as np
 import warnings
-import os
+import os, time
 from copy import deepcopy
 from dotmap import DotMap
+
+from astropy.constants import c as speed_of_light
 
 import logging
 
@@ -82,6 +84,8 @@ class model_galaxy(object):
         if filt_list is not None:
             self.filter_set.resample_filter_curves(self.wavelengths)
 
+        self.igm = igm(self.wavelengths)#, parameters['base']['igm'])
+        self.define_base_params_at_redshift(parameters)
         # # Set up a filter_set for calculating rest-frame UVJ magnitudes.
         # uvj_filt_list = np.loadtxt(utils.install_dir
         #                            + "/filters/UVJ.filt_list", dtype="str")
@@ -92,27 +96,6 @@ class model_galaxy(object):
         ########################## Create relevant physical models. ##########################
         ######################################################################################
         
-        ########################## Configure base-level parameters. ##########################
-        self.redshift = parameters['redshift']
-        self.igm = igm(self.wavelengths)#, parameters['base']['igm'])
-        # Compute IGM transmission at the given redshift
-        self.igm_trans = self.igm.trans(self.redshift)
-        # Convert from luminosity to observed flux at redshift z.
-        self.lum_flux = 1.
-        if self.redshift > 0.:
-            dL = config.cosmo.luminosity_distance(self.redshift).to(u.cm).value
-            self.lum_flux = 4*np.pi*dL**2
-
-            
-
-        # self.damping = damping(self.wavelengths, parameters['base']['damping'])
-        # self.MWdust = MWdust(self.wavelengths, components['base']['MWdust'])
-
-        if self.redshift > config.max_redshift:
-            raise ValueError("""Attempted to create a model with too high redshift. 
-                                Please increase max_redshift in brisket/config.py 
-                                before making this model.""")
-
         # initialize each component
         self.components = [c for c in list(parameters.keys()) if 'galaxy' in c or 'agn' in c]
         for component in self.components:
@@ -132,24 +115,6 @@ class model_galaxy(object):
                     
 
         self.compute_sed(parameters) 
-            
-        ######################### Handle unit-conversions for output #########################
-        self.logger.debug(f"Converting wavelength units from angstroms to {self.wav_units}")
-        self.wavelengths *= (1*u.angstrom).to(self.wav_units).value
-        self.wavelengths_obs = self.wavelengths * (1 + self.redshift)
-        if 'spectral flux density' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Converting flux units to f_nu ({self.sed_units})")
-            from astropy.constants import c
-            self.spectrum_full *= u.Lsun/u.angstrom/u.cm**2 
-            self.spectrum_full *= (self.wavelengths_obs * self.wav_units)**2 / c
-            self.spectrum_full = self.spectrum_full.to(self.sed_units).value
-
-        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Keeping flux units in f_lam ({self.sed_units})")
-            self.spectrum_full *= (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
-        else:
-            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
-            sys.exit(1)
 
         if self.filt_list is not None:
             self.compute_photometry(self.redshift)
@@ -157,14 +122,35 @@ class model_galaxy(object):
         if self.spec_wavs is not None:
             self.compute_spectrum(parameters)
 
+    def define_base_params_at_redshift(self, parameters):
+        ########################## Configure base-level parameters. ##########################
+        self.redshift = parameters['redshift']
+        # Compute IGM transmission at the given redshift
+        self.igm_trans = self.igm.trans(self.redshift)
+        # Convert from luminosity to observed flux at redshift z.
+        self.lum_flux = 1.
+        if self.redshift > 0.:
+            dL = config.cosmo.luminosity_distance(self.redshift).to(u.cm).value
+            self.lum_flux = 4*np.pi*dL**2
+
+        # self.damping = damping(self.wavelengths, parameters['base']['damping'])
+        # self.MWdust = MWdust(self.wavelengths, components['base']['MWdust'])
+
+        if self.redshift > config.max_redshift:
+            raise ValueError("""Attempted to create a model with too high redshift. 
+                                Please increase max_redshift in brisket/config.py 
+                                before making this model.""")
 
 
     def update(self, parameters):
         """ Update the model outputs (spectra, photometry) to reflect 
         new parameter values in the parameters dictionary. Note that 
         only the changing of numerical values is supported."""
+        self.define_base_params_at_redshift(parameters)
+
         for component in self.components:
             comp = getattr(self, component)
+            parameters[component]['redshift'] = parameters['redshift']
             if 'galaxy' in component:
                 comp.sfh.update(parameters[component])
                 if comp.dust_atten:
@@ -183,10 +169,16 @@ class model_galaxy(object):
                 #     # self._calculate_uvj_mags()
         
             elif 'agn' in component:
-                if self.dust_atten:
-                    self.dust_atten.update(parameters[component]["dust_atten"])
+                if comp.dust_atten:
+                    comp.dust_atten.update(parameters[component]["dust_atten"])
         
         self.compute_sed(parameters)
+
+        if self.filt_list is not None:
+            self.compute_photometry(parameters['redshift'])
+
+        if self.spec_wavs is not None:
+            self.compute_spectrum(parameters)
 
 
     def compute_sed(self, parameters):
@@ -196,7 +188,7 @@ class model_galaxy(object):
         compute_spectrum methods generate observables using this
         internal full spectrum. """
 
-        self.spectrum_full = np.zeros(len(self.wavelengths))
+        spectrum_full = np.zeros(len(self.wavelengths))
 
         for component in self.components:
             comp = getattr(self, component)
@@ -209,7 +201,7 @@ class model_galaxy(object):
                 if "t_bc" in list(params):
                     t_bc = params["t_bc"]
 
-            
+
                 spectrum_bc, spectrum = comp.stellar.spectrum(comp.sfh.ceh.grid, t_bc)
                 em_lines = np.zeros(config.line_wavs.shape)
 
@@ -311,7 +303,23 @@ class model_galaxy(object):
 
             spectrum *= self.igm_trans 
             spectrum /= self.lum_flux * (1+self.redshift)
-            self.spectrum_full += spectrum
+            spectrum_full += spectrum
+        
+        self.spectrum_full = spectrum_full
+        ######################### Handle unit-conversions for output #########################
+        # self.logger.debug(f"Converting wavelength units from angstroms to {self.wav_units}")
+        self.wav_rest = (self.wavelengths*u.angstrom).to(self.wav_units).value
+        self.wav_obs = self.wav_rest * (1 + self.redshift)
+        if 'spectral flux density' in list(self.sed_units.physical_type):
+            self.logger.debug(f"Converting flux units to f_nu ({self.sed_units})")
+            self.spectrum_full = (self.spectrum_full*u.Lsun/u.angstrom/u.cm**2 * (self.wav_obs * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
+
+        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
+            self.logger.debug(f"Keeping flux units in f_lam ({self.sed_units})")
+            self.spectrum_full *= (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+        else:
+            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
+            sys.exit(1)
 
 
     def _get_wavelength_sampling(self):

@@ -24,7 +24,7 @@ class dust_emission(object):
         self.logger = logger
 
         self.flag = True
-        if not ('dust_attenuation' in list(params) and 'dust_emission' in list(params)):
+        if not ('dust_atten' in list(params) and 'dust_emission' in list(params)):
             self.logger.info("Skipping dust emission module")
             self.flag = False; return
         
