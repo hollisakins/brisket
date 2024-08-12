@@ -10,7 +10,10 @@ from brisket import utils
 to generate the IGM absorption table which is subsequently used for
 all IGM calculations. """
 
-coefs = np.loadtxt(utils.grid_dir + "/lyman_series_coefs_inoue_2014_table2.txt")
+try:
+   coefs = np.loadtxt(utils.grid_dir + "/lyman_series_coefs_inoue_2014_table2.txt")
+except:
+   print('IGM coefficients file missing')
 
 
 def get_Inoue14_trans(rest_wavs, z_obs):
