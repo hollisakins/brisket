@@ -4,3 +4,4 @@ numpy
 scipy
 matplotlib
 sphinx_rtd_theme
+sphinx-autoapi

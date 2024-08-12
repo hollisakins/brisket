@@ -1,8 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
-import sys, os
-sys.path.insert(0, os.path.abspath('..'))  # Source code dir relative to this file
+# import sys, os
+# sys.path.insert(0, os.path.abspath('..'))  # Source code dir relative to this file
 
 project = 'BRISKET'
 copyright = '2024, Hollis Akins'
@@ -17,10 +17,14 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
+    # 'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
+    'autoapi.extension',
 ]
-autosummary_generate = True  # Turn on sphinx.ext.autosummary
+# autosummary_generate = True  # Turn on sphinx.ext.autosummary
+autodoc_typehints = 'description'
+autoapi_dirs = ['../brisket']
+autoapi_add_toctree_entry = False
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
