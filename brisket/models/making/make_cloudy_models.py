@@ -6,10 +6,10 @@ import sys
 
 from astropy.io import fits
 
-from ... import utils
-from ... import config
+from brisket import utils
+from brisket import config
 
-from ..model_galaxy import model_galaxy
+from brisket.models.model_galaxy import model_galaxy
 
 if "CLOUDY_DATA_PATH" in list(os.environ):
     cloudy_data_path = os.environ["CLOUDY_DATA_PATH"]
