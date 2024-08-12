@@ -2,6 +2,7 @@ API Reference
 =============
 
 .. autosummary::
-   :toctree: generated
+   :toctree: _autosummary
+   :recursive:
 
    brisket
