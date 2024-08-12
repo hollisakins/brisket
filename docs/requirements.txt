@@ -1,6 +1,7 @@
 astropy
 dotmap
 h5py
+toml
 spectres
 numpy
 scipy
