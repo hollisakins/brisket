@@ -3,15 +3,14 @@ from __future__ import print_function, division, absolute_import
 import numpy as np
 import sys
 import os
-
 from astropy.io import fits
+from brisket import config
 
 """ This code is called once when Bagpipes is first installed in order
 to generate the IGM absorption table which is subsequently used for
 all IGM calculations. """
 
-path = os.path.dirname(os.path.realpath(__file__)) + "/../grids"
-coefs = np.loadtxt(path + "/lyman_series_coefs_inoue_2014_table2.txt")
+coefs = np.loadtxt(config.grid_dir + "/lyman_series_coefs_inoue_2014_table2.txt")
 
 
 def get_Inoue14_trans(rest_wavs, z_obs):
