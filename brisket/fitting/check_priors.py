@@ -4,10 +4,10 @@ import numpy as np
 
 from copy import deepcopy
 
-from ..models.star_formation_history import star_formation_history
-from ..models.model_galaxy import model_galaxy
+from brisket.models.star_formation_history import star_formation_history
+from brisket.models.model_galaxy import model_galaxy
 
-from .prior import prior, dirichlet
+from brisket.fitting.prior import prior, dirichlet
 
 
 class check_priors:

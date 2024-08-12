@@ -2,8 +2,8 @@ import astropy.units as u
 from astropy.constants import c
 c = c.to(u.angstrom*u.Hz).value
 import numpy as np
-from .. import config
-from .. import utils
+from brisket import config
+from brisket import utils
 
 class accretion_disk(object):
     """ Allows access to and maniuplation of AGN accretion disk models.

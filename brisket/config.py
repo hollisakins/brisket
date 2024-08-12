@@ -11,8 +11,8 @@ import numpy as np
 from astropy.io import fits
 from astropy.units import cm
 
-from .utils import *
-from .models.making import igm_inoue2014
+from brisket.utils import *
+from brisket.models.making import igm_inoue2014
 
 ########################## Set up directory structure ##########################
 install_dir = os.path.dirname(os.path.realpath(__file__))

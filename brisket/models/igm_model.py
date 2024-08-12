@@ -2,7 +2,7 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 
-from .. import config
+from brisket import config
 
 
 def interp_discont(x, xp, fp, xdiscont, left=None, right=None):

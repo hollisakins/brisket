@@ -4,8 +4,8 @@ import numpy as np
 
 from scipy.interpolate import CubicSpline
 
-from .. import config
-from .. import utils
+from brisket import config
+from brisket import utils
 
 class dust_attenuation(object):
     """ Allows access to and maniuplation of dust attenuation models.

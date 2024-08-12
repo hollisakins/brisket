@@ -2,8 +2,8 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 
-from .. import config
-from .. import utils
+from brisket import config
+from brisket import utils
 
 
 class dust_emission(object):

@@ -1,2 +1,2 @@
-from .filter_set import filter_set
+from brisket.filters.filter_set import filter_set
 

@@ -1,10 +1,8 @@
 import numpy as np
 import sys, os
 import astropy.units as u
-# from .. import plotting
-from .. import filters
-# from .spectral_indices import measure_index
-from .. import utils
+from brisket import filters
+from brisket import utils
 
 class galaxy:
     """ A container for observational data loaded into BRISKET.

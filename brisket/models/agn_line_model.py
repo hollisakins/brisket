@@ -1,8 +1,8 @@
 
 import numpy as np
 
-from .. import config
-from .. import utils
+from brisket import config
+from brisket import utils
 
 
 class agn_lines(object):

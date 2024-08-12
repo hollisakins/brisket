@@ -2,8 +2,8 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 import h5py, sys
-from .. import config
-from .. import utils
+from brisket import config
+from brisket import utils
 
 #### Identical to bagpipes/filters/filter_set.py, but points to config.filter_dir instead of the install directory
 class filter_set(object):

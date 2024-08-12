@@ -5,10 +5,10 @@ import time
 
 from copy import deepcopy
 
-from .prior import prior, dirichlet
-from .calibration import calib_model
-from .noise import noise_model
-from ..models.model_galaxy import model_galaxy
+from brisket.fitting.prior import prior, dirichlet
+from brisket.fitting.calibration import calib_model
+from brisket.fitting.noise import noise_model
+from brisket.models.model_galaxy import model_galaxy
 
 
 class fitted_model(object):

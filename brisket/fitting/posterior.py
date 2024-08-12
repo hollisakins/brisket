@@ -6,13 +6,13 @@ import os
 
 from copy import deepcopy
 
-from .fitted_model import fitted_model
-from .prior import dirichlet
+from brisket.fitting.fitted_model import fitted_model
+from brisket.fitting.prior import dirichlet
 
-from ..models.star_formation_history import star_formation_history
-from ..models.model_galaxy import model_galaxy
+from brisket.models.star_formation_history import star_formation_history
+from brisket.models.model_galaxy import model_galaxy
 
-from .. import utils
+from brisket import utils
 
 from astropy.io import fits
 from astropy.table import Table, Column

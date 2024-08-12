@@ -44,11 +44,11 @@ try:
 except ImportError:
     rank = 0
 
-from .. import utils
+from brisket import utils
 # from .. import plotting
 
-from .fitted_model import fitted_model
-from .posterior import posterior
+from brisket.fitting.fitted_model import fitted_model
+from brisket.fitting.posterior import posterior
 
 
 class fit(object):

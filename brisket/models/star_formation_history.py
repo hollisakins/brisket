@@ -11,11 +11,11 @@ import numpy as np
 from scipy.optimize import fsolve
 from copy import copy, deepcopy
 
-from .. import utils
-from .. import config
+from brisket import utils
+from brisket import config
 # from .. import plotting
 
-from .chemical_enrichment_history import chemical_enrichment_history
+from brisket.models.chemical_enrichment_history import chemical_enrichment_history
 
 
 def lognorm_equations(p, consts):

@@ -5,9 +5,9 @@ from copy import copy
 import astropy.units as u
 import argparse, logging, toml
 import sys, os, shutil
-from . import config
-from . import utils
-from .filters import filter_set
+from brisket import config
+from brisket import utils
+from brisket.filters import filter_set
 import numpy as np
 
 def parse_toml_paramfile(toml_file, logger=utils.NullLogger):

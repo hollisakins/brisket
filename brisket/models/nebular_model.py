@@ -2,10 +2,10 @@ from __future__ import print_function, division, absolute_import
 
 import numpy as np
 
-from .. import config
-from .. import utils
+from brisket import config
+from brisket import utils
 
-from .star_formation_history import star_formation_history
+from brisket.models.star_formation_history import star_formation_history
 
 
 class nebular(object):

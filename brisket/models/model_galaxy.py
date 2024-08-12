@@ -8,22 +8,21 @@ from astropy.constants import c as speed_of_light
 
 import logging
 
-from .. import utils
-from .. import config
-from .. import filters
+from brisket import utils
+from brisket import config
+from brisket import filters
 # from .. import plotting
 
-from .stellar_model import stellar
-from .dust_emission_model import dust_emission
-from .dust_attenuation_model import dust_attenuation
-from .nebular_model import nebular
-from .accretion_disk_model import accretion_disk
-from .agn_line_model import agn_lines
+from brisket.models.stellar_model import stellar
+from brisket.models.dust_emission_model import dust_emission
+from brisket.models.dust_attenuation_model import dust_attenuation
+from brisket.models.nebular_model import nebular
+from brisket.models.accretion_disk_model import accretion_disk
+from brisket.models.agn_line_model import agn_lines
+from brisket.models.igm_model import igm
+from brisket.models.star_formation_history import star_formation_history
 
 
-from .igm_model import igm
-from .star_formation_history import star_formation_history
-# from ..input.spectral_indices import measure_index
 import astropy.units as u
 
 class galaxy_component(object):
