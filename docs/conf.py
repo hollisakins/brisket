@@ -1,6 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
+import sys, os
+sys.path.insert(0, os.path.abspath('..'))  # Source code dir relative to this file
 
 project = 'BRISKET'
 copyright = '2024, Hollis Akins'
@@ -18,6 +20,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
 ]
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
