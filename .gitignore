@@ -5,3 +5,5 @@ brisket/filters/__pycache__/
 brisket/fitting/__pycache__/
 brisket/input/__pycache__/
 brisket/models/__pycache__/
+brisket/models/making/__pycache__/
+brisket/.DS_Store
