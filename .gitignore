@@ -1,3 +1,4 @@
+__pycache__/
 brisket/models/grids/*
 *.egg-info/
 brisket/__pycache__/
