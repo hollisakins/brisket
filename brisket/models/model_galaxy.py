@@ -102,16 +102,30 @@ class model_galaxy(object):
             params['redshift'] = self.redshift
 
             if 'galaxy' in component:
+                params['component'] = 'galaxy'
                 setattr(self, component, DotMap(sfh=star_formation_history(params, logger=logger), 
                                                 stellar=stellar(self.wavelengths, params, logger=logger),
                                                 nebular=nebular(self.wavelengths, params, logger=logger),
                                                 dust_atten=dust_attenuation(self.wavelengths, params, logger=logger),
                                                 dust_emission=dust_emission(self.wavelengths, params, logger=logger)))
             if 'agn' in component:
+                params['component'] = 'agn'
                 setattr(self, component, DotMap(accdisk=accretion_disk(self.wavelengths, params, logger=logger), 
                                                 nebular=agn_lines(self.wavelengths, params, logger=logger),
                                                 dust_atten=dust_attenuation(self.wavelengths, params, logger=logger)))
-                    
+
+        ## Initialize unit conversion logic
+        self.wav_rest = (self.wavelengths*u.angstrom).to(self.wav_units).value
+        self.wav_obs = self.wav_rest * (1 + self.redshift)
+        if 'spectral flux density' in list(self.sed_units.physical_type):
+            self.logger.debug(f"Converting flux units to f_nu ({self.sed_units})")
+            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2 * (1 * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
+        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
+            self.logger.debug(f"Keeping flux units in f_lam ({self.sed_units})")
+            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+        else:
+            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
+            sys.exit()
 
         self.compute_sed(parameters) 
 
@@ -305,20 +319,11 @@ class model_galaxy(object):
             spectrum_full += spectrum
         
         self.spectrum_full = spectrum_full
-        ######################### Handle unit-conversions for output #########################
-        # self.logger.debug(f"Converting wavelength units from angstroms to {self.wav_units}")
-        self.wav_rest = (self.wavelengths*u.angstrom).to(self.wav_units).value
-        self.wav_obs = self.wav_rest * (1 + self.redshift)
-        if 'spectral flux density' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Converting flux units to f_nu ({self.sed_units})")
-            self.spectrum_full = (self.spectrum_full*u.Lsun/u.angstrom/u.cm**2 * (self.wav_obs * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
 
-        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Keeping flux units in f_lam ({self.sed_units})")
-            self.spectrum_full *= (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+        if self.flam: 
+            self.spectrum_full *= self.sed_unit_conv
         else:
-            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
-            sys.exit(1)
+            self.spectrum_full *= self.sed_unit_conv * self.wav_obs**2
 
 
     def _get_wavelength_sampling(self):
