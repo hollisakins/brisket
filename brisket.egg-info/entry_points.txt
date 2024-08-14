@@ -1,5 +1,0 @@
-[console_scripts]
-brisket-filters = brisket.brisket:filters
-brisket-fit = brisket.brisket:fit
-brisket-mod = brisket.brisket:mod
-brisket-plot = brisket.brisket:plot
