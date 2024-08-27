@@ -4,6 +4,32 @@ import astropy.units as u
 import numpy as np
 plt.style.use('hba_sans')
 
+import brisket
+
+p = {'redshift': 7, 'igm':'Inoue14', 'damping':24}
+p['galaxy'] = {
+    'stellar_model': 'BC03',
+    'logMstar': {'low':10, 'high':11, 'prior':'Gaussian', 'mu':10.5, 'sigma':0.2},
+    'metallicity': {'low':0.01, 'high':2.5, 'prior':'log_10'}, 
+    'sfh': 'constant',
+    'age_min': 0,
+    'age_max': 1,
+}
+p['galaxy']['nebular'] = {
+    'type':'flex',
+    'Hb': {'low':1e-21, 'high':1e-19},
+    'OIII5007': {'low':1e-21, 'high':1e-18},
+    'OIII4959': {'mirror':'OIII5007', 'transform': lambda x: x/3},
+    'Ha': {'mirror':'Hb'}
+}
+
+# p['calibration'] = {'template':'prism'}
+
+
+### OR 
+p = brisket.parameters.load_from_toml('tests/param_fit_test.toml')
+
+gal = brisket.model_galaxy(p, filt_list=['f115w','f150w','f277w','f444w'])
 
 
 

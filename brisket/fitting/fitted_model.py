@@ -211,7 +211,7 @@ class fitted_model(object):
         else:
             self.noise = noise_model({}, self.galaxy, model)
 
-        #
+
         if self.noise.corellated:
             lnlike_spec = self.noise.gp.lnlikelihood(self.noise.diff)
 

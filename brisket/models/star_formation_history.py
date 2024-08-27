@@ -180,6 +180,9 @@ class star_formation_history:
 
         return np.log10(mass_assembly[ind])
 
+    ###################################################################
+    ######### Various choices of star-formation history model #########
+    ###################################################################
     def burst(self, sfr, param):
         """ A delta function burst of star-formation. """
 
@@ -303,7 +306,7 @@ class star_formation_history:
     def psb_wild2020(self, sfr, param):
         """
         A 2-component SFH for post-starburst galaxies. An exponential
-        compoent represents the existing stellar population before the
+        component represents the existing stellar population before the
         starburst, while a double power law makes up the burst.
         The weight of mass formed between the two is controlled by a
         fburst factor: thefraction of mass formed in the burst.
@@ -357,12 +360,6 @@ class star_formation_history:
 
         sfr[self.ages > self.age_of_universe] = 0.
 
-    def plot(self, show=True):
-        return plotting.plot_sfh(self, show=show)
-
-
-
-
     def delayed_agefrac(self, sfr, param):
         age_frac = param["age_frac"]
         age = self.age_of_universe * age_frac
@@ -413,3 +410,8 @@ class star_formation_history:
             mask = (self.ages < bin_edges[i]) & (self.ages > bin_edges[i+1])
             sfr[mask] += 10**np.sum(dsfrs[:i])
 
+
+
+
+    def plot(self, show=True):
+        return plotting.plot_sfh(self, show=show)
