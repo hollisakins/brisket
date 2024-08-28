@@ -4,7 +4,7 @@
     damping  = "n" # need specify NH? 
     MWdust   = "n" # need specify coords?
 
-[galaxy1]
+[galaxy]
     model    = "BC03"
     # imf      = "Chabrier"
     logMstar = 9.0

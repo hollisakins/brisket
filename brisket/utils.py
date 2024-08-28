@@ -8,6 +8,7 @@ import sys
 
 install_dir = os.path.dirname(os.path.realpath(__file__))
 grid_dir = install_dir + "/models/grids"
+param_template_dir = install_dir + "/defaults/templates/"
 
 basicLogger = logging.getLogger('brisket')
 basicLogger.setLevel(logging.DEBUG)

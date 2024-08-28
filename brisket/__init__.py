@@ -9,7 +9,6 @@ from .brisket import parse_toml_paramfile
 from .models.model_galaxy import model_galaxy
 from .input.galaxy import galaxy
 from .fitting.fit import fit
-from .parameters import Params, var, mirror, transform    
 
 # from .catalogue.fit_catalogue import fit_catalogue
 

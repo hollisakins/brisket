@@ -5,8 +5,22 @@ import numpy as np
 plt.style.use('hba_sans')
 
 import brisket
+p = brisket.parameters.ParamDict('alpha')
+print(p)
 
-p = {'redshift': 7, 'igm':'Inoue14', 'damping':24}
+
+# p = {}
+# p['redshift'] = {'low':6, 'high':8, 'prior': 'Gaussian', 'mu':5, 'sigma':3}
+# p['galaxy'] = {'stellar_model':'BC03', 'logMstar': {'low':10, 'high':11}}
+# p['galaxy']['nebular'] = {'fesc':0, 'logU':{'low':-4,'high':-1}}
+# p['redshift'] = 7
+# p['galaxy'] = {'stellar_model':'BC03', 'logMstar': 10}
+# p['galaxy']['nebular'] = {'fesc':0, 'logU':-4}
+
+quit()
+
+p = {'redshift': 7}
+p['igm'] = 'Inoue14'
 p['galaxy'] = {
     'stellar_model': 'BC03',
     'logMstar': {'low':10, 'high':11, 'prior':'Gaussian', 'mu':10.5, 'sigma':0.2},
@@ -22,6 +36,8 @@ p['galaxy']['nebular'] = {
     'OIII4959': {'mirror':'OIII5007', 'transform': lambda x: x/3},
     'Ha': {'mirror':'Hb'}
 }
+p = brisket.parameters.ParamDict(p)
+
 
 # p['calibration'] = {'template':'prism'}
 
