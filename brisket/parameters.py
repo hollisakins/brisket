@@ -1,11 +1,10 @@
 import rich, toml, os, sys
 from brisket import utils
+from collections.abc import MutableMapping
 
-# from collections import UserDict
 base_params = ['redshift', 'igm']
 allowed_components = ['galaxy','agn']
 defaults = {'igm':'Inoue14'}
-
 
 class ParamDict:
     def __init__(self, data): #*args, **kwargs):
