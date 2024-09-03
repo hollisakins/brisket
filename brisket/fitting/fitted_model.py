@@ -5,13 +5,13 @@ import time
 
 from copy import deepcopy
 
-from brisket.fitting.prior import prior, dirichlet
+from brisket.fitting.prior import Prior, dirichlet
 from brisket.fitting.calibration import calib_model
 from brisket.fitting.noise import noise_model
-from brisket.models.model_galaxy import model_galaxy
+from brisket.models.model_galaxy import ModelGalaxy
 
 
-class fitted_model(object):
+class FittedModel(object):
     """ Contains a model which is to be fitted to observational data.
 
     Parameters
@@ -21,7 +21,7 @@ class fitted_model(object):
         A galaxy object containing the photomeric and/or spectroscopic
         data you wish to fit.
 
-    fit_instructions : dict
+    parameters : dict
         A dictionary containing instructions on the kind of model which
         should be fitted to the data.
 
@@ -30,93 +30,99 @@ class fitted_model(object):
         likelihood calls.
     """
 
-    def __init__(self, galaxy, fit_instructions, time_calls=False):
+    def __init__(self, galaxy, parameters, time_calls=False):
 
         self.galaxy = galaxy
-        self.fit_instructions = deepcopy(fit_instructions)
-        self.model_components = deepcopy(fit_instructions)
+        self.parameters = deepcopy(parameters)
         self.time_calls = time_calls
 
         self._set_constants()
-        self._process_fit_instructions()
+        self.params = self.parameters.free_param_names    # Names of parameters to be fit
+        self.limits = self.parameters.free_param_limits   # Limits for fitted parameter values
+        self.pdfs = self.parameters.free_param_pdfs       # Probability densities within lims
+        self.hypers = self.parameters.free_param_hypers  # Hyperparameters of prior distributions
+        self.mirrors = {} # self.parameters.free_param_mirrors   # Params which mirror a fitted param
+        #self.transforms = {} # self.parameters.free_param_transforms   # Params which are a transform of another param
+        self.ndim = self.parameters.ndim
 
-        self.prior = prior(self.limits, self.pdfs, self.hyper_params)
+        self.prior = Prior(self.limits, self.pdfs, self.hypers)
         self.model_galaxy = None
 
         if self.time_calls:
             self.times = np.zeros(1000)
             self.n_calls = 0
 
-    def _process_fit_instructions(self):
-        all_keys = []           # All keys in fit_instructions and subs
-        all_vals = []           # All vals in fit_instructions and subs
+    # def _process_fit_instructions(self): ### DEPRICATED - all functionality moved to parameters module
+    #     all_keys = []           # All keys in fit_instructions and subs
+    #     all_vals = []           # All vals in fit_instructions and subs
 
-        self.params = []        # Parameters to be fitted
-        self.limits = []        # Limits for fitted parameter values
-        self.pdfs = []          # Probability densities within lims
-        self.hyper_params = []  # Hyperparameters of prior distributions
-        self.mirror_pars = {}   # Params which mirror a fitted param
+    #     self.params = []        # Parameters to be fitted
+    #     self.limits = []        # Limits for fitted parameter values
+    #     self.pdfs = []          # Probability densities within lims
+    #     self.hyper_params = []  # Hyperparameters of prior distributions
+    #     self.mirror_pars = {}   # Params which mirror a fitted param
+    #     self.ndim = len(self.params)
 
-        # Flatten the input fit_instructions dictionary.
-        for key in list(self.fit_instructions):
-            if not isinstance(self.fit_instructions[key], dict):
-                all_keys.append(key)
-                all_vals.append(self.fit_instructions[key])
-            else:
-                for sub_key in list(self.fit_instructions[key]):
-                    if not isinstance(self.fit_instructions[key][sub_key], dict):
-                        all_keys.append(f'{key}:{sub_key}')
-                        all_vals.append(self.fit_instructions[key][sub_key])
-                    else:
-                        for sub_sub_key in list(self.fit_instructions[key][sub_key]):
-                            all_keys.append(f'{key}:{sub_key}:{sub_sub_key}')
-                            all_vals.append(self.fit_instructions[key][sub_key][sub_sub_key])
+    #     # # # Flatten the input fit_instructions dictionary.
+    #     # # for key in list(self.fit_instructions):
+    #     # #     if not isinstance(self.fit_instructions[key], dict):
+    #     # #         all_keys.append(key)
+    #     # #         all_vals.append(self.fit_instructions[key])
+    #     # #     else:
+    #     # #         for sub_key in list(self.fit_instructions[key]):
+    #     # #             if not isinstance(self.fit_instructions[key][sub_key], dict):
+    #     # #                 all_keys.append(f'{key}:{sub_key}')
+    #     # #                 all_vals.append(self.fit_instructions[key][sub_key])
+    #     # #             else:
+    #     # #                 for sub_sub_key in list(self.fit_instructions[key][sub_key]):
+    #     # #                     all_keys.append(f'{key}:{sub_key}:{sub_sub_key}')
+    #     # #                     all_vals.append(self.fit_instructions[key][sub_key][sub_sub_key])
 
-        # Sort the resulting lists alphabetically by parameter name.
-        indices = np.argsort(all_keys)
-        all_vals = [all_vals[i] for i in indices]
-        all_keys.sort()
+    #     # # Sort the resulting lists alphabetically by parameter name.
+    #     # indices = np.argsort(all_keys)
+    #     # all_vals = [all_vals[i] for i in indices]
+    #     # all_keys.sort()
         
-        # for i in range(len(all_keys)):
-        #     print(i, all_keys[i], all_vals[i])
-        # quit()
+    #     # for i in range(len(all_keys)):
+    #     #     print(i, all_keys[i], all_vals[i])
+    #     # quit()
 
-        # Find parameters to be fitted and extract their priors.
-        for i in range(len(all_vals)):
-            if isinstance(all_vals[i], tuple):
-                self.params.append(all_keys[i])
-                self.limits.append(all_vals[i])  # Limits on prior.
+    #     # # Find parameters to be fitted and extract their priors.
+    #     # for i in range(len(all_vals)):
+    #     #     if isinstance(all_vals[i], tuple):
+    #     #         self.params.append(all_keys[i])
+    #     #         self.limits.append(all_vals[i])  # Limits on prior.
 
-                # Prior probability densities between these limits.
-                prior_key = all_keys[i] + "_prior"
-                if prior_key in list(all_keys):
-                    self.pdfs.append(all_vals[all_keys.index(prior_key)])
+    #     #         # Prior probability densities between these limits.
+    #     #         prior_key = all_keys[i] + "_prior"
+    #     #         if prior_key in list(all_keys):
+    #     #             self.pdfs.append(all_vals[all_keys.index(prior_key)])
 
-                else:
-                    self.pdfs.append("uniform")
+    #     #         else:
+    #     #             self.pdfs.append("uniform")
 
-                # Any hyper-parameters of these prior distributions.
-                self.hyper_params.append({})
-                for i in range(len(all_keys)):
-                    if all_keys[i].startswith(prior_key + "_"):
-                        hyp_key = all_keys[i][len(prior_key)+1:]
-                        self.hyper_params[-1][hyp_key] = all_vals[i]
+    #     #         # Any hyper-parameters of these prior distributions.
+    #     #         self.hyper_params.append({})
+    #     #         for i in range(len(all_keys)):
+    #     #             if all_keys[i].startswith(prior_key + "_"):
+    #     #                 hyp_key = all_keys[i][len(prior_key)+1:]
+    #     #                 self.hyper_params[-1][hyp_key] = all_vals[i]
 
-            # Find any parameters which mirror the value of a fit param.
-            if all_vals[i] in all_keys:
-                self.mirror_pars[all_keys[i]] = all_vals[i]
+    #         # # Find any parameters which mirror the value of a fit param.
+    #         # if all_vals[i] in all_keys:
+    #         #     self.mirror_pars[all_keys[i]] = all_vals[i]
 
-            if all_vals[i] == "dirichlet":
-                n = all_vals[all_keys.index(all_keys[i][:-6])]
-                comp = all_keys[i].split(":")[0]
-                for j in range(1, n):
-                    self.params.append(comp + ":dirichletr" + str(j))
-                    self.pdfs.append("uniform")
-                    self.limits.append((0., 1.))
-                    self.hyper_params.append({})
+    #         # if all_vals[i] == "dirichlet":
+    #         #     n = all_vals[all_keys.index(all_keys[i][:-6])]
+    #         #     comp = all_keys[i].split(":")[0]
+    #         #     for j in range(1, n):
+    #         #         self.params.append(comp + ":dirichletr" + str(j))
+    #         #         self.pdfs.append("uniform")
+    #         #         self.limits.append((0., 1.))
+    #         #         self.hyper_params.append({})
 
-        # Find the dimensionality of the fit
-        self.ndim = len(self.params)
+    #     # Find the dimensionality of the fit
+    #     # self.ndim = len(self.params)
 
     def _set_constants(self):
         """ Calculate constant factors used in the lnlike function. """
@@ -245,67 +251,77 @@ class fitted_model(object):
 
         return self.K_ind - 0.5*self.chisq_ind
 
-    def _update_model_components(self, param):
+    def _update_model_parameters(self, param):
         """ Generates a model object with the current parameters. """
+        # for i in range(len(self.params)):
+        #     print(self.params[i], param[i])
+        # quit()
 
-        dirichlet_comps = []
+        # dirichlet_comps = []
 
         # Substitute values of fit params from param into model_comp.
         for i in range(len(self.params)):
             split = self.params[i].split(":")
             if len(split) == 1:
-                self.model_components[self.params[i]] = param[i]
-
+                self.parameters[self.params[i]] = param[i]
             elif len(split) == 2:
-                if "dirichlet" in split[1]:
-                    if split[0] not in dirichlet_comps:
-                        dirichlet_comps.append(split[0])
-                else:
-                    self.model_components[split[0]][split[1]] = param[i]
-            
+                self.parameters[split[0]][split[1]] = param[i]
             elif len(split) == 3:
-                if "dirichlet" in split[2]:
-                    if split[1] not in dirichlet_comps:
-                        dirichlet_comps.append(split[1])
-                else:
-                    self.model_components[split[0]][split[1]][split[2]] = param[i]
+                self.parameters[split[0]][split[1]][split[2]] = param[i]
+        # for i in range(len(self.params)):
+        #     split = self.params[i].split(":")
+        #     if len(split) == 1:
+        #         self.model_components[self.params[i]] = param[i]
+
+        #     elif len(split) == 2:
+        #         if "dirichlet" in split[1]:
+        #             if split[0] not in dirichlet_comps:
+        #                 dirichlet_comps.append(split[0])
+        #         else:
+        #             self.model_components[split[0]][split[1]] = param[i]
+            
+        #     elif len(split) == 3:
+        #         if "dirichlet" in split[2]:
+        #             if split[1] not in dirichlet_comps:
+        #                 dirichlet_comps.append(split[1])
+        #         else:
+        #             self.model_components[split[0]][split[1]][split[2]] = param[i]
 
         # Set any mirror params to the value of the relevant fit param.
-        for key in list(self.mirror_pars):
+        for key in list(self.mirrors):
             split_par = key.split(":")
-            split_val = self.mirror_pars[key].split(":")
-            fit_val = self.model_components[split_val[0]][split_val[1]]
-            self.model_components[split_par[0]][split_par[1]] = fit_val
+            split_val = self.mirrors[key].split(":")
+            fit_val = self.parameters[split_val[0]][split_val[1]]
+            self.parameters[split_par[0]][split_par[1]] = fit_val
 
-        # Deal with any Dirichlet distributed parameters.
-        if len(dirichlet_comps) > 0:
-            comp = dirichlet_comps[0]
-            n_bins = 0
-            for i in range(len(self.params)):
-                split = self.params[i].split(":")
-                if (split[0] == comp) and ("dirichlet" in split[1]):
-                    n_bins += 1
+        # # Deal with any Dirichlet distributed parameters.
+        # if len(dirichlet_comps) > 0:
+        #     comp = dirichlet_comps[0]
+        #     n_bins = 0
+        #     for i in range(len(self.params)):
+        #         split = self.params[i].split(":")
+        #         if (split[0] == comp) and ("dirichlet" in split[1]):
+        #             n_bins += 1
+            # self.model_components[comp]["r"] = np.zeros(n_bins)
 
-            self.model_components[comp]["r"] = np.zeros(n_bins)
+            # j = 0
+            # for i in range(len(self.params)):
+            #     split = self.params[i].split(":")
+            #     if (split[0] == comp) and "dirichlet" in split[1]:
+            #         self.model_components[comp]["r"][j] = param[i]
+            #         j += 1
 
-            j = 0
-            for i in range(len(self.params)):
-                split = self.params[i].split(":")
-                if (split[0] == comp) and "dirichlet" in split[1]:
-                    self.model_components[comp]["r"][j] = param[i]
-                    j += 1
+            # tx = dirichlet(self.model_components[comp]["r"],
+            #                self.model_components[comp]["alpha"])
 
-            tx = dirichlet(self.model_components[comp]["r"],
-                           self.model_components[comp]["alpha"])
-
-            self.model_components[comp]["tx"] = tx
+            # self.model_components[comp]["tx"] = tx
 
     def _update_model_galaxy(self, param):
-        self._update_model_components(param)
+        self._update_model_parameters(param)
 
         if self.model_galaxy is None:
-            self.model_galaxy = model_galaxy(self.model_components,
+            self.model_galaxy = ModelGalaxy(self.parameters,
                                              filt_list=self.galaxy.filt_list,
                                              spec_wavs=self.galaxy.spec_wavs)
 
-        self.model_galaxy.update(self.model_components)
+        self.model_galaxy.update(self.parameters)

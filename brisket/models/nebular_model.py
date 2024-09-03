@@ -5,10 +5,10 @@ import numpy as np
 from brisket import config
 from brisket import utils
 
-from brisket.models.star_formation_history import star_formation_history
+from brisket.models.star_formation_history import StarFormationHistoryModel
 
 
-class nebular(object):
+class NebularModel(object):
     """ Allows access to and maniuplation of nebular emission models.
     These must be pre-computed using Cloudy and the relevant set of
     stellar emission models. This has already been done for the default
@@ -30,12 +30,12 @@ class nebular(object):
             self.logger.info("Skipping nebular emission module")
             self.flag = False; return
         
-        self.model = params['model']
+        self.model = params['stellar_model']
         self.logger.info(f"Initializing nebular emission module".ljust(50) + f'(model: {self.model})'.rjust(20))
 
         if 'metallicity' in list(params['nebular']):
             self.logger.info("Computing independent chemical enrichment history for nebular models")
-            self.neb_sfh = star_formation_history(params)
+            self.neb_sfh = StarFormationHistoryModel(params)
 
         self.metallicities = config.stellar_models[self.model]['metallicities']
         self.logU = config.nebular_models[self.model]['logU']

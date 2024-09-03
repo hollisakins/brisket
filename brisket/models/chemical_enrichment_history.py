@@ -6,11 +6,11 @@ from brisket import utils
 from brisket import config
 
 
-class chemical_enrichment_history(object):
+class ChemicalEnrichmentHistoryModel(object):
 
     def __init__(self, model_comp, sfh_weights):
 
-        model = model_comp['model']
+        model = model_comp['stellar_model']
         
         self.zmet_vals = config.stellar_models[model]['metallicities']
         self.zmet_lims = config.stellar_models[model]['metallicity_bins']

@@ -5,7 +5,7 @@ from brisket import config
 from brisket import utils
 
 
-class agn_lines(object):
+class AGNLineModel(object):
     """ Allows access to and maniuplation of AGN emission line models.
     
     Parameters

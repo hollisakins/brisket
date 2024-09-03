@@ -47,11 +47,11 @@ except ImportError:
 from brisket import utils
 # from .. import plotting
 
-from brisket.fitting.fitted_model import fitted_model
-from brisket.fitting.posterior import posterior
+from brisket.fitting.fitted_model import FittedModel
+from brisket.fitting.posterior import Posterior
 
 
-class fit(object):
+class Fitter(object):
     """ Top-level class for fitting models to observational data.
     Interfaces with MultiNest to sample from the posterior distribution
     of a fitted_model object. Performs loading and saving of results.
@@ -59,11 +59,11 @@ class fit(object):
     Parameters
     ----------
 
-    galaxy : bagpipes.galaxy
+    galaxy : bagpipes.Galaxy
         A galaxy object containing the photomeric and/or spectroscopic
         data you wish to fit.
 
-    fit_instructions : dict
+    parameters : brisket.parameters.Params
         A dictionary containing instructions on the kind of model which
         should be fitted to the data.
 
@@ -80,12 +80,12 @@ class fit(object):
         posterior once fitting is complete. Default is 500.
     """
 
-    def __init__(self, galaxy, fit_instructions, run=".", time_calls=False,
+    def __init__(self, galaxy, parameters, run=".", time_calls=False,
                  n_posterior=500, logger=utils.NullLogger):
 
         self.run = run
         self.galaxy = galaxy
-        self.fit_instructions = deepcopy(fit_instructions)
+        self.parameters = deepcopy(parameters)
         self.n_posterior = n_posterior
         self.logger = logger
 
@@ -103,7 +103,7 @@ class fit(object):
         if os.path.exists(f'{self.fname}brisket_results.fits'):
 
             file = fits.open(f'{self.fname}brisket_results.fits')['RESULTS']
-            self.fit_instructions = utils.str_to_dict(file.header['FIT_INST'])
+            self.parameters.data = utils.str_to_dict(file.header['PARAMS'])
             self.results['samples2d'] = file.data['samples2d']
             self.results['lnlike'] = file.data['lnlike']
             self.results['lnz'] = file.header['LNZ']
@@ -112,15 +112,15 @@ class fit(object):
             self.results["conf_int"] = np.percentile(self.results["samples2d"],
                                                      (16, 84), axis=0)
             
-            self.posterior = posterior(self.galaxy, run=run,
+            self.posterior = Posterior(self.galaxy, run=run,
                                        n_samples=n_posterior)
             
             if rank == 0:
                 self.logger.info(f'Loaded results from {self.fname}brisket_results.fits')
 
         # Set up the model which is to be fitted to the data.
-        self.fitted_model = fitted_model(galaxy, self.fit_instructions,
-                                         time_calls=time_calls)
+        self.fitted_model = FittedModel(galaxy, self.parameters,
+                                       time_calls=time_calls)
 
     def fit(self, verbose=False, n_live=400, use_MPI=True, 
             sampler="multinest", n_eff=0, discard_exploration=False,
@@ -290,24 +290,23 @@ class fit(object):
                 os.system(f'rm -r ' + '/'.join(self.fname.split('/')[:-1]) + '/*')
             
             columns = []
-            columns.append(fits.Column(name='samples2d', array=self.results['samples2d'], format=f'{len(self.fitted_model.params)}D'))
+            columns.append(fits.Column(name='samples2d', array=self.results['samples2d'], format=f'{self.fitted_model.ndim}D'))
             columns.append(fits.Column(name='lnlike', array=self.results['lnlike'], format='D'))
             hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), 
                 header=fits.Header({'EXTNAME':'RESULTS',
-                                    'FIT_INST':utils.dict_to_str(self.fit_instructions),
+                                    'PARAMS':utils.dict_to_str(self.parameters.data),
                                     'LNZ':self.results['lnz'],
                                     'LNZ_ERR':self.results['lnz_err']}))
             hdulist = fits.HDUList([fits.PrimaryHDU(), hdu])
             hdulist.writeto(f'{self.fname}brisket_results.fits')
 
             self.results["median"] = np.median(self.results['samples2d'], axis=0)
-            self.results["conf_int"] = np.percentile(self.results["samples2d"],
-                                                     (16, 84), axis=0)
+            self.results["conf_int"] = np.percentile(self.results["samples2d"], (16, 84), axis=0)
 
             self._print_results()
 
             # Create a posterior object to hold the results of the fit.
-            self.posterior = posterior(self.galaxy, run=self.run,
+            self.posterior = Posterior(self.galaxy, run=self.run,
                                        n_samples=self.n_posterior)
 
     def _print_results(self):

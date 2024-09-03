@@ -7,7 +7,7 @@ from scipy.interpolate import CubicSpline
 from brisket import config
 from brisket import utils
 
-class dust_attenuation(object):
+class DustAttenuationModel(object):
     """ Allows access to and maniuplation of dust attenuation models.
     This class calculates the absolute attenuation curve (A_lam/A_V)
     for the specified model. Some curves have fixed shapes, so they are
@@ -68,6 +68,7 @@ class dust_attenuation(object):
 
         # Call update method (does nothing for Calzetti and Cardelli)
         self.update(param['dust_atten'])
+        self.trans_cont, self.trans_line, self.trans_bc = self.transmission()
 
     def update(self, param):
 
@@ -77,6 +78,7 @@ class dust_attenuation(object):
 
         # Variable shape dust laws have to be computed every time.
         self.A_cont, self.A_line = getattr(self, self.type)(param)
+        self.trans_cont, self.trans_line, self.trans_bc = self.transmission()
 
     def CF00(self, param):
         """ Modified Charlot + Fall (2000) model of Carnall et al.
@@ -231,6 +233,18 @@ class dust_attenuation(object):
         """
         return A_lambda
 
+    def transmission(self):
+        Av = self.param['dust_atten']['Av']
+        logfscat = self.param['dust_atten']['logfscat']
+        fscat = np.power(10., logfscat)
+
+        trans_cont = 10**(-Av*self.A_cont/2.5)
+        
+        bc_Av = Av * self.param['dust_atten']['eta']
+        trans_bc = 10**(-bc_Av*self.A_cont/2.5)
+
+        trans_line = 10**(-bc_Av*self.A_line/2.5)
+        return trans_cont, trans_line, trans_bc
 
     def __bool__(self):
         return self.flag

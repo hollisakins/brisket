@@ -6,7 +6,7 @@ from brisket import config
 from brisket import utils
 
 
-class stellar(object):
+class StellarModel(object):
     """ Allows access to and maniuplation of stellar emission models.
 
     Parameters
@@ -18,7 +18,7 @@ class stellar(object):
 
     def __init__(self, wavelengths, parameters, logger=utils.NullLogger):
         self.wavelengths = wavelengths
-        model = parameters['model']
+        model = parameters['stellar_model']
         
         self.logger = logger
         self.logger.info(f'Initializing stellar module'.ljust(50) + f'(model: {model})'.rjust(20))

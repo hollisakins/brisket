@@ -6,7 +6,7 @@ from brisket import config
 from brisket import utils
 
 
-class dust_emission(object):
+class DustEmissionModel(object):
     """ Allows access to dust emission models. Currently implemented models: 
 
         - Draine & Li (2007) radiative transfer models
@@ -25,17 +25,25 @@ class dust_emission(object):
         Subset of the model_components dictionary with dust emission parameters
     """
 
-    def __init__(self, wavelengths, redshift, model_comp):
+    def __init__(self, wavelengths, params, logger=utils.NullLogger):
         self.wavelengths = wavelengths
-        self.redshift = redshift
-        self.model_comp = model_comp
-        if self.model_comp['type'] == 'DL07':
+        self.params = params
+        self.logger = logger
+
+        self.flag = True
+        if not 'dust_emission' in list(params):
+            self.logger.info("Skipping dust emission module")
+            self.flag = False; return
+
+        self.redshift =  params['redshift']
+        self.type = params['dust_emission']['type']
+        if self.type == 'DL07':
             self.spectrum = self.spectrum_DL07
-        elif self.model_comp['type'] == 'MBBPL':
+        elif self.type == 'MBBPL':
             self.spectrum = self.spectrum_MBBPL
 
 
-    def spectrum_DL07(self, model_comp):
+    def spectrum_DL07(self, params):
         """ Get the Draine & Li (2007) model for a given set of model 
         parameters, given as keys in model_comp.
 
@@ -50,9 +58,9 @@ class dust_emission(object):
             The fraction of the dust heated by starlight (0-1)
         """
 
-        qpah = model_comp['qpah']
-        umin = model_comp['umin']
-        gamma = model_comp['gamma']
+        qpah = params['dust_emission']['qpah']
+        umin = params['dust_emission']['umin']
+        gamma = params['dust_emission']['gamma']
 
         qpah_ind = config.qpah_vals[config.qpah_vals < qpah].shape[0]
         umin_ind = config.umin_vals[config.umin_vals < umin].shape[0]
@@ -89,7 +97,7 @@ class dust_emission(object):
         return spectrum
 
 
-    def spectrum_MBBPL(self, model_comp):
+    def spectrum_MBBPL(self, params):
         """ Compute the Drew & Casey (2021) model for a given 
         set of model parameters, given as keys in model_comp.
 
@@ -106,10 +114,10 @@ class dust_emission(object):
             ...
         """
 
-        T = model_comp['Tdust']
-        beta = model_comp['beta']
-        alpha = model_comp['alpha']
-        lam0 = model_comp['lam0'] # in micron
+        T = params['dust_emission']['Tdust']
+        beta = params['dust_emission']['beta']
+        alpha = params['dust_emission']['alpha']
+        lam0 = params['dust_emission']['lam0'] # in micron
 
         hck = 143877687.75039333 # Kelvin*angstrom
         c = 2.9979e18 # angstrom/s
@@ -152,3 +160,6 @@ class dust_emission(object):
             spectrum = spectrum / np.trapz(spectrum, x=self.wavelengths)
 
         return spectrum * CMB
+
+    def __bool__(self):
+        return self.flag

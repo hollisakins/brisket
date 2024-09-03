@@ -5,26 +5,25 @@ from copy import deepcopy
 from dotmap import DotMap
 
 from astropy.constants import c as speed_of_light
-
 import logging
+import astropy.units as u
 
 from brisket import utils
 from brisket import config
 from brisket import filters
 # from .. import plotting
 
-from brisket.models.stellar_model import stellar
-from brisket.models.dust_emission_model import dust_emission
-from brisket.models.dust_attenuation_model import dust_attenuation
-from brisket.models.nebular_model import nebular
-from brisket.models.accretion_disk_model import accretion_disk
-from brisket.models.agn_line_model import agn_lines
-from brisket.models.igm_model import igm
-from brisket.models.star_formation_history import star_formation_history
+from brisket.models.stellar_model import StellarModel
+from brisket.models.nebular_model import NebularModel
+from brisket.models.star_formation_history import StarFormationHistoryModel
+from brisket.models.dust_emission_model import DustEmissionModel
+from brisket.models.dust_attenuation_model import DustAttenuationModel
+from brisket.models.accretion_disk_model import AccretionDiskModel
+from brisket.models.agn_line_model import AGNLineModel
+from brisket.models.igm_model import IGMModel
+from brisket.parameters import Params
 
-import astropy.units as u
-
-class model_galaxy(object):
+class ModelGalaxy(object):
     """ Model galaxy generation with BRISKET.
 
     Parameters
@@ -39,8 +38,9 @@ class model_galaxy(object):
     phot_units=u.uJy,
     logger=utils.NullLogger
 
-    parameters : dict
-        Parameter dictionary.
+    parameters : brisket.parameters.Params object or dict
+        Model parameters. If provided as dict, it will be converted 
+        to brisket.parameters.Params object to validate the input. 
 
     filt_list : list - optional
         A list of filter curves as defined in brisket.filters. 
@@ -73,7 +73,8 @@ class model_galaxy(object):
         f_nu or f_lambda. 
         Default: uJy
     """
-    def __init__(self, parameters, 
+    def __init__(self, 
+                 parameters, 
                  filt_list=None,
                  spec_wavs=None,
                  wav_units=u.micron,
@@ -82,8 +83,6 @@ class model_galaxy(object):
                  phot_units=u.uJy,
                  logger=utils.NullLogger):
 
-
-        ## separate function to parse parameters/parameter file?
         self.logger = logger
         self.spec_wavs = spec_wavs
         self.filt_list = filt_list
@@ -96,24 +95,22 @@ class model_galaxy(object):
         if self.filt_list is not None: self.phot_output = True
         if self.spec_wavs is not None: self.spec_output = True
 
-        
-        if type(parameters)==str:
-            self.logger.info(f'Loading parameters from file {parameters}')
-            # parameter file input
-            import toml
-            parameters = toml.load(os.path.join(config.working_dir, parameters))
-
-        elif type(parameters)==dict:
-            self.logger.info(f'Loading parameter dictionary')            
-            pass
+        # Deal with the input parameters
+        if isinstance(parameters, Params):
+            self.logger.debug(f'Parameters loaded')            
+            self.parameters = parameters
+        elif isinstance(parameters, dict):
+            self.logger.info(f'Loading parameter dictionary')           
+            self.parameters = Params(parameters)
         else:
-            self.logger.error("Input `parameters` must be either python dictionary or str path to TOML parameter file")
-            raise TypeError("Input `parameters` must be either python dictionary or str path to TOML parameter file")
+            msg = "Input `parameters` must be either a brisket.parameters.Params object or python dictionary"
+            self.logger.error(msg)
+            raise TypeError(msg)
 
 
         # if self.index_list is not None:
         #     self.spec_wavs = self._get_index_spec_wavs(model_components)
-
+        
         # Create a filter_set object to manage the filter curves.
         if self.phot_output:
             if type(filt_list) == list:
@@ -121,62 +118,69 @@ class model_galaxy(object):
             elif type(filt_list) == filters.filter_set:
                 self.filter_set = filt_list
 
+        # Calculate optimal wavelength sampling for the model
         self.logger.debug('Calculating optimal wavelength sampling for the model...')
         self.wavelengths = self._get_wavelength_sampling()
         self.wav_rest = (self.wavelengths*u.angstrom).to(self.wav_units).value
 
-        self.logger.debug('Resampling the filter curves onto model wavelength grid...')
+
+
         if self.phot_output:
+            self.logger.debug('Resampling the filter curves onto model wavelength grid...')
             self.filter_set.resample_filter_curves(self.wavelengths)
 
+
         self.logger.debug('Initializing IGM absorption model...')
-        self.igm = igm(self.wavelengths)#, parameters['base']['igm'])
+        self.igm = IGMModel(self.wavelengths)#, parameters['base']['igm'])
         
-
-        self.define_base_params_at_redshift(parameters)
+        # Initialize the base parameters -- redshift, igm transmission, luminosity distance, etc
+        self._define_base_params_at_redshift()
         
-        ######################################################################################
-        ########################## Create relevant physical models. ##########################
-        ######################################################################################
-        self.components = [c for c in list(parameters.keys()) if 'galaxy' in c or 'agn' in c]
-        for component in self.components:
-            params = parameters[component]
-            params['redshift'] = self.redshift
-
-            if 'galaxy' in component:
-                params['component'] = 'galaxy'
-                setattr(self, component, DotMap(sfh=star_formation_history(params, logger=logger), 
-                                                stellar=stellar(self.wavelengths, params, logger=logger),
-                                                nebular=nebular(self.wavelengths, params, logger=logger),
-                                                dust_atten=dust_attenuation(self.wavelengths, params, logger=logger),
-                                                dust_emission=dust_emission(self.wavelengths, params, logger=logger)))
-            if 'agn' in component:
-                params['component'] = 'agn'
-                setattr(self, component, DotMap(accdisk=accretion_disk(self.wavelengths, params, logger=logger), 
-                                                nebular=agn_lines(self.wavelengths, params, logger=logger),
-                                                dust_atten=dust_attenuation(self.wavelengths, params, logger=logger)))
+        # Initialize the various physical models
+        self.components = self.parameters.components
+        if 'galaxy' in self.components: 
+            params = self.parameters['galaxy']
+            params['redshift'] = self.parameters['redshift']
+            self.galaxy = DotMap(sfh=StarFormationHistoryModel(params, logger=logger), 
+                                 stellar=StellarModel(self.wavelengths, params, logger=logger),
+                                 nebular=NebularModel(self.wavelengths, params, logger=logger),
+                                 dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger),
+                                 dust_emission=DustEmissionModel(self.wavelengths, params, logger=logger))
+        if 'agn' in self.components:
+            params = self.parameters['agn']
+            params['redshift'] = self.parameters['redshift']
+            self.agn = DotMap(accdisk=AccretionDiskModel(self.wavelengths, params, logger=logger), 
+                              nebular=AGNLineModel(self.wavelengths, params, logger=logger),
+                              dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger))
 
         ## Initialize unit conversion logic
         if 'spectral flux density' in list(self.sed_units.physical_type):
             self.logger.debug(f"Converting flux units to f_nu ({self.sed_units})")
             self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2 * (1 * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
+            self.flam = False
         elif 'spectral flux density wav' in list(self.sed_units.physical_type):
             self.logger.debug(f"Keeping flux units in f_lam ({self.sed_units})")
             self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+            self.flam = True
         else:
             self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
             sys.exit()
 
-        ####################################################################################################
-        self.compute_sed(parameters) 
+        # Compute the full internal model SED
+        self._compute_sed() 
 
+        # Compute observables
         if self.phot_output:
-            self.compute_photometry(self.redshift)
+            self._compute_photometry()
 
         if self.spec_output:
-            self.compute_spectrum(parameters)
-
+            self._compute_spectrum()
     
+        # if self.prop_output:
+            # self._compute_properties()
+
+    def _compute_properties(self):
+        pass
         #### reframe into a function that computes interesting quantities from a model_galaxy object
         #### then use that method in fit.posterior to compute those quantities for all posterior samples!
         #### UVJ, Muv, beta, SFR100, SFR10, current mass, 
@@ -189,15 +193,15 @@ class model_galaxy(object):
         # self.uvj_filter_set.resample_filter_curves(self.wavelengths)
 
 
-    def define_base_params_at_redshift(self, parameters):
+    def _define_base_params_at_redshift(self):
 
+        ########################## Configure base-level parameters. ##########################
+        self.redshift = self.parameters['redshift']
         if self.redshift > config.max_redshift:
             raise ValueError("""Attempted to create a model with too high redshift. 
                                 Please increase max_redshift in brisket/config.py 
                                 before making this model.""")
 
-        ########################## Configure base-level parameters. ##########################
-        self.redshift = parameters['redshift']
         # Compute IGM transmission at the given redshift
         self.igm_trans = self.igm.trans(self.redshift)
         # Convert from luminosity to observed flux at redshift z.
@@ -217,146 +221,119 @@ class model_galaxy(object):
         """ Update the model outputs (spectra, photometry) to reflect 
         new parameter values in the parameters dictionary. Note that 
         only the changing of numerical values is supported."""
-        self.define_base_params_at_redshift(parameters)
+        self._define_base_params_at_redshift()
 
-        for component in self.components:
-            comp = getattr(self, component)
-            parameters[component]['redshift'] = parameters['redshift']
-            if 'galaxy' in component:
-                comp.sfh.update(parameters[component])
-                if comp.dust_atten:
-                    comp.dust_atten.update(parameters[component]["dust_atten"])
+        if 'galaxy' in self.components: 
+            params = parameters['galaxy']
+            params['redshift'] = parameters['redshift']
+            self.galaxy.sfh.update(params)
+            if self.galaxy.dust_atten:
+                self.galaxy.dust_atten.update(params["dust_atten"])
         
-            elif 'agn' in component:
-                if comp.dust_atten:
-                    comp.dust_atten.update(parameters[component]["dust_atten"])
-        
+        if 'agn' in self.components:
+            params = parameters['agn']
+            params['redshift'] = parameters['redshift']
+            if self.agn.dust_atten:
+                self.agn.dust_atten.update(params["dust_atten"])
+    
         # Compute the internal full SED 
-        self.compute_sed(parameters)
+        self._compute_sed()
 
         # If photometric output, compute photometry
         if self.phot_output:
-            self.compute_photometry(parameters['redshift'])
+            self._compute_photometry()
 
         # If spectroscopic output, compute spectrum
         if self.spec_output:
-            self.compute_spectrum(parameters)
+            self._compute_spectrum()
 
 
-    def compute_sed(self, parameters):
-        """ This method combines the models for the various emission
-        and absorption processes to generate the internal full galaxy
-        spectrum held within the class. The compute_photometry and
-        compute_spectrum methods generate observables using this
-        internal full spectrum. """
+    def _compute_sed(self):
+        """ This method is the primary workhorse for ModelGalaxy. It combines the 
+        models for the various emission, attenuation, and absorption processes to 
+        generate the internal full galaxy SED held within the class. 
+        The _compute_photometry and compute_spectrum methods generate observables 
+        using this internal full spectrum. """
 
         self.sed = np.zeros(len(self.wavelengths))
 
-        for component in self.components:
-            comp = getattr(self, component)
-            params = parameters[component]
+        if 'galaxy' in self.components: 
+            params = self.parameters['galaxy']
+            #self.galaxy.sfh.update(params) not needed?
 
-            if 'galaxy' in component: 
-                comp.sfh.update(params)
+            sed_bc, sed = self.galaxy.stellar.spectrum(self.galaxy.sfh.ceh.grid, params['t_bc'])
+            em_lines = np.zeros(config.line_wavs.shape)
 
-                t_bc = 0.01
-                if "t_bc" in list(params):
-                    t_bc = params["t_bc"]
+            if self.galaxy.nebular:
+                grid = np.copy(self.galaxy.sfh.ceh.grid)
+                if "metallicity" in list(params["nebular"]):
+                    nebular_metallicity = params["nebular"]["metallicity"]
+                    self.galaxy.neb_sfh.update(params['nebular'])
+                    grid = self.galaxy.neb_sfh.ceh.grid
 
+                if "fesc" not in list(params['nebular']):
+                    params['nebular']["fesc"] = 0
 
-                sed_bc, sed = comp.stellar.spectrum(comp.sfh.ceh.grid, t_bc)
-                em_lines = np.zeros(config.line_wavs.shape)
+                em_lines += self.galaxy.nebular.line_fluxes(grid, params['t_bc'],
+                                                       params['nebular']["logU"])*(1-params['nebular']["fesc"])
 
-                if comp.nebular:
-                    grid = np.copy(comp.sfh.ceh.grid)
-                    if "metallicity" in list(params["nebular"]):
-                        nebular_metallicity = params["nebular"]["metallicity"]
-                        comp.neb_sfh.update(params['nebular'])
-                        grid = comp.neb_sfh.ceh.grid
+                # All stellar emission below 912A goes into nebular emission
+                sed_bc[self.wavelengths < 912.] = sed_bc[self.wavelengths < 912.] * params['nebular']["fesc"]
+                sed_bc += self.galaxy.nebular.spectrum(grid, params['t_bc'],
+                                                  params['nebular']["logU"])*(1-params['nebular']["fesc"])
 
-                    if "fesc" not in list(params['nebular']):
-                        params['nebular']["fesc"] = 0
+            # Apply IGM and redshifting
+            sed *= self.igm_trans 
+            sed /= self.lum_flux * (1+self.redshift)
+            self.sed += sed
 
-                    em_lines += comp.nebular.line_fluxes(grid, t_bc,
-                                                        params['nebular']["logU"])*(1-params['nebular']["fesc"])
+            if self.galaxy.dust_atten:
+                # Add attenuation due to the diffuse ISM.
+                dust_flux = 0.  # Total attenuated flux for energy balance.
+                sed_atten = sed * self.galaxy.dust_atten.trans_cont
+                dust_flux += np.trapz(sed - sed_atten, x=self.wavelengths)
+                sed = sed_atten
 
-                    # All stellar emission below 912A goes into nebular emission
-                    sed_bc[self.wavelengths < 912.] = sed_bc[self.wavelengths < 912.] * params['nebular']["fesc"]
-                    sed_bc += comp.nebular.spectrum(grid, t_bc,
-                                                        params['nebular']["logU"])*(1-params['nebular']["fesc"])
+                sed_bc_atten = sed_bc * self.galaxy.dust_atten.trans_bc
+                dust_flux += np.trapz(sed_bc - sed_bc_atten, x=self.wavelengths)
+                sed_bc = sed_bc_atten
 
-                if comp.dust_atten:
-                    # Add attenuation due to the diffuse ISM.
-                    dust_flux = 0.  # Total attenuated flux for energy balance.
-                    trans = 10**(-params["dust_atten"]["Av"]*comp.dust_atten.A_cont/2.5)
-                    sed_atten = sed*trans
-                    dust_flux += np.trapz(sed - sed_atten, x=self.wavelengths)
-                    
-                    scat = 0
-                    if 'logfscat' in list(params['dust_atten']):
-                        scat = sed * np.power(10., params['dust_atten']['logfscat'])
-                    sed_atten += scat
-
-                    sed = sed_atten
-
-                    # Add (extra) attenuation to stellar birth clouds.
-                    eta = 1.
-                    if "eta" in list(params["dust_atten"]):
-                        eta = params["dust_atten"]["eta"]
-
-                    bc_Av = eta*params["dust_atten"]["Av"]
-                    bc_trans = 10**(-bc_Av*comp.dust_atten.A_cont/2.5)
-                    sed_bc_atten = sed_bc*bc_trans
-                    dust_flux += np.trapz(sed_bc - sed_bc_atten, x=self.wavelengths)
-
-                    scat_bc = 0
-                    if 'logfscat' in list(params['dust_atten']):
-                        scat_bc = sed_bc * np.power(10., params['dust_atten']['logfscat'])
-                    sed_bc_atten += scat_bc
-
-                    sed_bc = sed_bc_atten
-
-                    # Add (extra) attenuation to nebular emission lines
-                    em_lines *= 10**(-bc_Av*comp.dust_atten.A_line/2.5)
+                # Add (extra) attenuation to nebular emission lines
+                em_lines *= self.galaxy.dust_atten.trans_line
 
 
-                sed += sed_bc  # We're done treating birthclouds separately -- add birth cloud SED to full SED. 
+            sed += sed_bc  # We're done treating birthclouds separately -- add birth cloud SED to full SED. 
 
-                if comp.dust_atten and comp.dust_emission:
-                    sed += dust_flux*comp.dust_emission.spectrum(params)
+            if self.galaxy.dust_atten and self.galaxy.dust_emission:
+                # TODO: add logic for ignoring energy balance if e.g. L_IR is present in params['dust_emission']
+                sed += dust_flux*self.galaxy.dust_emission.spectrum(params)
 
-                # self.line_fluxes = dict(zip(config.line_names, em_lines))
+            # self.line_fluxes = dict(zip(config.line_names, em_lines))
+        
+        if 'agn' in self.components: 
+            sed = self.agn.accdisk.spectrum(params) * (1+self.redshift)**2
+
+            if self.agn.nebular:
+                # line_names = list(self.nebular.line_names)
+                # em_lines = self.nebular.line_fluxes(model_comp['nebular'])
+                i_norm = np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))
+                nebular_sed = self.agn.nebular.spectrum(params) * sed[i_norm]
+                # blr_spectrum = self.agn_lines.blr * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
+                # nlr_spectrum = self.agn_lines.nlr * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
+                sed += nebular_sed
+
+            # Add attenuation
+            if comp.dust_atten:
+                sed_atten = sed * self.agn.dust_atten.trans_cont
+                sed = sed_atten
+                # if self.nebular:
+                #     trans2 = 10**(-0.4*Alam*model_comp['dust_atten']['eta_nlr'])
+                #     spectrum = (spectrum-nlr_spectrum) * trans + nlr_spectrum*trans2 + scat
+                # else:
             
-            elif 'agn' in component: 
-                sed = comp.accdisk.spectrum(params) * (1+self.redshift)**2
-
-                if comp.nebular:
-                    # line_names = list(self.nebular.line_names)
-                    # em_lines = self.nebular.line_fluxes(model_comp['nebular'])
-                    i_norm = np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))
-                    nebular_sed = comp.nebular.spectrum(params) * sed[i_norm]
-                    # blr_spectrum = self.agn_lines.blr * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
-                    # nlr_spectrum = self.agn_lines.nlr * spectrum[np.argmin(np.abs(self.wavelengths-config.qsogen_wnrm))]
-                    sed += nebular_sed
-
-                # Add attenuation
-                if comp.dust_atten:
-                    Alam = params["dust_atten"]["Av"]*comp.dust_atten.A_cont
-                    trans = 10**(-0.4*Alam)
-                    scat = 0
-                    if 'logfscat' in list(params['dust_atten']):
-                        scat = sed * np.power(10., params['dust_atten']['logfscat'])
-                    # if self.nebular:
-                    #     trans2 = 10**(-0.4*Alam*model_comp['dust_atten']['eta_nlr'])
-                    #     spectrum = (spectrum-nlr_spectrum) * trans + nlr_spectrum*trans2 + scat
-                    # else:
-                    sed = sed * trans + scat
-                
                 # Add dust emission.
 
-            #################################################
-            ### regardless of what type of component it is, apply IGM and redshifting
-
+            # Apply IGM and redshifting
             sed *= self.igm_trans 
             sed /= self.lum_flux * (1+self.redshift)
             self.sed += sed
@@ -437,7 +414,7 @@ class model_galaxy(object):
 
         return np.array(x)
 
-    def compute_photometry(self, redshift, uvj=False):
+    def _compute_photometry(self):
         """ This method generates predictions for observed photometry.
         It resamples filter curves onto observed frame wavelengths and
         integrates over them to calculate photometric fluxes. """
@@ -448,10 +425,10 @@ class model_galaxy(object):
         #                                               unit_conv=unit_conv)
 
         # else:
-        phot = self.filter_set.get_photometry(self.spectrum_full, redshift)#output_units=self.phot_units)
+        phot = self.filter_set.get_photometry(self.sed, self.redshift)#output_units=self.phot_units)
         self.photometry = phot
 
-    def compute_spectrum(self, model_comp):
+    def _compute_spectrum(self):
         """ This method generates predictions for observed spectroscopy.
         It optionally applies a Gaussian velocity dispersion then
         resamples onto the specified set of observed wavelengths. """

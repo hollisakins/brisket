@@ -15,7 +15,7 @@ from brisket import utils
 from brisket import config
 # from .. import plotting
 
-from brisket.models.chemical_enrichment_history import chemical_enrichment_history
+from brisket.models.chemical_enrichment_history import ChemicalEnrichmentHistoryModel
 
 
 def lognorm_equations(p, consts):
@@ -33,7 +33,7 @@ def lognorm_equations(p, consts):
     return (tau, t0)
 
 
-class star_formation_history:
+class StarFormationHistoryModel:
     """ Generate a star formation history.
 
     Parameters
@@ -52,7 +52,7 @@ class star_formation_history:
         self.logger = logger
         self.hubble_time = config.age_at_z(0)
 
-        model = model_components['model']
+        model = model_components['stellar_model']
         self.logger.info(f"Initializing star-formation history module".ljust(50) + f"(sfh: {model_components['sfh']})".rjust(20))
         
         self.template_metallicities = config.stellar_models[model]['metallicities']
@@ -123,8 +123,8 @@ class star_formation_history:
             self.unphysical = True
 
         # ceh: Chemical enrichment history object
-        self.ceh = chemical_enrichment_history(self.model_components,
-                                               self.component_weights)
+        self.ceh = ChemicalEnrichmentHistoryModel(self.model_components,
+                                                  self.component_weights)
 
         self._calculate_derived_quantities()
 
@@ -336,16 +336,16 @@ class star_formation_history:
         dpl_form = ((tburst/tau_plaw)**alpha + (tburst/tau_plaw)**-beta)**-1
         sfr[mask] += fburst * dpl_form / sfr_burst_tot
 
-    def continuity(self, sfr, param):
-        bin_edges = np.array(param["bin_edges"])[::-1]*10**6
-        n_bins = len(bin_edges) - 1
-        dsfrs = [param["dsfr" + str(i)] for i in range(1, n_bins)]
+    # def continuity(self, sfr, param):
+    #     bin_edges = np.array(param["bin_edges"])[::-1]*10**6
+    #     n_bins = len(bin_edges) - 1
+    #     dsfrs = [param["dsfr" + str(i)] for i in range(1, n_bins)]
 
-        for i in range(1, n_bins+1):
-            print(self.ages)
-            print(bin_edges)
-            mask = (self.ages < bin_edges[i-1]) & (self.ages > bin_edges[i])
-            sfr[mask] += 10**np.sum(dsfrs[:i])
+    #     for i in range(1, n_bins+1):
+    #         print(self.ages)
+    #         print(bin_edges)
+    #         mask = (self.ages < bin_edges[i-1]) & (self.ages > bin_edges[i])
+    #         sfr[mask] += 10**np.sum(dsfrs[:i])
 
     def custom(self, sfr, param):
         history = param["history"]
@@ -386,7 +386,7 @@ class star_formation_history:
         sfr[mask] = ((t/tau)**alpha + (t/tau)**-beta)**-1
 
 
-    def continuity_hba(self, sfr, param):
+    def continuity(self, sfr, param):
         '''
         * `bin_edges` specifies the first few bins
         * `n_bins` specifies how many total bins you want

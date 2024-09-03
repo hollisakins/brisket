@@ -6,9 +6,9 @@ from . import brisket
 from . import parameters
 
 from .brisket import parse_toml_paramfile
-from .models.model_galaxy import model_galaxy
-from .input.galaxy import galaxy
-from .fitting.fit import fit
+from .models.model_galaxy import ModelGalaxy
+from .input.galaxy import Galaxy
+from .fitting.fitter import Fitter
 
 # from .catalogue.fit_catalogue import fit_catalogue
 

@@ -4,7 +4,7 @@ import astropy.units as u
 from brisket import filters
 from brisket import utils
 
-class galaxy:
+class Galaxy:
     """ A container for observational data loaded into BRISKET.
 
     Parameters

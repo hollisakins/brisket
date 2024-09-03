@@ -1,5 +1,5 @@
 [base] # basic physical parameters that apply to the entire model
-    redshift = {low=0, high=15, prior='Uniform'}
+    redshift = {low=0, high=10, prior='Uniform'}
     igm      = "Inoue14" # Madau95, Inoue14
     #damping  = "n" # need specify NH? 
     #MWdust   = "n" # need specify coords?
@@ -10,11 +10,9 @@
     logMstar = {low=4,high=13, prior='Uniform'} # log of stellar mass in Msun
     metallicity = {low=0.001, high=2.5, prior='Uniform'} # metallicity in Z/Zsun
 
-    sfh       = "continuity" 
-    bin_edges = [0, 10, 50]
-    n_bins    = 6
-    z_max     = 20
-    # dsfrs     = 'auto'
+    sfh       = "constant" 
+    age_min   = 0
+    age_max   = {low=0.01, high=0.5, prior='Uniform'}
 
     [galaxy.nebular] 
         logU = {low=-4, high=-1, prior='Uniform'}
@@ -23,7 +21,10 @@
     [galaxy.dust_atten] 
         type = "Salim" # "Calzetti", "Cardelli", "SMC", "Salim", "CF00"
         Av   = {low=0.001, high=10, prior='log_10'}
+        delta = 0
+        B = 0
         eta  = 1
+        logfscat = -99
         
 # [agn]
 #     # type = "full"

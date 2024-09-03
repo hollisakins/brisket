@@ -32,7 +32,7 @@ def dirichlet(r, alpha):
     return np.cumsum(x)
 
 
-class prior(object):
+class Prior(object):
     """ A class which allows for samples to be drawn from a joint prior
     distribution in several parameters and for transformations from the
     unit cube to the prior volume.
@@ -75,7 +75,7 @@ class prior(object):
             
         # Call the relevant prior functions to draw random values.
         for i in range(self.ndim):
-            prior_function = getattr(self, self.pdfs[i])
+            prior_function = self._parse_prior_function(self.pdfs[i])
             params[i] = prior_function(params[i], self.limits[i],
                                      self.hyper_params[i])
 
@@ -214,4 +214,22 @@ class prior(object):
         value = (uniform_max-uniform_min)*value + uniform_min
         value = np.interp(value, cdf, x)
         return value
+        
+    def _parse_prior_function(self, pdf):
+        if pdf in ['Uniform','Unif','uniform','unif']: return self.uniform
+        elif pdf in ['log_10','log10','log','loguniform','LogUniform','LogUnif']: return self.log_10
+        elif pdf in ['log_e','loge','ln']: return self.log_e
+        elif pdf in ['pow_10','pow10']: return self.pow_10
+        elif pdf in ['recip','Recip']: return self.recip
+        elif pdf in ['recipsq','Recipsq']: return self.recipsq
+        elif pdf in ['Gaussian','Normal','normal','gaussian','gauss','Gauss']: return self.Gaussian
+        elif pdf in ['LogNorm','LogNormal','LogGaussian','lognorm','lognormal','loggauss','loggaussian']: return self.LogNorm
+        elif pdf in ['GenNorm', 'gennorm']: return self.GenNorm
+        elif pdf in ['SkewNorm', 'skewnorm']: return self.SkewNorm
+        elif pdf in ['LogSkewNorm', 'logskewnorm']: return self.LogSkewNorm
+        elif pdf in ['student_t', 't']: return self.student_t
+        elif pdf in ['custom']: return self.custom
+        else:
+            msg = f'prior {pdf} not understood'
+            raise KeyError(msg)
         

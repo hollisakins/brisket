@@ -6,11 +6,12 @@ import os
 
 from copy import deepcopy
 
-from brisket.fitting.fitted_model import fitted_model
+from brisket.fitting.fitted_model import FittedModel
 from brisket.fitting.prior import dirichlet
 
-from brisket.models.star_formation_history import star_formation_history
-from brisket.models.model_galaxy import model_galaxy
+from brisket.models.star_formation_history import StarFormationHistoryModel
+from brisket.models.model_galaxy import ModelGalaxy
+from brisket.parameters import Params
 
 from brisket import utils
 
@@ -18,7 +19,7 @@ from astropy.io import fits
 from astropy.table import Table, Column
 
 
-class posterior(object):
+class Posterior(object):
     """ Provides access to the outputs from fitting models to data and
     calculating posterior predictions for derived parameters (e.g. for
     star-formation histories, rest-frane magnitudes etc).
@@ -52,11 +53,11 @@ class posterior(object):
         with fits.open(self.fname) as f:
             hdu = f['RESULTS']
             # Reconstruct the fitted model.
-            self.fit_instructions = utils.str_to_dict(hdu.header['FIT_INST'])
+            self.parameters = Params(utils.str_to_dict(hdu.header['PARAMS']))
             # 2D array of samples for the fitted parameters only.
             self.samples2d = deepcopy(hdu.data['samples2d'])
 
-        self.fitted_model = fitted_model(self.galaxy, self.fit_instructions)
+        self.fitted_model = FittedModel(self.galaxy, self.parameters)
 
         # If fewer than n_samples exist in posterior, reduce n_samples
         if self.samples2d.shape[0] < self.n_samples:
@@ -80,7 +81,7 @@ class posterior(object):
 
     def compute_posterior_quantities(self):
 
-        if "spectrum_full" in list(self.samples):
+        if "sed" in list(self.samples):
             return
 
         self.fitted_model._update_model_galaxy(self.samples2d[0, :])
@@ -91,8 +92,8 @@ class posterior(object):
         # all_model_keys = dir(self.model_galaxy)
         # quantity_names = [q for q in all_names if q in all_model_keys]
 
-        size = self.fitted_model.model_galaxy.spectrum_full.shape[0]
-        self.samples['spectrum_full'] = np.zeros((self.n_samples, size))
+        size = self.fitted_model.model_galaxy.sed.shape[0]
+        self.samples['sed'] = np.zeros((self.n_samples, size))
         
         # for q in quantity_names:
         #     size = getattr(self.model_galaxy, q).shape[0]
@@ -119,7 +120,7 @@ class posterior(object):
             param = self.samples2d[self.indices[i], :]
             self.fitted_model._update_model_galaxy(param)
 
-            self.samples['spectrum_full'][i] = self.fitted_model.model_galaxy.spectrum_full
+            self.samples['sed'][i] = self.fitted_model.model_galaxy.sed
             
             # if self.galaxy.photometry_exists:
             #     self.samples["chisq_phot"][i] = self.fitted_model.chisq_phot
@@ -151,9 +152,9 @@ class posterior(object):
             header = fits.Header({'EXTNAME':'SED_MED'})
             columns = []
             columns.append(fits.Column(name='wav_rest', array=self.fitted_model.model_galaxy.wav_rest, format='D'))
-            columns.append(fits.Column(name='f_lam_16', array=np.percentile(self.samples['spectrum_full'], 16, axis=0), format='D'))
-            columns.append(fits.Column(name='f_lam_50', array=np.percentile(self.samples['spectrum_full'], 50, axis=0), format='D'))
-            columns.append(fits.Column(name='f_lam_84', array=np.percentile(self.samples['spectrum_full'], 84, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_16', array=np.percentile(self.samples['sed'], 16, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_50', array=np.percentile(self.samples['sed'], 50, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_84', array=np.percentile(self.samples['sed'], 84, axis=0), format='D'))
             hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), header=header)
             hdul.append(hdu) 
 

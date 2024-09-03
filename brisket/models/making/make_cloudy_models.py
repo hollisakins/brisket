@@ -9,7 +9,7 @@ from astropy.io import fits
 from brisket import utils
 from brisket import config
 
-from brisket.models.model_galaxy import model_galaxy
+from brisket.models.model_galaxy import ModelGalaxy
 
 if "CLOUDY_DATA_PATH" in list(os.environ):
     cloudy_data_path = os.environ["CLOUDY_DATA_PATH"]
@@ -113,7 +113,7 @@ def get_bagpipes_spectrum(age, zmet, spec_units="ergscma"):
     model_comp["burst"] = burst
     model_comp["redshift"] = 0.
 
-    model = model_galaxy(model_comp,
+    model = ModelGalaxy(model_comp,
                          spec_wavs=config.wavelengths,
                          spec_units=spec_units)
 

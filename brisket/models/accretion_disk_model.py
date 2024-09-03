@@ -5,7 +5,7 @@ import numpy as np
 from brisket import config
 from brisket import utils
 
-class accretion_disk(object):
+class AccretionDiskModel(object):
     """ Allows access to and maniuplation of AGN accretion disk models.
 
     Parameters

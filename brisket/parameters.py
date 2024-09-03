@@ -4,21 +4,34 @@ from collections.abc import MutableMapping
 
 base_params = ['redshift', 'igm']
 allowed_components = ['galaxy','agn']
-defaults = {'igm':'Inoue14'}
+defaults = {'igm':'Inoue14', 
+            'galaxy': {
+                'stellar_model':'BC03', 
+                't_bc':0.01
+                },}
 
-class ParamDict:
+## ADD TO DEFAULTS
+# t_bc = 0.01
+# if "t_bc" in list(params):
+#     t_bc = params["t_bc"]
+
+### TODO better handling of defaults, more complexity 
+### e.g. continuity SFH: need to add defaults for dsfr1, dsfr2, etc 
+
+
+class Params:
     def __init__(self, data): #*args, **kwargs):
         if isinstance(data, str):
             if data.endswith('.toml'):
                 try:
-                    data = toml.load(data)
+                    data = self._parse_from_toml(data)
                     data.update(data['base'])
                     del data['base']
                 except FileNotFoundError:
                     print(f"Parameter file {data} not found."); sys.exit()
             else:
                 try:
-                    data = toml.load(os.path.join(utils.param_template_dir, data + '.toml'))
+                    data = self._parse_from_toml(os.path.join(utils.param_template_dir, data + '.toml'))
                     data.update(data['base'])
                     del data['base']
                 except FileNotFoundError:
@@ -49,6 +62,22 @@ class ParamDict:
             if not key in data: continue;
             val = data[key]
             assert isinstance(val, dict), f'Key `{key}` must provide component parameters as a dictionary'
+            
+            # handle defaults 
+            default_val = defaults[key]
+            for subkey in default_val:
+                if isinstance(default_val[subkey], dict):
+                    if subkey not in val:
+                        for subsubkey in val[subkey]:
+                            if subsubkey not in val[subkey]:
+                                self.data[key][subkey][subsubkey] = default_val[subkey][subsubkey]
+                                self.add_param(f'{key}:{subkey}:{subsubkey}', default_val[subkey][subsubkey])
+                                self.defaults.append(f'{key}:{subkey}')
+                else:
+                    if subkey not in val:
+                        self.data[key][subkey] = default_val[subkey]
+                        self.add_param(f'{key}:{subkey}', default_val[subkey])
+                        self.defaults.append(f'{key}:{subkey}')
 
             self.components.append(key)
             for subkey in val:
@@ -61,6 +90,8 @@ class ParamDict:
                 else:
                     self.add_param(f'{key}:{subkey}', val[subkey])
 
+            # val['redshift'] = self['redshift']
+            
         for key in data:
             if key not in allowed_components and key not in base_params:            
                 msg = f"Key `{key}` is not a recognized base-level parameter or model component"
@@ -112,6 +143,12 @@ class ParamDict:
             self.free_param_pdfs.append(pdf)
             self.free_param_hypers.append({k:val[k] for k in val if k not in ['low','high','prior']})
 
+            # # Find any parameters which mirror the value of a fit param.
+            # if all_vals[i] in all_keys:
+            #     self.mirror_pars[all_keys[i]] = all_vals[i]
+
+
+
     @property
     def nparam(self):
         return len(self.all_param_names)
@@ -120,6 +157,24 @@ class ParamDict:
     def ndim(self):
         return len(self.free_param_names)
 
+    def __setitem__(self, key, val):
+        dict.__setitem__(self.data, key, val)
+
+    def __getitem__(self, key):
+        return dict.__getitem__(self.data, key)
+
+    def _parse_from_toml(self, filepath):
+        '''Fixes a bug in TOML where inline dictionaries are stored with some obscure DynamicInlineTableDict class instead of regular old python dict'''
+        f = toml.load(filepath)
+        for key in f:
+            for subkey in f[key]:
+                if 'DynamicInlineTableDict' in str(type(f[key][subkey])): 
+                    f[key][subkey] = dict(f[key][subkey])
+                if isinstance(f[key][subkey], dict):
+                    for subsubkey in f[key][subkey]:
+                        if 'DynamicInlineTableDict' in str(type(f[key][subkey][subsubkey])): 
+                            f[key][subkey][subsubkey] = dict(f[key][subkey][subsubkey])
+        return f
 
 
 #         pass

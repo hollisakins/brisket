@@ -15,7 +15,7 @@ def interp_discont(x, xp, fp, xdiscont, left=None, right=None):
     return y
 
 
-class igm(object):
+class IGMModel(object):
     """ Allows access to and maniuplation of the IGM attenuation models
     of Inoue (2014).
 
