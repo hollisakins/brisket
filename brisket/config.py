@@ -23,7 +23,9 @@ from brisket.models.making import igm_inoue2014
 install_dir = os.path.dirname(os.path.realpath(__file__))
 '''Stores the install directory for easy reference'''
 grid_dir = install_dir + "/models/grids"
-'''Stores the models/grids/ for easy reference'''
+'''Stores the path to the model grid directory for easy reference'''
+res_dir = install_dir + "/models/res"
+'''Stores the path to the resolution curve directory for easy reference'''
 filter_db = install_dir + '/filters/filter_db.hdf5'
 '''Stores the path to the filter database for easy reference'''
 
@@ -55,6 +57,12 @@ R_phot = 100.
 R_other = 50.
 '''Sets the R value for other spectral regions.'''
 
+R_curves = {}
+r = fits.getdata(os.path.join(res_dir,'jwst_nirspec_prism_disp.fits'))
+R_curves['JWST_NIRSpec_PRISM'] = np.array([r['WAVELENGTH']*1e4, r['R']]).T
+r = fits.getdata(os.path.join(res_dir,'jwst_nirspec_g395m_disp.fits'))
+R_curves['JWST_NIRSpec_G395M'] = np.array([r['WAVELENGTH']*1e4, r['R']]).T
+#TODO add the rest of the JWST resolution curves
 
 
 

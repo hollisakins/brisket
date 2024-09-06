@@ -3,7 +3,7 @@ from brisket import utils
 from collections.abc import MutableMapping
 
 base_params = ['redshift', 'igm']
-allowed_components = ['galaxy','agn']
+allowed_components = ['galaxy','agn','nebular','calib']
 defaults = {'igm':'Inoue14', 
             'galaxy': {
                 'stellar_model':'BC03', 
@@ -64,20 +64,23 @@ class Params:
             assert isinstance(val, dict), f'Key `{key}` must provide component parameters as a dictionary'
             
             # handle defaults 
-            default_val = defaults[key]
-            for subkey in default_val:
-                if isinstance(default_val[subkey], dict):
-                    if subkey not in val:
-                        for subsubkey in val[subkey]:
-                            if subsubkey not in val[subkey]:
-                                self.data[key][subkey][subsubkey] = default_val[subkey][subsubkey]
-                                self.add_param(f'{key}:{subkey}:{subsubkey}', default_val[subkey][subsubkey])
-                                self.defaults.append(f'{key}:{subkey}')
-                else:
-                    if subkey not in val:
-                        self.data[key][subkey] = default_val[subkey]
-                        self.add_param(f'{key}:{subkey}', default_val[subkey])
-                        self.defaults.append(f'{key}:{subkey}')
+            try:
+                default_val = defaults[key]
+                for subkey in default_val:
+                    if isinstance(default_val[subkey], dict):
+                        if subkey not in val:
+                            for subsubkey in val[subkey]:
+                                if subsubkey not in val[subkey]:
+                                    self.data[key][subkey][subsubkey] = default_val[subkey][subsubkey]
+                                    self.add_param(f'{key}:{subkey}:{subsubkey}', default_val[subkey][subsubkey])
+                                    self.defaults.append(f'{key}:{subkey}')
+                    else:
+                        if subkey not in val:
+                            self.data[key][subkey] = default_val[subkey]
+                            self.add_param(f'{key}:{subkey}', default_val[subkey])
+                            self.defaults.append(f'{key}:{subkey}')
+            except:
+                pass
 
             self.components.append(key)
             for subkey in val:
@@ -162,6 +165,9 @@ class Params:
 
     def __getitem__(self, key):
         return dict.__getitem__(self.data, key)
+
+    def __contains__(self, key):
+        return dict.__contains__(self.data, key)
 
     def _parse_from_toml(self, filepath):
         '''Fixes a bug in TOML where inline dictionaries are stored with some obscure DynamicInlineTableDict class instead of regular old python dict'''
