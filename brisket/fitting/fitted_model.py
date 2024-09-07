@@ -6,7 +6,7 @@ import time
 from copy import deepcopy
 
 from brisket.fitting.prior import Prior, dirichlet
-from brisket.fitting.calibration import calib_model
+# from brisket.fitting.calibration import calib_model
 from brisket.fitting.noise import noise_model
 from brisket.models.model_galaxy import ModelGalaxy
 
@@ -46,7 +46,11 @@ class FittedModel(object):
         self.ndim = self.parameters.ndim
 
         self.prior = Prior(self.limits, self.pdfs, self.hypers)
-        self.model_galaxy = None
+
+        # Initialize the ModelGalaxy object with a set of parameters randomly drawn from the prior cube
+        self._update_model_parameters(self.prior.sample())
+        self.model_galaxy = ModelGalaxy(self.parameters, filt_list=self.galaxy.filt_list, spec_wavs=self.galaxy.spec_wavs, 
+                                        wav_units=self.galaxy.wav_units, spec_units=self.galaxy.spec_units, phot_units=self.galaxy.phot_units)
 
         if self.time_calls:
             self.times = np.zeros(1000)
@@ -193,29 +197,24 @@ class FittedModel(object):
         includes options for fitting flexible spectral calibration and
         covariant noise models. """
 
-        # Optionally divide the model by a polynomial for calibration.
-        if "calib" in list(self.fit_instructions):
-            self.calib = calib_model(self.model_components["calib"],
-                                     self.galaxy.spectrum,
-                                     self.model_galaxy.spectrum)
-
-            model = self.model_galaxy.spectrum[:, 1]/self.calib.model
-
-        else:
-            model = self.model_galaxy.spectrum[:, 1]
+        model = self.model_galaxy.spectrum
+        if any(np.isnan(model)):
+            print(self.parameters.data)
+            quit()
 
         # Calculate differences between model and observed spectrum
         diff = (self.galaxy.spectrum[:, 1] - model)
+        # print(any(np.isnan(diff)))
 
-        if "noise" in list(self.fit_instructions):
-            if self.galaxy.spec_cov is not None:
-                raise ValueError("Noise modelling is not currently supported "
-                                 "with manually specified covariance matrix.")
+        # if "noise" in list(self.fit_instructions):
+        #     if self.galaxy.spec_cov is not None:
+        #         raise ValueError("Noise modelling is not currently supported "
+        #                          "with manually specified covariance matrix.")
 
-            self.noise = noise_model(self.model_components["noise"],
-                                     self.galaxy, model)
-        else:
-            self.noise = noise_model({}, self.galaxy, model)
+        #     self.noise = noise_model(self.model_components["noise"],
+        #                              self.galaxy, model)
+        # else:
+        self.noise = noise_model({}, self.galaxy, model)
 
 
         if self.noise.corellated:
@@ -226,20 +225,20 @@ class FittedModel(object):
         else:
             # Allow for calculation of chi-squared with direct input
             # covariance matrix - experimental!
-            if self.galaxy.spec_cov is not None:
-                diff_cov = np.dot(diff.T, self.galaxy.spec_cov_inv)
-                self.chisq_spec = np.dot(diff_cov, diff)
+            # if self.galaxy.spec_cov is not None:
+            #     diff_cov = np.dot(diff.T, self.galaxy.spec_cov_inv)
+            #     self.chisq_spec = np.dot(diff_cov, diff)
 
-                return -0.5*self.chisq_spec
+            #     return -0.5*self.chisq_spec
 
             self.chisq_spec = np.sum(self.noise.inv_var*diff**2)
 
-            if "noise" in list(self.fit_instructions):
-                c_spec = -np.log(self.model_components["noise"]["scaling"])
-                K_spec = self.galaxy.spectrum.shape[0]*c_spec
+            # if "noise" in list(self.fit_instructions):
+            #     c_spec = -np.log(self.model_components["noise"]["scaling"])
+            #     K_spec = self.galaxy.spectrum.shape[0]*c_spec
 
-            else:
-                K_spec = 0.
+            # else:
+            K_spec = 0.
 
             return K_spec - 0.5*self.chisq_spec
 
@@ -318,10 +317,4 @@ class FittedModel(object):
 
     def _update_model_galaxy(self, param):
         self._update_model_parameters(param)
-
-        if self.model_galaxy is None:
-            self.model_galaxy = ModelGalaxy(self.parameters,
-                                             filt_list=self.galaxy.filt_list,
-                                             spec_wavs=self.galaxy.spec_wavs)
-
         self.model_galaxy.update(self.parameters)

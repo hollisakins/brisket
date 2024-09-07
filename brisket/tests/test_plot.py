@@ -1,46 +1,71 @@
 from astropy.io import fits 
 import matplotlib.pyplot as plt
 import astropy.units as u
+from astropy.constants import c
 import numpy as np
 plt.style.use('hba_sans')
 
 import brisket
 
 
-p = {'redshift': 6}
+p = {'redshift': 7.05}
 # p['galaxy'] = {
-#     'stellar_model': 'BPASS',
-#     'logMstar': 10,
-#     'metallicity': 0.001,
+#     'stellar_model': 'BC03',
+#     'logMstar': 7.4,
+#     'metallicity': 0.05,
 #     'sfh': 'constant',
 #     'age_min': 0,
-#     'age_max': 0.3,
+#     'age_max': 0.01,
+# }
+# p['galaxy']['nebular'] = {
+#     'type': 'cloudy',
+#     'logU': -1.0, 
+#     # 'metallicity': 0.001
 # }
 p['nebular'] = {
     'type': 'flex',
-    'f_Ha_broad': 1e-19, 
-    'f_Ha_narrow': 1e-19, 
-    'fwhm_broad': 5000,
-    'fwhm_narrow': 300,
-    'cont_type': 'dblplaw',
-    'cont_beta1': -2.5,
-    'cont_beta2': -2,
-    'cont_break':3800,
-    'f5100': 5e-21,
+    'fwhm_broad': 3883.3553194999695, 'fwhm_narrow': 28.086774945259094, 'f_Ha_broad': 8.57437789440155e-18, 'f_Ha_narrow': 1.9943654537200928e-18,
+    ###
+    'cont_type': 'plaw',
+    'cont_beta': 0,
+    ###
+    # 'f_Lya_narrow': 7e-19,
+    # 'dv_Lya': 2800, 
+    # 'f_CIII_narrow': 1.44e-19,
+    # 'f_CIV_narrow': 2.296e-19,
+    #'f_Ha_broad': 7.188e-19, 
+    # 'f_Ha_narrow': 4.939e-19, 
+    #'f_Hb_broad': 1e-20, 
+    # 'f_Hb_narrow': 1.149e-19, 
+    # 'f_OIII4959_narrow': 1.065e-19, 
+    # 'f_OIII5007_narrow': 4.079e-19, 
+    'f5100': 1.104e-21,
 }
-p['calib'] = {
-    'R_curve': 'JWST_NIRSpec_PRISM'
+p['calib'] = { # 'calib' handles instrumental calibration, e.g. matching spectral resolution, or polynomial correction factors to account for slit loss/flux calibration
+    'R_curve': 'JWST_NIRSpec_PRISM',
+    'f_LSF': 1.3,
 }
 
-spec_wavs = fits.getdata('/data/DD6585/final_cal2/jw06585004001_s66964_x1d.fits')['WAVELENGTH']*1e4
-gal = brisket.ModelGalaxy(p, filt_list=['f115w','f150w','f277w','f444w'], spec_wavs=spec_wavs, logger=brisket.utils.basicLogger, spec_units=u.uJy)
+# spec_wavs = brisket.utils.prism_wavs
+spec_wavs = fits.getdata('/data/DD6585/final_cal2/jw06585004001_s66964_x1d.fits')['WAVELENGTH']
+flux = fits.getdata('/data/DD6585/final_cal2/jw06585004001_s66964_x1d.fits')['FLUX']
+flux = (flux*u.Jy*c/(spec_wavs*u.micron)**2).to(u.erg/u.s/u.cm**2/u.angstrom).value
 
-fig, ax = plt.subplots()
-ax.loglog(gal.wav_obs, gal.sed)
-ax.step(spec_wavs/1e4, gal.spectrum[:,1], where='mid')
-ax.set_xlim(0.7, 9)
-ax.set_ylim(0.04, 2)
-ax.loglog()
+gal = brisket.ModelGalaxy(p, filt_list=['f115w','f150w','f277w','f444w'], spec_wavs=spec_wavs, 
+                          wav_units='um', sed_units='ergscma', spec_units='ergscma', logger=brisket.utils.basicLogger)
+
+fig, ax = plt.subplots(figsize=(10,4.5), dpi=200, constrained_layout=True)
+ax.step(spec_wavs, flux, where='mid')
+ax.step(spec_wavs, gal.spectrum, where='mid')
+print(any(np.isnan(gal.spectrum)))
+
+ax.plot(gal.wav_obs, gal.sed)
+ax.set_xlim(0.7, 5.35)
+ax.set_ylim(-1.7e-21, 4.16e-20)
+ax.set_xlabel('Observed Wavelength [µm]')
+# ax.set_ylabel(r'$f_{\lambda}$ [erg\,s$^{-1}$\,cm$^{-2}$\,\AA$^{-1}]')
+ax.set_ylabel('Flux Density [erg/s/cm/cm/A]')
+# ax.loglog()
 plt.show()
 
 

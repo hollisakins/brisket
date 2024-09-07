@@ -8,7 +8,11 @@ defaults = {'igm':'Inoue14',
             'galaxy': {
                 'stellar_model':'BC03', 
                 't_bc':0.01
-                },}
+                },
+            'calib': {
+                'f_LSF': 1.0,
+                'oversample': 4,
+            }}
 
 ## ADD TO DEFAULTS
 # t_bc = 0.01

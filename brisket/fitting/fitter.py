@@ -49,6 +49,7 @@ from brisket import utils
 
 from brisket.fitting.fitted_model import FittedModel
 from brisket.fitting.posterior import Posterior
+from brisket.parameters import Params
 
 
 class Fitter(object):
@@ -85,9 +86,22 @@ class Fitter(object):
 
         self.run = run
         self.galaxy = galaxy
-        self.parameters = deepcopy(parameters)
         self.n_posterior = n_posterior
         self.logger = logger
+
+        # Handle the input parameters, whether provided in dictionary form or in Params object.
+        if isinstance(parameters, Params):
+            self.logger.debug(f'Parameters loaded')            
+            self.parameters = parameters
+        elif isinstance(parameters, dict):
+            self.logger.info(f'Loading parameter dictionary')           
+            self.parameters = Params(parameters)
+        else:
+            msg = "Input `parameters` must be either a brisket.parameters.Params object or python dictionary"
+            self.logger.error(msg)
+            raise TypeError(msg)
+
+        self.parameters = deepcopy(self.parameters)
 
         # Set up the directory structure for saving outputs.
         if rank == 0:

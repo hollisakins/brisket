@@ -27,7 +27,7 @@ class NebularModel(object):
         self.logger = logger
         
         self.flag = True
-        if not 'nebular' in list(params):
+        if not 'nebular' in params:
             self.logger.info("Skipping nebular emission module")
             self.flag = False; return
         
@@ -240,12 +240,12 @@ class NebularModel(object):
             elif params['nebular']['cont_type'] == 'multiplaw':
                 assert 'cont_breaks' in params['nebular']
                 mask0 = np.array(np.zeros(len(flex_spectrum)),dtype=bool)
-                breaks = np.append(np.min(self.wavelengths),params['nebular']['breaks'])
+                breaks = np.append(np.min(self.wavelengths),params['nebular']['cont_breaks'])
                 breaks = np.append(breaks, np.max(self.wavelengths))
                 if 'cont_alpha1' in params['nebular']:
-                    slopes = [params['nebular'][f'cont_alpha{i}']-2 for i in range(1,len(params['nebular']['breaks'])+2)]
+                    slopes = [params['nebular'][f'cont_alpha{i}']-2 for i in range(1,len(params['nebular']['cont_breaks'])+2)]
                 elif 'cont_beta1' in params['nebular']:
-                    slopes = [params['nebular'][f'cont_beta{i}'] for i in range(1,len(params['nebular']['breaks'])+2)]
+                    slopes = [params['nebular'][f'cont_beta{i}'] for i in range(1,len(params['nebular']['cont_breaks'])+2)]
                 for i in range(len(slopes)-1):
                     mask1 = (self.wavelengths > breaks[i])&(self.wavelengths < breaks[i+1])
                     mask2 = (self.wavelengths > breaks[i+1])&(self.wavelengths < breaks[i+2])

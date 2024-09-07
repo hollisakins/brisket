@@ -1,0 +1,93 @@
+
+[fit] # the "fit" category parameters related to the desired output and format
+    ID = 66964
+
+    sampler = 'multinest' # 'ultranest' or 'multinest' or 'nautilus'
+    n_live = 500
+    n_posterior = 1000
+
+    out_wav_units = 'um'
+    out_sed_units = 'uJy' # nJy, uJy, mJy, Jy, or ergscma
+
+    # [fit.photometry]
+    #     file = '/data/COSMOS-Web/catalogs/COSMOS-Web_supercatalog_pm_v0.7.fits'
+    #     phot_columns = ['f_primer_auto_f606w','f_primer_auto_f814w','f_primer_auto_f090w','f_primer_auto_f115w','f_primer_auto_f150w','f_primer_auto_f200w','f_primer_auto_f277w','f_primer_auto_f356w','f_primer_auto_f410m','f_primer_auto_f444w']
+    #     phot_err_columns = ['e_primer_auto_f606w','e_primer_auto_f814w','e_primer_auto_f090w','e_primer_auto_f115w','e_primer_auto_f150w','e_primer_auto_f200w','e_primer_auto_f277w','e_primer_auto_f356w','e_primer_auto_f410m','e_primer_auto_f444w']
+    #     filt_list = ['f606w','f814w','f090w','f115w','f150w','f200w','f277w','f356w','f410m','f444w']
+    #     phot_units = 'uJy'
+
+    [fit.spectroscopy]
+        file = 'spectra/msa_id_0_spec_x1d.fits' # spectra are typically stored in an individual file per-object
+        # BRISKET will look in the 0th and 1st FITS extensions for a BinTableHDU
+        wav_column = 'wave' # column name for spectrum wavelengths
+        wav_units = "um" # units of wavelengths
+        spec_column = 'flux' # column name for spectrum fluxes
+        spec_err_column = 'fluxerr' # column name for spectrum flux errors
+        spec_units = "ergscma" # nJy, uJy, mJy, Jy, or ergscma
+        
+[base] # basic physical parameters that apply to the entire model
+    redshift = {low=7.02, high=7.05, prior='Gaussian', mu=7.0345, std=0.001}
+
+
+[nebular]
+    type = 'flex'
+    # continuum model
+    cont_type = 'multiplaw'
+    cont_breaks = [1800,2800,3500,4200,4700,5200]
+    cont_beta1 = {low=-2.5, high=0.5}    
+    cont_beta2 = {low=-3.5, high=0}    
+    cont_beta3 = {low=-1.5, high=1.5}    
+    cont_beta4 = {low=0, high=3.5}    
+    cont_beta5 = {low=-0.5, high=2.5}    
+    cont_beta6 = {low=1.5, high=1.5}    
+    cont_beta7 = {low=-1.5, high=1.5}    
+    f5100 = {low=1e-22,high=5e-21} 
+    
+    # line widths
+    broad_fwhm = {low=1000,high=6000} 
+    narrow_fwhm = {low=10,high=500} 
+    
+    # line fluxes
+    f_Lya_narrow = {low=0,high=1e-18}
+    dv_Lya = {low=100,high=4000}
+    
+    f_CII_narrow = {low=-5e-19,high=5e-19}
+    f_OIII1663_narrow = {low=-5e-19,high=5e-19}
+    f_HeII_narrow = {low=-5e-19,high=5e-19}
+    f_NIII_narrow = {low=-5e-19,high=5e-19}
+
+    f_CIV_narrow = {low=0,high=5e-19}
+    f_CIII_narrow = {low=0,high=5e-19}
+    f_OII3727_narrow = {low=0,high=3e-19}
+    f_NeIII3869_narrow = {low=0,high=3e-19}
+    f_NeIII3967_narrow = {low=0,high=3e-19}
+    f_Hd_narrow = {low=0,high=3e-19}
+    f_Hg_narrow = {low=0,high=3e-19}
+    f_OIII4363_narrow = {low=0,high=3e-19}
+    f_HeII4685_narrow = {low=0,high=3e-19}
+    f_Hb_broad = {low=0,high=1e-18}
+    f_Hb_narrow = {low=0,high=1e-18}
+    f_OIII4959_narrow = {low=0,high=1e-18}
+    f_OIII5007_narrow = {low=0,high=3e-18}
+    f_HeI5876_narrow = {low=0,high=1e-19} 
+    f_HeI5876_broad = {low=0,high=1e-19} 
+    
+    f_Ha_broad = {low=0,high=1e-17}
+    f_Ha_narrow = {low=0,high=1e-17}
+    dv_Ha = {low=100,high=4000}
+
+    f_NII6549_narrow = {low=-1e-18, high=1e-18}
+    f_NII6585_narrow = {mirror='f_NII6549_narrow', scale=3}
+
+
+[calib]
+    R_curve = 'JWST_NIRSpec_PRISM' # optional -- convolve model with "line spread function" defined by a resolution curve
+    f_LSF = {low=1.0, high=2.0, prior='Gaussian', mu=1.3, std=0.2} # optional -- scaling parameter for the line spread function
+
+# #     [agn.dust_emission]
+# #         type = "Nenvoka08" 
+# #         #Av = 3
+# #         # logfscat = -2
+
+#     # [Xray]
+    

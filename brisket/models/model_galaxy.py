@@ -22,6 +22,7 @@ from brisket.models.dust_attenuation_model import DustAttenuationModel
 from brisket.models.accretion_disk_model import AccretionDiskModel
 from brisket.models.agn_line_model import AGNLineModel
 from brisket.models.igm_model import IGMModel
+from brisket.models.calibration import SpectralCalibrationModel
 from brisket.parameters import Params
 
 class ModelGalaxy(object):
@@ -96,7 +97,7 @@ class ModelGalaxy(object):
         if self.filt_list is not None: self.phot_output = True
         if self.spec_wavs is not None: self.spec_output = True
 
-        # Deal with the input parameters
+        # Handl the input parameters, whether provided in dictionary form or in Params object.
         if isinstance(parameters, Params):
             self.logger.debug(f'Parameters loaded')            
             self.parameters = parameters
@@ -108,9 +109,45 @@ class ModelGalaxy(object):
             self.logger.error(msg)
             raise TypeError(msg)
 
+        self.components = self.parameters.components
 
         # if self.index_list is not None:
         #     self.spec_wavs = self._get_index_spec_wavs(model_components)
+
+        
+        # Initialize unit conversion logic
+        if isinstance(self.sed_units, str): self.sed_units = utils.unit_parser(self.sed_units)
+        if isinstance(self.wav_units, str): self.wav_units = utils.unit_parser(self.wav_units)
+        if 'spectral flux density' in list(self.sed_units.physical_type):
+            self.logger.debug(f"Converting SED flux units to f_nu ({self.sed_units})")
+            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2 * (1 * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
+            self.flam = False
+        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
+            self.logger.debug(f"Keeping SED flux units in f_lam ({self.sed_units})")
+            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+            self.flam = True
+        else:
+            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
+            sys.exit()
+        if self.spec_output:
+            self.spec_wavs_internal = (self.spec_wavs*self.wav_units).to(u.angstrom).value # store an internal spec_wavs array in angstroms
+            if isinstance(self.spec_units, str): self.spec_units = utils.unit_parser(self.spec_units)
+            if 'spectral flux density' in list(self.spec_units.physical_type): self.spec_flam = False
+            elif 'spectral flux density wav' in list(self.spec_units.physical_type): self.spec_flam = True
+            if (self.flam and self.spec_flam) or (not self.flam and not self.spec_flam): # easy conversion, just scaling
+                self.spec_unit_conv = (1*self.sed_units).to(self.spec_units).value
+            elif self.flam and not self.spec_flam: # if SED is in f_lam but spectrum is in f_nu... 
+                self.spec_unit_conv = (1*self.sed_units * (1 * self.wav_units)**2 / speed_of_light).to(self.spec_units).value
+            elif not self.flam and self.spec_flam: # if SED is in f_nu but spectrum is in f_lam...
+                self.spec_unit_conv = (1*self.sed_units / (1 * self.wav_units)**2 * speed_of_light).to(self.spec_units).value
+            else:
+                self.logger.error(f"Could not determine units for spectrum -- input astropy.units ")
+                sys.exit()
+
+        # Create a spectral calibration object to handle spectroscopic calibration and resolution.
+        self.calib = self.spec_output
+        if 'calib' in self.components: 
+            self.calib = SpectralCalibrationModel(self.spec_wavs_internal, self.parameters, logger=logger)
         
         # Create a filter_set object to manage the filter curves.
         if self.phot_output:
@@ -118,30 +155,28 @@ class ModelGalaxy(object):
                 self.filter_set = filters.filter_set(filt_list, logger=logger)
             elif type(filt_list) == filters.filter_set:
                 self.filter_set = filt_list
+        
 
         # Calculate optimal wavelength sampling for the model
         self.logger.debug('Calculating optimal wavelength sampling for the model...')
         self.wavelengths = self._get_wavelength_sampling()
         self.wav_rest = (self.wavelengths*u.angstrom).to(self.wav_units).value
 
-
-
         if self.phot_output:
             self.logger.debug('Resampling the filter curves onto model wavelength grid...')
             self.filter_set.resample_filter_curves(self.wavelengths)
-
 
         self.logger.debug('Initializing IGM absorption model...')
         self.igm = IGMModel(self.wavelengths)#, parameters['base']['igm'])
         
         # Initialize the base parameters -- redshift, igm transmission, luminosity distance, etc
-        self._define_base_params_at_redshift()
+        self._define_base_params_at_redshift() #TODO should take redshift as argument? 
         
         # Initialize the various physical models
-        self.components = self.parameters.components
         if 'galaxy' in self.components: 
             params = self.parameters['galaxy']
             params['redshift'] = self.parameters['redshift']
+
             self.galaxy = DotMap(sfh=StarFormationHistoryModel(params, logger=logger), 
                                  stellar=StellarModel(self.wavelengths, params, logger=logger),
                                  nebular=NebularModel(self.wavelengths, params, logger=logger),
@@ -153,22 +188,10 @@ class ModelGalaxy(object):
             self.agn = DotMap(accdisk=AccretionDiskModel(self.wavelengths, params, logger=logger), 
                               nebular=AGNLineModel(self.wavelengths, params, logger=logger),
                               dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger))
+
         if 'nebular' in self.components: # stand-alone nebular model
-            params = self.parameters.data
-            self.nebular = NebularModel(self.wavelengths, params, logger=logger)
-                           
-        ## Initialize unit conversion logic
-        if 'spectral flux density' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Converting flux units to f_nu ({self.sed_units})")
-            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2 * (1 * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
-            self.flam = False
-        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Keeping flux units in f_lam ({self.sed_units})")
-            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
-            self.flam = True
-        else:
-            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
-            sys.exit()
+            self.nebular = NebularModel(self.wavelengths, self.parameters, logger=logger)
+
 
         # Compute the full internal model SED
         self._compute_sed() 
@@ -263,6 +286,7 @@ class ModelGalaxy(object):
 
         if 'nebular' in self.components: 
             nebular_spectrum = self.nebular.spectrum(self.parameters)
+            nebular_spectrum[self.wavelengths < 912] = 0
             nebular_spectrum *= self.igm_trans 
             nebular_spectrum /= self.lum_flux * (1+self.redshift)
             self.sed += nebular_spectrum
@@ -348,6 +372,18 @@ class ModelGalaxy(object):
             sed /= self.lum_flux * (1+self.redshift)
             self.sed += sed
 
+
+        # # Optionally divide the model by a polynomial for calibration.
+        # if "calib" in list(self.fit_instructions):
+        #     self.calib = calib_model(self.model_components["calib"],
+        #                              self.galaxy.spectrum,
+        #                              self.model_galaxy.spectrum)
+
+        #     model = self.model_galaxy.spectrum[:, 1]/self.calib.model
+
+        # else:
+        #     model = self.model_galaxy.spectrum[:, 1]
+
         if self.flam: 
             self.sed *= self.sed_unit_conv
         else:
@@ -359,14 +395,8 @@ class ModelGalaxy(object):
         given the required resolution values specified in the config
         file. The way this is done is key to the speed of the code. """
 
-        self.R_curve = None
-        if 'calib' in self.parameters:
-            if 'R_curve' in self.parameters['calib']:
-                if isinstance(self.parameters['calib']['R_curve'], str):
-                    self.R_curve = config.R_curves[self.parameters['calib']['R_curve']]
-                else:
-                    self.R_curve = self.parameters['calib']['R_curve'] # 2D array, col 1 is wavelength in angstroms, col 2 is resolution
-        
+        self.R_curve = self.calib.R_curve
+
         # we don't want to generate a model on a coarser grid than we are observing it
         R_spec = config.R_spec
         if self.R_curve is not None:
@@ -378,56 +408,56 @@ class ModelGalaxy(object):
         max_wav = config.max_wavelength.to(u.angstrom).value
 
         # if neither spectral or photometric output is desired, just compute the full spectrum at resolution R_other
-        if self.spec_wavs is None and self.filt_list is None:
+        if not self.spec_output and not self.phot_output:
             self.max_wavs = [max_wav]
             self.R = [R_other]
             
         # if only photometric output is desired, compute spectrum at resolution R_phot in the range of the photometric data, and R_other elsewhere
-        elif self.spec_wavs is None:
+        elif not self.spec_output:
             self.max_wavs = [self.filter_set.min_phot_wav/(1+max_z), 1.01*self.filter_set.max_phot_wav, max_wav]
             self.R = [R_other, R_phot, R_other]
 
         # if only spectral output is desired, compute spectrum at resolution R_spec in the range of the spectrum, and R_other elsewhere
-        elif self.filt_list is None:
-            self.max_wavs = [self.spec_wavs[0]/(1+max_z), self.spec_wavs[-1], max_wav]
+        elif not self.phot_output:
+            self.max_wavs = [self.spec_wavs_internal[0]/(1+max_z), self.spec_wavs_internal[-1], max_wav]
             self.R = [R_other, R_spec, R_other]
 
         # if both are desired, more complicated logic is necessary
         else:
-            if (self.spec_wavs[0] > self.filter_set.min_phot_wav
-                    and self.spec_wavs[-1] < self.filter_set.max_phot_wav):
+            if (self.spec_wavs_internal[0] > self.filter_set.min_phot_wav
+                    and self.spec_wavs_internal[-1] < self.filter_set.max_phot_wav):
 
                 self.max_wavs = [self.filter_set.min_phot_wav/(1.+max_z),
-                                 self.spec_wavs[0]/(1.+max_z),
-                                 self.spec_wavs[-1],
+                                 self.spec_wavs_internal[0]/(1.+max_z),
+                                 f[-1],
                                  self.filter_set.max_phot_wav, max_wav]
 
                 self.R = [R_other, R_phot, R_spec,
                           R_phot, R_other]
 
-            elif (self.spec_wavs[0] < self.filter_set.min_phot_wav
-                  and self.spec_wavs[-1] < self.filter_set.max_phot_wav):
+            elif (self.spec_wavs_internal[0] < self.filter_set.min_phot_wav
+                  and self.spec_wavs_internal[-1] < self.filter_set.max_phot_wav):
 
-                self.max_wavs = [self.spec_wavs[0]/(1.+max_z),
-                                 self.spec_wavs[-1],
+                self.max_wavs = [self.spec_wavs_internal[0]/(1.+max_z),
+                                 self.spec_wavs_internal[-1],
                                  self.filter_set.max_phot_wav, max_wav]
 
                 self.R = [R_other, R_spec,
                           R_phot, R_other]
 
-            elif (self.spec_wavs[0] > self.filter_set.min_phot_wav
-                    and self.spec_wavs[-1] > self.filter_set.max_phot_wav):
+            elif (self.spec_wavs_internal[0] > self.filter_set.min_phot_wav
+                    and self.spec_wavs_internal[-1] > self.filter_set.max_phot_wav):
 
                 self.max_wavs = [self.filter_set.min_phot_wav/(1.+max_z),
-                                 self.spec_wavs[0]/(1.+max_z),
-                                 self.spec_wavs[-1], max_wav]
+                                 self.spec_wavs_internal[0]/(1.+max_z),
+                                 self.spec_wavs_internal[-1], max_wav]
 
                 self.R = [R_other, R_phot,
                           R_spec, R_other]
             
-            elif (self.spec_wavs[0] < self.filter_set.min_phot_wav
-                    and self.spec_wavs[-1] > self.filter_set.max_phot_wav):
-                self.max_wavs = [self.spec_wavs[0]/(1+max_z), self.spec_wavs[-1], max_wav]
+            elif (self.spec_wavs_internal[0] < self.filter_set.min_phot_wav
+                    and self.spec_wavs_internal[-1] > self.filter_set.max_phot_wav):
+                self.max_wavs = [self.spec_wavs_internal[0]/(1+max_z), self.spec_wavs_internal[-1], max_wav]
                 self.R = [R_other, R_spec, R_other]
 
         # Generate the desired wavelength sampling.
@@ -480,35 +510,24 @@ class ModelGalaxy(object):
         spectrum = self.sed
         wav_obs = (1+self.redshift) * self.wavelengths
 
-        if self.R_curve is not None:
-            print('Using R_curve to convolve')
-            oversample = 4
-            new_wavs = [0.95*self.spec_wavs[0]]
-            while new_wavs[-1] < 1.05*self.spec_wavs[-1]:
-                R_val = np.interp(new_wavs[-1], self.R_curve[:, 0], self.R_curve[:, 1])
-                dwav = new_wavs[-1]/R_val/oversample
-                new_wavs.append(new_wavs[-1] + dwav)
+        if self.calib.R_curve is not None:
+            self.logger.debug(f"Convolving output spectrum using provided R_curve")
+            wav_obs, spectrum = self.calib.convolve_R_curve(wav_obs, spectrum, self.parameters['calib']['f_LSF'])
 
-            new_wavs = np.array(new_wavs)
-            spectrum = spectres.spectres(new_wavs, wav_obs, spectrum, fill=0)
+        self.spectrum = spectres.spectres(self.spec_wavs_internal, wav_obs, spectrum, fill=0)
 
-            sigma_pix = oversample/2.35  # sigma width of kernel in pixels
-            k_size = 4*int(sigma_pix+1)
-            x_kernel_pix = np.arange(-k_size, k_size+1)
 
-            kernel = np.exp(-(x_kernel_pix**2)/(2*sigma_pix**2))
-            kernel /= np.trapz(kernel)  # Explicitly normalise kernel
+        if (self.flam and self.spec_flam) or (not self.flam and not self.spec_flam): # easy conversion, just scaling
+            self.spectrum *= self.spec_unit_conv
+        elif self.flam and not self.spec_flam: # if SED is in f_lam but spectrum is in f_nu... 
+            self.spectrum *= self.spec_unit_conv * self.spec_wavs**2
+        elif not self.flam and self.spec_flam: # if SED is in f_nu but spectrum is in f_lam...
+            self.spectrum *= self.spec_unit_conv / self.spec_wavs**2
 
-            # Disperse non-uniformly sampled spectrum
-            spectrum = np.convolve(spectrum, kernel, mode="valid")
-            wav_obs = new_wavs[k_size:-k_size]
+        # if self.spec_units == "mujy":
+        #     fluxes /= ((10**-29*2.9979*10**18/self.spec_wavs**2))
 
-        fluxes = spectres.spectres(self.spec_wavs, wav_obs, spectrum, fill=0)
-
-        if self.spec_units == "mujy":
-            fluxes /= ((10**-29*2.9979*10**18/self.spec_wavs**2))
-
-        self.spectrum = np.c_[self.spec_wavs, fluxes]
+        # self.spectrum = np.c_[self.spec_wavs, fluxes]
 
     def _calculate_uvj_mags(self):
         """ Obtain (unnormalised) rest-frame UVJ magnitudes. """
