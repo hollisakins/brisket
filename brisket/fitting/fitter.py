@@ -138,7 +138,7 @@ class Fitter(object):
 
     def fit(self, verbose=False, n_live=400, use_MPI=True, 
             sampler="multinest", n_eff=0, discard_exploration=False,
-            n_networks=4, pool=1, overwrite=False):
+            n_networks=4, pool=1, nsteps=4, overwrite=False):
         """ Fit the specified model to the input galaxy data.
 
         Parameters
@@ -234,7 +234,7 @@ class Fitter(object):
                                                 log_dir='/'.join(self.fname.split('/')[:-1]), 
                                                 resume=resume, 
                                                 run_num=None)
-                u_sampler.stepsampler = SliceSampler(nsteps=8,#,
+                u_sampler.stepsampler = SliceSampler(nsteps=nsteps,#len(self.fitted_model.params)*4,
                                                      generate_direction=generate_mixture_random_direction)
                 u_sampler.run(
                     min_num_live_points=n_live,
