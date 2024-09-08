@@ -120,7 +120,10 @@ class Posterior(object):
                 self.fitted_model._update_model_galaxy(param)
                 self.fitted_model.model_galaxy._compute_properties()
                 for key in self.fitted_model.model_galaxy.properties:
-                    self.samples[key][i] = self.fitted_model.model_galaxy.properties[key]
+                    try:
+                        self.samples[key][i] = self.fitted_model.model_galaxy.properties[key]
+                    except:
+                        print(key, self.fitted_model.model_galaxy.properties[key], len(self.fitted_model.model_galaxy.properties[key]), len(self.samples[key][i]))
             
             # if self.galaxy.photometry_exists:
             #     self.samples["chisq_phot"][i] = self.fitted_model.chisq_phot

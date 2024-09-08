@@ -302,7 +302,6 @@ class NebularModel(object):
                         dv = params['nebular'][f'dv_{name}_{suffix}']
                     else:
                         dv = 0
-                    print(name, suffix, fwhm, dv)
                 else:
                     print(f'Skipping key {key}, {name} not in line list')
             else:
@@ -310,13 +309,10 @@ class NebularModel(object):
             
             wav = self.linelist['wav'][self.linelist['name']==name][0]
             wav *= 1+dv/2.998e5
-            print(wav)
 
             flux = params['nebular'][key] # in erg/s/cm2
-            print(flux)
 
             lum = flux * lum_flux * (1+redshift) / 3.826e33
-            print(lum)
             g = self._gauss(self.wavelengths, lum, wav, fwhm, fwhm_unit='kms')
             flex_spectrum += g
 
