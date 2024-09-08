@@ -60,7 +60,7 @@ templates_path = ['_templates']
 
 source_suffix = '.rst'
 
-master_doc = 'index.rst'
+master_doc = 'index'
 
 # -- Options for HTML output
 
