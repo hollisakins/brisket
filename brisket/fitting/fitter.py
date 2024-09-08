@@ -113,21 +113,6 @@ class Fitter(object):
         # A dictionary containing properties of the model to be saved.
         self.results = {}
 
-        # If a posterior file already exists load it.
-        if os.path.exists(f'{self.fname}brisket_results.fits'):
-
-            file = fits.open(f'{self.fname}brisket_results.fits')['RESULTS']
-            self.parameters.data = utils.str_to_dict(file.header['PARAMS'])
-            self.results['samples2d'] = file.data['samples2d']
-            self.results['lnlike'] = file.data['lnlike']
-            self.results['lnz'] = file.header['LNZ']
-            self.results['lnz_err'] = file.header['LNZ_ERR']
-            self.results["median"] = np.median(self.results['samples2d'], axis=0)
-            self.results["conf_int"] = np.percentile(self.results["samples2d"],
-                                                     (16, 84), axis=0)            
-            if rank == 0:
-                self.logger.info(f'Loaded results from {self.fname}brisket_results.fits')
-
         # Set up the model which is to be fitted to the data.
         self.fitted_model = FittedModel(galaxy, self.parameters,
                                        time_calls=time_calls)
@@ -166,11 +151,23 @@ class Fitter(object):
             MultiNest is parallelized with MPI.
 
         """
-        if "lnz" in list(self.results):
+        
+        # If a posterior file already exists load it.
+        if os.path.exists(f'{self.fname}brisket_results.fits'):
             if rank == 0:
-                self.logger.info(f'Fitting not performed as results have already been loaded from {self.fname[:-1]}.h5. To start over delete this file or change run.')
+                self.logger.info(f'Fitting not performed as results have already been loaded from {self.fname}brisket_results.fits. To start over delete this file or change run.')
+
+            file = fits.open(f'{self.fname}brisket_results.fits')['RESULTS']
+            self.parameters.data = utils.str_to_dict(file.header['PARAMS'])
+            self.results['samples2d'] = file.data['samples2d']
+            self.results['lnlike'] = file.data['lnlike']
+            self.results['lnz'] = file.header['LNZ']
+            self.results['lnz_err'] = file.header['LNZ_ERR']
+            self.results["median"] = np.median(self.results['samples2d'], axis=0)
+            self.results["conf_int"] = np.percentile(self.results["samples2d"],
+                                                     (16, 84), axis=0)            
             self._print_results()
-            self.posterior = Posterior(self.galaxy, run=run, n_samples=n_posterior, logger=self.logger)
+            self.posterior = Posterior(self.galaxy, run=self.run, n_samples=self.n_posterior, logger=self.logger)
             return
 
         # Figure out which sampling algorithm to use
