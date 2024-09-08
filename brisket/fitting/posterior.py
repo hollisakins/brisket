@@ -152,23 +152,23 @@ class Posterior(object):
             header = fits.Header({'EXTNAME':'SED_MED'})
             columns = []
             columns.append(fits.Column(name='wav_rest', array=self.fitted_model.model_galaxy.wav_rest, format='D'))
-            columns.append(fits.Column(name='f_lam_16', array=np.percentile(self.samples['sed'], 16, axis=0), format='D'))
-            columns.append(fits.Column(name='f_lam_50', array=np.percentile(self.samples['sed'], 50, axis=0), format='D'))
-            columns.append(fits.Column(name='f_lam_84', array=np.percentile(self.samples['sed'], 84, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_16', array=np.percentile(self.samples['SED'], 16, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_50', array=np.percentile(self.samples['SED'], 50, axis=0), format='D'))
+            columns.append(fits.Column(name='f_lam_84', array=np.percentile(self.samples['SED'], 84, axis=0), format='D'))
             hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), header=header)
             hdul.append(hdu) 
 
 
-            header = fits.Header({'EXTNAME':'SED_MAP'}) # should have wav_rest, wav_obs, f_nu, f_lam, and parameters in header #### seds for each subset? 
+            # header = fits.Header({'EXTNAME':'SED_MAP'}) # should have wav_rest, wav_obs, f_nu, f_lam, and parameters in header #### seds for each subset? 
         
-            header = fits.Header({'EXTNAME':'PHOT'}) # should have filter, wav_obs, f_nu_obs, f_nu_obs_err, f_nu_mod (array?)
-            columns = []
-            columns.append(fits.Column(name='filter', array=self.galaxy.filt_list, format=f'{np.max([len(f) for f in self.galaxy.filt_list])}A'))
-            columns.append(fits.Column(name='wav', array=self.galaxy.photometry[:,0], format='D'))
-            columns.append(fits.Column(name='flux', array=self.galaxy.photometry[:,1], format='D'))
-            columns.append(fits.Column(name='flux_err', array=self.galaxy.photometry[:,2], format='D'))
-            hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), header=header)
-            hdul.append(hdu) 
+            # header = fits.Header({'EXTNAME':'PHOT'}) # should have filter, wav_obs, f_nu_obs, f_nu_obs_err, f_nu_mod (array?)
+            # columns = []
+            # columns.append(fits.Column(name='filter', array=self.galaxy.filt_list, format=f'{np.max([len(f) for f in self.galaxy.filt_list])}A'))
+            # columns.append(fits.Column(name='wav', array=self.galaxy.photometry[:,0], format='D'))
+            # columns.append(fits.Column(name='flux', array=self.galaxy.photometry[:,1], format='D'))
+            # columns.append(fits.Column(name='flux_err', array=self.galaxy.photometry[:,2], format='D'))
+            # hdu = fits.BinTableHDU.from_columns(fits.ColDefs(columns), header=header)
+            # hdul.append(hdu) 
             
 
             hdul.writeto(self.fname, overwrite=True)
