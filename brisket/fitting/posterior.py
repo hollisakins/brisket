@@ -87,7 +87,7 @@ class Posterior(object):
         self.fitted_model.model_galaxy._compute_properties()
         for key in self.fitted_model.model_galaxy.properties:
             try: # for arrays
-                l = len(self.fitted_model.model_galaxy.properties)
+                l = len(self.fitted_model.model_galaxy.properties[key])
                 self.samples[key] = np.zeros((self.n_samples, l))
             except TypeError: # for keys with no len() (i.e., floats)
                 self.samples[key] = np.zeros(self.n_samples)
@@ -120,10 +120,7 @@ class Posterior(object):
                 self.fitted_model._update_model_galaxy(param)
                 self.fitted_model.model_galaxy._compute_properties()
                 for key in self.fitted_model.model_galaxy.properties:
-                    try:
-                        self.samples[key][i] = self.fitted_model.model_galaxy.properties[key]
-                    except:
-                        print(key, self.fitted_model.model_galaxy.properties[key], len(self.fitted_model.model_galaxy.properties[key]), len(self.samples[key][i]))
+                    self.samples[key][i] = self.fitted_model.model_galaxy.properties[key]
             
             # if self.galaxy.photometry_exists:
             #     self.samples["chisq_phot"][i] = self.fitted_model.chisq_phot
