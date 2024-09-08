@@ -24,10 +24,12 @@ p = {'redshift': 7.05}
 # }
 p['nebular'] = {
     'type': 'flex',
-    'fwhm_broad': 3883.3553194999695, 'fwhm_narrow': 28.086774945259094, 'f_Ha_broad': 8.57437789440155e-18, 'f_Ha_narrow': 1.9943654537200928e-18,
+    'fwhm_broad': 3883.3553194999695, 'fwhm_narrow': 300, 'f_Ha_broad': 8.57437789440155e-18, 'f_Ha_narrow': 1.9943654537200928e-18,
     ###
-    'cont_type': 'plaw',
-    'cont_beta': 0,
+    'cont_type': 'dblplaw',
+    'cont_beta1': -2,
+    'cont_beta2': 0,
+    'cont_break': 3600,
     ###
     # 'f_Lya_narrow': 7e-19,
     # 'dv_Lya': 2800, 
@@ -54,12 +56,18 @@ flux = (flux*u.Jy*c/(spec_wavs*u.micron)**2).to(u.erg/u.s/u.cm**2/u.angstrom).va
 gal = brisket.ModelGalaxy(p, filt_list=['f115w','f150w','f277w','f444w'], spec_wavs=spec_wavs, 
                           wav_units='um', sed_units='ergscma', spec_units='ergscma', logger=brisket.utils.basicLogger)
 
+
+gal._compute_properties()
+print(gal.properties)
+print()
+
 fig, ax = plt.subplots(figsize=(10,4.5), dpi=200, constrained_layout=True)
 ax.step(spec_wavs, flux, where='mid')
-ax.step(spec_wavs, gal.spectrum, where='mid')
-print(any(np.isnan(gal.spectrum)))
-
 ax.plot(gal.wav_obs, gal.sed)
+ax.step(spec_wavs, gal.spectrum, where='mid')
+# ax.plot(gal.wavelengths[gal.tophat], gal.sed_flam[gal.tophat])
+
+
 ax.set_xlim(0.7, 5.35)
 ax.set_ylim(-1.7e-21, 4.16e-20)
 ax.set_xlabel('Observed Wavelength [µm]')

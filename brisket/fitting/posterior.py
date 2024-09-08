@@ -17,7 +17,8 @@ from brisket import utils
 
 from astropy.io import fits
 from astropy.table import Table, Column
-
+from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 class Posterior(object):
     """ Provides access to the outputs from fitting models to data and
@@ -38,11 +39,12 @@ class Posterior(object):
         The number of posterior samples to generate for each quantity.
     """
 
-    def __init__(self, galaxy, run=".", n_samples=500):
+    def __init__(self, galaxy, run=".", n_samples=500, logger=utils.NullLogger):
 
         self.galaxy = galaxy
         self.run = run
         self.n_samples = n_samples
+        self.logger = logger
 
         self.fname = f"brisket/posterior/{self.run}/{self.galaxy.ID}_brisket_results.fits"
 
@@ -76,24 +78,20 @@ class Posterior(object):
 
         # self.get_dirichlet_tx(dirichlet_comps)
 
-        self.compute_posterior_quantities()
+        self._compute_posterior_quantities()
 
 
-    def compute_posterior_quantities(self):
-
-        if "sed" in list(self.samples):
-            return
+    def _compute_posterior_quantities(self):
 
         self.fitted_model._update_model_galaxy(self.samples2d[0, :])
-        
-        # all_names = ["photometry", "spectrum", "spectrum_full", "uvj",
-        #              "indices"]
+        self.fitted_model.model_galaxy._compute_properties()
+        for key in self.fitted_model.model_galaxy.properties:
+            try: # for arrays
+                l = len(self.fitted_model.model_galaxy.properties)
+                self.samples[key] = np.zeros((self.n_samples, l))
+            except TypeError: # for keys with no len() (i.e., floats)
+                self.samples[key] = np.zeros(self.n_samples)
 
-        # all_model_keys = dir(self.model_galaxy)
-        # quantity_names = [q for q in all_names if q in all_model_keys]
-
-        size = self.fitted_model.model_galaxy.sed.shape[0]
-        self.samples['sed'] = np.zeros((self.n_samples, size))
         
         # for q in quantity_names:
         #     size = getattr(self.model_galaxy, q).shape[0]
@@ -115,12 +113,14 @@ class Posterior(object):
         #     if type.startswith("GP"):
         #         size = self.model_galaxy.spectrum.shape[0]
         #         self.samples["noise"] = np.zeros((self.n_samples, size))
-
-        for i in range(self.n_samples):
-            param = self.samples2d[self.indices[i], :]
-            self.fitted_model._update_model_galaxy(param)
-
-            self.samples['sed'][i] = self.fitted_model.model_galaxy.sed
+        self.logger.info('Computing derived posterior properties...')
+        with logging_redirect_tqdm(loggers=[self.logger]):
+            for i in tqdm(range(self.n_samples)):
+                param = self.samples2d[self.indices[i], :]
+                self.fitted_model._update_model_galaxy(param)
+                self.fitted_model.model_galaxy._compute_properties()
+                for key in self.fitted_model.model_galaxy.properties:
+                    self.samples[key][i] = self.fitted_model.model_galaxy.properties[key]
             
             # if self.galaxy.photometry_exists:
             #     self.samples["chisq_phot"][i] = self.fitted_model.chisq_phot

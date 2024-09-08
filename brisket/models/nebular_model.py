@@ -235,8 +235,8 @@ class NebularModel(object):
                     sl1, sl2 = params['nebular']['cont_beta1'], params['nebular']['cont_beta2']
                 norm = (wavbrk**sl1)/(wavbrk**sl2)
                 flex_spectrum += np.where(self.wavelengths < wavbrk,
-                                    self.wavelengths**sl1,
-                                    norm*self.wavelengths**sl2)
+                                          self.wavelengths**sl1,
+                                          norm*self.wavelengths**sl2)
             elif params['nebular']['cont_type'] == 'multiplaw':
                 assert 'cont_breaks' in params['nebular']
                 mask0 = np.array(np.zeros(len(flex_spectrum)),dtype=bool)
@@ -302,6 +302,7 @@ class NebularModel(object):
                         dv = params['nebular'][f'dv_{name}_{suffix}']
                     else:
                         dv = 0
+                    print(name, suffix, fwhm, dv)
                 else:
                     print(f'Skipping key {key}, {name} not in line list')
             else:
@@ -309,10 +310,13 @@ class NebularModel(object):
             
             wav = self.linelist['wav'][self.linelist['name']==name][0]
             wav *= 1+dv/2.998e5
+            print(wav)
 
             flux = params['nebular'][key] # in erg/s/cm2
+            print(flux)
 
             lum = flux * lum_flux * (1+redshift) / 3.826e33
+            print(lum)
             g = self._gauss(self.wavelengths, lum, wav, fwhm, fwhm_unit='kms')
             flex_spectrum += g
 

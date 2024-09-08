@@ -132,18 +132,22 @@ class StarFormationHistoryModel:
         self.stellar_mass = np.log10(np.sum(self.live_frac_grid*self.ceh.grid))
         self.formed_mass = np.log10(np.sum(self.ceh.grid))
 
-        age_mask = (self.ages < 10**8)
-        self.sfr = np.sum(self.sfh[age_mask]*self.age_widths[age_mask])
-        self.sfr /= self.age_widths[age_mask].sum()
-        self.ssfr = np.log10(self.sfr) - self.stellar_mass
-        self.nsfr = np.log10(self.sfr*self.age_of_universe) - self.formed_mass
+        age_mask = self.ages < 1e8 # 100 Myr
+        self.SFR_100 = np.sum(self.sfh[age_mask]*self.age_widths[age_mask])/np.sum(self.age_widths[age_mask])
+        self.sSFR_100 = np.log10(self.SFR_100) - self.stellar_mass
+        self.nSFR_100 = np.log10(self.SFR_100*self.age_of_universe) - self.formed_mass
+        
+        age_mask = self.ages < 1e7 # 10 Myr
+        self.SFR_10 = np.sum(self.sfh[age_mask]*self.age_widths[age_mask])/np.sum(self.age_widths[age_mask])
+        self.sSFR_10 = np.log10(self.SFR_10) - self.stellar_mass
+        self.nSFR_10 = np.log10(self.SFR_10*self.age_of_universe) - self.formed_mass
 
         self.mass_weighted_age = np.sum(self.sfh*self.age_widths*self.ages)
         self.mass_weighted_age /= np.sum(self.sfh*self.age_widths)
 
-        self.tform = self.age_of_universe - self.mass_weighted_age
+        self.t_form = self.age_of_universe - self.mass_weighted_age
 
-        self.tform *= 10**-9
+        self.t_form *= 10**-9
         self.mass_weighted_age *= 10**-9
 
         mass_assembly = np.cumsum(self.sfh[::-1]*self.age_widths[::-1])[::-1]
@@ -153,12 +157,12 @@ class StarFormationHistoryModel:
         sf_mask = (self.sfh > 0.)
         normed_sfrs[sf_mask] = self.sfh[sf_mask]/mean_sfrs[sf_mask]
 
-        if self.sfr > 0.1*mean_sfrs[0]:
-            self.tquench = 99.
+        if self.SFR_100 > 0.1*mean_sfrs[0]:
+            self.t_quench = 99.
 
         else:
             quench_ind = np.argmax(normed_sfrs > 0.1)
-            self.tquench = tunivs[quench_ind]*10**-9
+            self.t_quench = tunivs[quench_ind]*10**-9
 
     def _resample_live_frac_grid(self):
         self.live_frac_grid = np.zeros((self.template_metallicities.shape[0],

@@ -321,24 +321,75 @@ class Fitter(object):
 
             # Create a posterior object to hold the results of the fit.
             self.posterior = Posterior(self.galaxy, run=self.run,
-                                       n_samples=self.n_posterior)
+                                       n_samples=self.n_posterior, logger=self.logger)
 
     def _print_results(self):
         """ Print the 16th, 50th, 84th percentiles of the posterior. """
-        # ╔═════════════════════════╦══════════╦══════════╦══════════╦════════════════════════════════════════════════════╗
-        # ║ Parameter               ║   16th   ║   50th   ║   84th   ║                    Distribution                    ║
-        # ╠═════════════════════════╬══════════╬══════════╬══════════╬════════════════════════════════════════════════════╣
-        # ║                         ║          ║          ║          ║ 1e-20         ▁▁▁▁▂▂▂▂▂▃▃▃▄▄▅▅▆▇█▇▅▂         1e-18 ║
+
+        parameter_len_max = np.max([len(p) for p in self.fitted_model.params])
+        parameter_len = np.max([parameter_len_max+2, 25])
+
+        self.logger.info('╔' + '═'*parameter_len + '╦' + '═'*12 + '╦' + '═'*12 + '╦' + '═'*12 + '╦' + '═'*54 + '╗')
+        self.logger.info('║ ' + 'Parameter' + ' '*(parameter_len-10) + '║    16th    ║    50th    ║    84th    ║' + ' '*21 + 'Distribution' + ' '*21 + '║')
+        self.logger.info('╠' + '═'*parameter_len + '╬' + '═'*12 + '╬' + '═'*12 + '╬' + '═'*12 + '╬' + '═'*54 + '╣')
+        for i in range(ndim):
+            s = "║ "
+            s += f"{self.fitted_model.params[i]}" + ' '*(parameter_len-len(self.fitted_model.params[i])-2) 
+            s += " ║ "
+            
+            p00 = self.fitted_model.prior.limits[i][0]
+            p99 = self.fitted_model.prior.limits[i][0]
+            p16 = self.results['conf_int'][0,i]
+            p50 = self.results['median'][i]
+            p84 = self.results['conf_int'][1,i]
+            sig_digit = int(np.floor(np.log10(np.min([p84-p50,p50-p16]))))-1
+            if sig_digit >= 0: 
+                p00 = int(np.round(p00, -sig_digit))
+                p16 = int(np.round(p16, -sig_digit))
+                p50 = int(np.round(p50, -sig_digit))
+                p84 = int(np.round(p84, -sig_digit))
+                p99 = int(np.round(p99, -sig_digit))
+                s += f"{p16:<10d} ║ {p50:<10d} ║ {p84:<10d}"
+            else:
+                p00 = np.round(p00, -sig_digit)
+                p16 = np.round(p16, -sig_digit)
+                p50 = np.round(p50, -sig_digit)
+                p84 = np.round(p84, -sig_digit)
+                p99 = np.round(p99, -sig_digit)
+                s += f"{p16:<10} ║ {p50:<10} ║ {p84:<10}"
+
+            s += ' ║ '
+
+            bins = np.linspace(self.fitted_model.prior.limits[i][0], self.fitted_model.prior.limits[i][1], 39)
+            ys, _ = np.histogram(self.results['samples2d'][i], bins=bins)
+            ys = ys/np.max(ys)
+            s += f"{p00:<7}"
+            for y in ys:
+                if y<1/16: s += ' '
+                elif y<3/16: s += '▁'
+                elif y<5/16: s += '▂'
+                elif y<7/16: s += '▃'
+                elif y<9/16: s += '▄'
+                elif y<11/16: s += '▅'
+                elif y<13/16: s += '▆'
+                elif y<15/16: s += '▇'
+                else: s += '█'
+              
+                    
+            s += '║'
         
-        self.logger.info(f"{'Parameter':<25} {'16th':>10} {'50th':>10} {'84th':>10}")
-        self.logger.info("-"*58)
-        for i in range(self.fitted_model.ndim):
-            s = f"{self.fitted_model.params[i]:<25}"
-            if self.results['conf_int'][0, i]<0: s += f" {self.results['conf_int'][0, i]:>9.3f}"
-            else: s += f"  {self.results['conf_int'][0, i]:>10.3f}"
-            s += f" {self.results['median'][i]:>10.3f}"
-            s += f" {self.results['conf_int'][1, i]:>10.3f}"
             self.logger.info(s)
+        self.logger.info('╚' + '═'*parameter_len + '╩' + '═'*12 + '╩' + '═'*12 + '╩' + '═'*12 + '╩' + '═'*54 + '╝')
+
+        # self.logger.info(f"{'Parameter':<25} {'16th':>10} {'50th':>10} {'84th':>10}")
+        # self.logger.info("-"*58)
+        # for i in range(self.fitted_model.ndim):
+        #     s = f"{self.fitted_model.params[i]:<25}"
+        #     if self.results['conf_int'][0, i]<0: s += f" {self.results['conf_int'][0, i]:>9.3f}"
+        #     else: s += f"  {self.results['conf_int'][0, i]:>10.3f}"
+        #     s += f" {self.results['median'][i]:>10.3f}"
+        #     s += f" {self.results['conf_int'][1, i]:>10.3f}"
+        #     self.logger.info(s)
 
     # def plot_corner(self, show=False, save=True):
     #     return plotting.plot_corner(self, show=show, save=save)

@@ -79,9 +79,12 @@ def make_dirs(run="."):
 
     if not os.path.exists(working_dir + "/brisket/posterior"):
         os.mkdir(working_dir + "/brisket/posterior")
+    
+    if not os.path.exists(working_dir + "/brisket/models"):
+        os.mkdir(working_dir + "/brisket/models")
 
-    if not os.path.exists(working_dir + "/brisket/cats"):
-        os.mkdir(working_dir + "/brisket/cats")
+    # if not os.path.exists(working_dir + "/brisket/cats"):
+    #     os.mkdir(working_dir + "/brisket/cats")
 
     if run != ".":
         if not os.path.exists("brisket/posterior/" + run):

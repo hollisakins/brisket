@@ -129,6 +129,7 @@ class ModelGalaxy(object):
         else:
             self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
             sys.exit()
+
         if self.spec_output:
             self.spec_wavs_internal = (self.spec_wavs*self.wav_units).to(u.angstrom).value # store an internal spec_wavs array in angstroms
             if isinstance(self.spec_units, str): self.spec_units = utils.unit_parser(self.spec_units)
@@ -198,26 +199,13 @@ class ModelGalaxy(object):
 
         # Compute observables
         if self.phot_output:
-            self._compute_photometry()
+            self.photometry = self._compute_photometry(self.sed)
 
         if self.spec_output:
-            self._compute_spectrum()
+            self.spectrum = self._compute_spectrum(self.sed)
     
         # if self.prop_output:
             # self._compute_properties()
-
-    def _compute_properties(self):
-        pass
-        #### reframe into a function that computes interesting quantities from a model_galaxy object
-        #### then use that method in fit.posterior to compute those quantities for all posterior samples!
-        #### UVJ, Muv, beta, SFR100, SFR10, current mass, 
-        #### then maybe split update() into update_sed() and update_properties()
-
-        # # Set up a filter_set for calculating rest-frame UVJ magnitudes.
-        # uvj_filt_list = np.loadtxt(utils.install_dir
-        #                            + "/filters/UVJ.filt_list", dtype="str")
-        # self.uvj_filter_set = filters.filter_set(uvj_filt_list)
-        # self.uvj_filter_set.resample_filter_curves(self.wavelengths)
 
 
     def _define_base_params_at_redshift(self):
@@ -268,11 +256,11 @@ class ModelGalaxy(object):
 
         # If photometric output, compute photometry
         if self.phot_output:
-            self._compute_photometry()
+            self.photometry = self._compute_photometry(self.sed)
 
         # If spectroscopic output, compute spectrum
         if self.spec_output:
-            self._compute_spectrum()
+            self.spectrum = self._compute_spectrum(self.sed)
 
 
     def _compute_sed(self):
@@ -285,12 +273,9 @@ class ModelGalaxy(object):
         self.sed = np.zeros(len(self.wavelengths))
 
         if 'nebular' in self.components: 
-            nebular_spectrum = self.nebular.spectrum(self.parameters)
-            nebular_spectrum[self.wavelengths < 912] = 0
-            nebular_spectrum *= self.igm_trans 
-            nebular_spectrum /= self.lum_flux * (1+self.redshift)
-            self.sed += nebular_spectrum
-
+            self.sed_nebular = self.nebular.spectrum(self.parameters)
+            self.sed_nebular[self.wavelengths < 912] = 0
+            self.sed += self.sed_nebular
 
         if 'galaxy' in self.components: 
             params = self.parameters['galaxy']
@@ -340,9 +325,8 @@ class ModelGalaxy(object):
             # self.line_fluxes = dict(zip(config.line_names, em_lines))
 
             # Apply IGM and redshifting
-            sed *= self.igm_trans 
-            sed /= self.lum_flux * (1+self.redshift)
-            self.sed += sed
+            self.sed_galaxy = sed
+            self.sed += self.sed_galaxy
         
         if 'agn' in self.components: 
             sed = self.agn.accdisk.spectrum(params) * (1+self.redshift)**2
@@ -367,11 +351,8 @@ class ModelGalaxy(object):
             
                 # Add dust emission.
 
-            # Apply IGM and redshifting
-            sed *= self.igm_trans 
-            sed /= self.lum_flux * (1+self.redshift)
-            self.sed += sed
-
+            self.sed_agn = sed
+            self.sed += self.sed_agn
 
         # # Optionally divide the model by a polynomial for calibration.
         # if "calib" in list(self.fit_instructions):
@@ -384,23 +365,31 @@ class ModelGalaxy(object):
         # else:
         #     model = self.model_galaxy.spectrum[:, 1]
 
-        if self.flam: 
-            self.sed *= self.sed_unit_conv
-        else:
-            self.sed *= self.sed_unit_conv * self.wav_obs**2
 
+        if self.flam: 
+            unit_conv = self.sed_unit_conv 
+        else:
+            unit_conv = self.sed_unit_conv * self.wav_obs**2
+        
+        self.sed *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
+        if 'galaxy' in self.components: 
+            self.sed_galaxy *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
+        if 'agn' in self.components: 
+            self.sed_agn *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
+        if 'nebular' in self.components: 
+            self.sed_nebular *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
 
     def _get_wavelength_sampling(self):
         """ Calculate the optimal wavelength sampling for the model
         given the required resolution values specified in the config
         file. The way this is done is key to the speed of the code. """
 
-        self.R_curve = self.calib.R_curve
-
-        # we don't want to generate a model on a coarser grid than we are observing it
         R_spec = config.R_spec
-        if self.R_curve is not None:
-            R_spec = int(4*np.max(self.R_curve[:,1]))
+        if self.calib:
+            # we don't want to generate a model on a coarser grid than we are observing it
+            self.R_curve = self.calib.R_curve
+            if self.R_curve is not None:
+                R_spec = int(4*np.max(self.R_curve[:,1]))
 
         R_phot, R_other = config.R_phot, config.R_other
 
@@ -475,7 +464,7 @@ class ModelGalaxy(object):
         return np.array(x)
 
 
-    def _compute_photometry(self):
+    def _compute_photometry(self, sed):
         """ This method generates predictions for observed photometry.
         It resamples filter curves onto observed frame wavelengths and
         integrates over them to calculate photometric fluxes. """
@@ -486,10 +475,10 @@ class ModelGalaxy(object):
         #                                               unit_conv=unit_conv)
 
         # else:
-        phot = self.filter_set.get_photometry(self.sed, self.redshift)#output_units=self.phot_units)
-        self.photometry = phot
+        phot = self.filter_set.get_photometry(sed, self.redshift)#output_units=self.phot_units)
+        return phot
 
-    def _compute_spectrum(self):
+    def _compute_spectrum(self, sed):
         """ This method generates predictions for observed spectroscopy.
         It optionally applies a Gaussian velocity dispersion then
         resamples onto the specified set of observed wavelengths. """
@@ -507,27 +496,28 @@ class ModelGalaxy(object):
         #     wav_obs = (1+self.redshift) * self.wavelengths[k_size:-k_size]
 
         # else:
-        spectrum = self.sed
         wav_obs = (1+self.redshift) * self.wavelengths
 
-        if self.calib.R_curve is not None:
-            self.logger.debug(f"Convolving output spectrum using provided R_curve")
-            wav_obs, spectrum = self.calib.convolve_R_curve(wav_obs, spectrum, self.parameters['calib']['f_LSF'])
+        if self.calib:
+            if self.calib.R_curve is not None:
+                self.logger.debug(f"Convolving output spectrum using provided R_curve")
+                wav_obs, sed = self.calib.convolve_R_curve(wav_obs, sed, self.parameters['calib']['f_LSF'])
 
-        self.spectrum = spectres.spectres(self.spec_wavs_internal, wav_obs, spectrum, fill=0)
+        spectrum = spectres.spectres(self.spec_wavs_internal, wav_obs, sed, fill=0)
 
 
         if (self.flam and self.spec_flam) or (not self.flam and not self.spec_flam): # easy conversion, just scaling
-            self.spectrum *= self.spec_unit_conv
+            spectrum *= self.spec_unit_conv
         elif self.flam and not self.spec_flam: # if SED is in f_lam but spectrum is in f_nu... 
-            self.spectrum *= self.spec_unit_conv * self.spec_wavs**2
+            spectrum *= self.spec_unit_conv * self.spec_wavs**2
         elif not self.flam and self.spec_flam: # if SED is in f_nu but spectrum is in f_lam...
-            self.spectrum *= self.spec_unit_conv / self.spec_wavs**2
+            spectrum *= self.spec_unit_conv / self.spec_wavs**2
 
         # if self.spec_units == "mujy":
         #     fluxes /= ((10**-29*2.9979*10**18/self.spec_wavs**2))
 
         # self.spectrum = np.c_[self.spec_wavs, fluxes]
+        return spectrum
 
     def _calculate_uvj_mags(self):
         """ Obtain (unnormalised) rest-frame UVJ magnitudes. """
@@ -540,34 +530,86 @@ class ModelGalaxy(object):
     # def plot_full_spectrum(self, show=True):
     #     return plotting.plot_full_spectrum(self, show=show)
 
-    def compute_quantities(self, extras):
+    def _compute_properties(self): 
 
-        self.fitted_model._update_model_components(self.samples2d[0, :])
-        self.sfh = star_formation_history(self.fitted_model.model_components)
+        self.properties = {}
 
-        quantity_names = ["stellar_mass", "formed_mass", "sfr", "ssfr", "nsfr",
-                            "mass_weighted_age", "tform", "tquench"]
+        self.properties['redshift'] = self.redshift
+        self.properties['t_hubble'] = config.age_at_z(self.redshift)
 
-        for q in quantity_names:
-            self.samples[q] = np.zeros(self.n_samples)
+        # full SEDs (and spec, phot) for each component
+        self.properties['SED'] = self.sed
 
-        self.samples["sfh"] = np.zeros((self.n_samples,
-                                        self.sfh.ages.shape[0]))
+        if len(self.components) >= 2:
+            if 'galaxy' in self.components: 
+                self.properties['SED_galaxy'] = self.sed_galaxy
+                if self.phot_output: self.properties['phot_galaxy'] = self._compute_photometry(self.sed_galaxy)
+                if self.spec_output: self.properties['spec_galaxy'] = self._compute_spectrum(self.sed_galaxy)
+            if 'agn' in self.components: 
+                self.properties['SED_AGN'] = self.sed_agn
+                if self.phot_output: self.properties['phot_AGN'] = self._compute_photometry(self.sed_agn)
+                if self.spec_output: self.properties['spec_AGN'] = self._compute_spectrum(self.sed_agn)
+            if 'nebular' in self.components: 
+                self.properties['SED_nebular'] = self.sed_nebular
+                if self.phot_output: self.properties['phot_nebular'] = self._compute_photometry(self.sed_nebular)
+                if self.spec_output: self.properties['spec_nebular'] = self._compute_spectrum(self.sed_nebular)
 
-        quantity_names += ["sfh"]
+        if 'galaxy' in self.components: 
+            for q in ['stellar_mass', 'formed_mass', 'SFR_10', 'sSFR_10', 'nSFR_10', 'SFR_100', 'sSFR_100', 'nSFR_100', 'mass_weighted_age', 't_form', 't_quench']:
+                self.properties[q] = getattr(self.galaxy.sfh, q)
 
-        for i in range(self.n_samples):
-            param = self.samples2d[self.indices[i], :]
-            self.fitted_model._update_model_components(param)
-            self.sfh.update(self.fitted_model.model_components)
-
-            for q in quantity_names:
-                self.samples[q][i] = getattr(self.sfh, q)
+            self.properties['SFH_ages'] = self.galaxy.sfh.ages
+            self.properties['SFH_redshifts'] = config.z_at_age(self.properties['t_hubble']-self.properties['sfh_ages'])
+            self.properties['SFH'] = self.galaxy.sfh.sfh
 
 
+        # emission line fluxes, equivalent widths 
+        # self.line_fluxes
+        # self.line_EWs
+
+        tophat = np.array((self.wavelengths > 1450)&(self.wavelengths < 1550),dtype=bool)
+        if self.flam: 
+            sed_flam = (self.sed*self.sed_units).to(u.erg/u.s/u.cm**2/u.angstrom).value
+            sed_fnu = (self.sed*self.sed_units * (self.wav_obs * self.wav_units)**2 / speed_of_light).to(u.Jy).value
+        else: 
+            sed_flam = (self.sed*self.sed_units * speed_of_light / (self.wav_obs * self.wav_units)**2).to(u.erg/u.s/u.cm**2/u.angstrom).value
+            sed_fnu = (self.sed*self.sed_units).to(u.Jy).value
+
+        mUV = -2.5*np.log10(np.mean(sed_fnu[tophat])/(1+self.redshift)/3631)
+        dL = config.cosmo.luminosity_distance(self.redshift).to(u.pc).value
+        MUV = mUV - 5*(np.log10(dL)-1)
+        self.properties['m_UV'] = round(mUV,4)
+        self.properties['M_UV'] = round(MUV,4)
+        
+        # calzetti 1994 wavelength windows 
+        windows = np.zeros(len(self.wavelengths),dtype=bool)
+        windows |= (self.wavelengths>=1268)&(self.wavelengths<=1284)
+        windows |= (self.wavelengths>=1309)&(self.wavelengths<=1316)
+        windows |= (self.wavelengths>=1342)&(self.wavelengths<=1371)
+        windows |= (self.wavelengths>=1407)&(self.wavelengths<=1515)
+        windows |= (self.wavelengths>=1562)&(self.wavelengths<=1583)
+        windows |= (self.wavelengths>=1677)&(self.wavelengths<=1740)
+        windows |= (self.wavelengths>=1760)&(self.wavelengths<=1833)
+        windows |= (self.wavelengths>=1866)&(self.wavelengths<=1890)
+        windows |= (self.wavelengths>=1930)&(self.wavelengths<=1950)
+        windows |= (self.wavelengths>=2400)&(self.wavelengths<=2580)
+        p = np.polyfit(np.log10(self.wavelengths[windows]), np.log10(sed_flam[windows]), deg=1)
+        self.properties['beta_UV'] = round(p[0],4)
+        # beta_opt?
+
+        # dust_curve
+        # UVJ mags
+
+        # # Set up a filter_set for calculating rest-frame UVJ magnitudes.
+        # uvj_filt_list = np.loadtxt(utils.install_dir
+        #                            + "/filters/UVJ.filt_list", dtype="str")
+        # self.uvj_filter_set = filters.filter_set(uvj_filt_list)
+        # self.uvj_filter_set.resample_filter_curves(self.wavelengths)
 
 
     def save_output(self, outfile, overwrite=True):
+        assert hasattr(self, properties)
+
         if outfile.endswith('.fits'):
             from astropy.io import fits
             self.logger.info(f'Saving model output to {outfile}')
@@ -579,7 +621,7 @@ class ModelGalaxy(object):
             columns.append(fits.Column(name='flux', array=self.spectrum_full, format='D', unit=str(self.sed_units)))
             tables.append(fits.BinTableHDU.from_columns(columns, header=fits.Header({'EXTNAME':'SED'})))
 
-            if 'photometry' in dir(self):
+            if self.phot_output:
                 columns = []
                 columns.append(fits.Column(name='wav_obs', array=self.filter_set.eff_wavs, format='D', unit=str(self.wav_units)))
                 columns.append(fits.Column(name='wav_obs_min', array=self.filter_set.min_wavs, format='D', unit=str(self.wav_units)))
