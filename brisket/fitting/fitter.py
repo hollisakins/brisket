@@ -332,7 +332,7 @@ class Fitter(object):
         self.logger.info('╔' + '═'*parameter_len + '╦' + '═'*12 + '╦' + '═'*12 + '╦' + '═'*12 + '╦' + '═'*54 + '╗')
         self.logger.info('║ ' + 'Parameter' + ' '*(parameter_len-10) + '║    16th    ║    50th    ║    84th    ║' + ' '*21 + 'Distribution' + ' '*21 + '║')
         self.logger.info('╠' + '═'*parameter_len + '╬' + '═'*12 + '╬' + '═'*12 + '╬' + '═'*12 + '╬' + '═'*54 + '╣')
-        for i in range(self.fitted_mode.ndim):
+        for i in range(self.fitted_model.ndim):
             s = "║ "
             s += f"{self.fitted_model.params[i]}" + ' '*(parameter_len-len(self.fitted_model.params[i])-2) 
             s += " ║ "
