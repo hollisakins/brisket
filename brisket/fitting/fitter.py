@@ -338,7 +338,7 @@ class Fitter(object):
             s += " ║ "
             
             p00 = self.fitted_model.prior.limits[i][0]
-            p99 = self.fitted_model.prior.limits[i][0]
+            p99 = self.fitted_model.prior.limits[i][1]
             p16 = self.results['conf_int'][0,i]
             p50 = self.results['median'][i]
             p84 = self.results['conf_int'][1,i]
@@ -374,6 +374,7 @@ class Fitter(object):
                 elif y<13/16: s += '▆'
                 elif y<15/16: s += '▇'
                 else: s += '█'
+            s += f"{p99:>7}"
               
                     
             s += '║'
