@@ -75,5 +75,6 @@ As well as several projects incorporated into ``brisket``:
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials:
+   
    example-model-sed.ipynb
    example-simple-fit.ipynb

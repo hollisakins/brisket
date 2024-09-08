@@ -14,15 +14,18 @@ version = '0.1.0'
 # -- General configuration
 
 extensions = [
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.doctest',
+    'sphinx.ext.autosectionlabel',
+    'nbsphinx',
+    'sphinx_rtd_theme',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.duration',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
 ]
@@ -55,9 +58,24 @@ intersphinx_disabled_domains = ['std']
 
 templates_path = ['_templates']
 
+source_suffix = '.rst'
+
+master_doc = 'index.rst'
+
 # -- Options for HTML output
 
 html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This patterns also effect to html_static_path and html_extra_path
+exclude_patterns = ['.DS_Store', '**.ipynb_checkpoints']
+
+edit_on_github_project = 'hollisakins/brisket'
+edit_on_github_branch = 'master'
+# edit_on_github_src = 'docs/'
+
