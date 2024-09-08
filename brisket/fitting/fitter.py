@@ -325,8 +325,11 @@ class Fitter(object):
 
     def _print_results(self):
         """ Print the 16th, 50th, 84th percentiles of the posterior. """
-
-        # self.logger.info(f"{'Parameter':<25}{'Posterior percentiles':>31}")
+        # ╔═════════════════════════╦══════════╦══════════╦══════════╦════════════════════════════════════════════════════╗
+        # ║ Parameter               ║   16th   ║   50th   ║   84th   ║                    Distribution                    ║
+        # ╠═════════════════════════╬══════════╬══════════╬══════════╬════════════════════════════════════════════════════╣
+        # ║                         ║          ║          ║          ║ 1e-20         ▁▁▁▁▂▂▂▂▂▃▃▃▄▄▅▅▆▇█▇▅▂         1e-18 ║
+        
         self.logger.info(f"{'Parameter':<25} {'16th':>10} {'50th':>10} {'84th':>10}")
         self.logger.info("-"*58)
         for i in range(self.fitted_model.ndim):

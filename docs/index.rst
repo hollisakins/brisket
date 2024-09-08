@@ -62,8 +62,18 @@ As well as several projects incorporated into ``brisket``:
 * TBD
 
  .. toctree::
-    :hidden:
+    :maxdepth: 1
+    :caption: Contents: 
     
     Home <self>
+    install
+    features
+    models
     cli
     api
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials:
+   example-model-sed.ipynb
+   example-simple-fit.ipynb
