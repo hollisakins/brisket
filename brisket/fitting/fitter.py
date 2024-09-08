@@ -234,7 +234,7 @@ class Fitter(object):
                                                 log_dir='/'.join(self.fname.split('/')[:-1]), 
                                                 resume=resume, 
                                                 run_num=None)
-                u_sampler.stepsampler = SliceSampler(nsteps=len(self.fitted_model.params)*4,
+                u_sampler.stepsampler = SliceSampler(nsteps=8,#,
                                                      generate_direction=generate_mixture_random_direction)
                 u_sampler.run(
                     min_num_live_points=n_live,

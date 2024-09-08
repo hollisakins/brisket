@@ -61,20 +61,20 @@ As well as several projects incorporated into ``brisket``:
 * The `UltraNest <https://johannesbuchner.github.io/UltraNest/index.html>`_ nested sampling algorithm `(Buchner et al. 2021) <https://arxiv.org/abs/2101.09604>`_
 * TBD
 
- .. toctree::
-    :maxdepth: 1
-    :caption: Contents: 
-    
-    Home <self>
-    install
-    features
-    models
-    cli
-    api
+.. toctree::
+  :maxdepth: 1
+  :caption: Contents: 
+  
+  Home <self>
+  install
+  features
+  models
+  cli
+  api
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials:
-   
+
    example-model-sed.ipynb
    example-simple-fit.ipynb
