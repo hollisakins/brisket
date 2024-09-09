@@ -98,13 +98,13 @@ class Params:
                         split = val[subkey]['mirror'].split(':')
                         if len(split)==1:
                             self.free_param_mirrors[f'{key}:{subkey}'] = f"{key}:{val[subkey]['mirror']}"
-                            self.add_param(f'{key}:{subkey}', val[val[subkey]['mirror']])
+                            # self.add_param(f'{key}:{subkey}', val[val[subkey]['mirror']])
                         elif len(split)==2:
                             self.free_param_mirrors[f'{key}:{subkey}'] = val[subkey]['mirror']
-                            self.add_param(f'{key}:{subkey}', data[split[0]][split[1]])
+                            # self.add_param(f'{key}:{subkey}', data[split[0]][split[1]])
                         elif len(split)==3:
                             self.free_param_mirrors[f'{key}:{subkey}'] = val[subkey]['mirror']
-                            self.add_param(f'{key}:{subkey}', data[split[0]][split[1]][split[2]])
+                            # self.add_param(f'{key}:{subkey}', data[split[0]][split[1]][split[2]])
                         if 'transform' in val[subkey]:
                             self.free_param_transforms[f'{key}:{subkey}'] = val[subkey]['transform']
                     else:
