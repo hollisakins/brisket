@@ -323,13 +323,20 @@ class Fitter(object):
         parameter_len_max = np.max([len(p) for p in self.fitted_model.params])
         parameter_len = np.max([parameter_len_max+2, 25])
 
-        self.logger.info('╔' + '═'*parameter_len + '╦' + '═'*12 + '╦' + '═'*12 + '╦' + '═'*12 + '╦' + '═'*54 + '╗')
-        self.logger.info('║ ' + 'Parameter' + ' '*(parameter_len-10) + '║    16th    ║    50th    ║    84th    ║' + ' '*21 + 'Distribution' + ' '*21 + '║')
-        self.logger.info('╠' + '═'*parameter_len + '╬' + '═'*12 + '╬' + '═'*12 + '╬' + '═'*12 + '╬' + '═'*54 + '╣')
+        if config.ascii:
+            value_cahrs = ' ░▒▓█'
+            border_chars = '═║╔╦╗╠╬╣╚╩╝'
+        else:
+            value_chars = ' ▁▂▃▄▅▆▇█'
+            border_chars = '═║╔╦╗╠╬╣╚╩╝'
+
+        self.logger.info(border_chars[2] + border_chars[0]*parameter_len + border_chars[3] + border_chars[0]*12 + border_chars[3] + border_chars[0]*12 + border_chars[3] + border_chars[0]*12 + border_chars[3] + border_chars[0]*54 + border_chars[4])
+        self.logger.info(border_chars[1] + ' ' + 'Parameter' + ' '*(parameter_len-10) + +border_chars[1]+'    16th    '+border_chars[1]+'    50th    '+border_chars[1]+'    84th    '+border_chars[1] + ' '*21 + 'Distribution' + ' '*21 + border_chars[1])
+        self.logger.info(border_chars[5] + border_chars[0]*parameter_len + border_chars[6] + border_chars[0]*12 + border_chars[6] + border_chars[0]*12 + border_chars[6] + border_chars[0]*12 + border_chars[6] + border_chars[0]*54 + border_chars[7])
         for i in range(self.fitted_model.ndim):
-            s = "║ "
+            s = f"{border_chars[1]} "
             s += f"{self.fitted_model.params[i]}" + ' '*(parameter_len-len(self.fitted_model.params[i])-2) 
-            s += " ║ "
+            s += f" {border_chars[1]} "
             
             p00 = self.fitted_model.prior.limits[i][0]
             p99 = self.fitted_model.prior.limits[i][1]
@@ -343,16 +350,16 @@ class Fitter(object):
                 p50 = int(np.round(p50, -sig_digit))
                 p84 = int(np.round(p84, -sig_digit))
                 p99 = int(np.round(p99, -sig_digit))
-                s += f"{p16:<10d} ║ {p50:<10d} ║ {p84:<10d}"
+                s += f"{p16:<10d} {border_chars[1]} {p50:<10d} {border_chars[1]} {p84:<10d}"
             else:
                 p00 = np.round(p00, -sig_digit)
                 p16 = np.round(p16, -sig_digit)
                 p50 = np.round(p50, -sig_digit)
                 p84 = np.round(p84, -sig_digit)
                 p99 = np.round(p99, -sig_digit)
-                s += f"{p16:<10} ║ {p50:<10} ║ {p84:<10}"
+                s += f"{p16:<10} {border_chars[1]} {p50:<10} {border_chars[1]} {p84:<10}"
 
-            s += ' ║ '
+            s += f' {border_chars[1]} '
 
             bins = np.linspace(self.fitted_model.prior.limits[i][0], self.fitted_model.prior.limits[i][1], 39)
             ys, _ = np.histogram(self.results['samples2d'][i], bins=bins)
@@ -371,10 +378,10 @@ class Fitter(object):
             s += f"{p99:>7}"
               
                     
-            s += ' ║'
+            s += f' {border_chars[1]}'
         
             self.logger.info(s)
-        self.logger.info('╚' + '═'*parameter_len + '╩' + '═'*12 + '╩' + '═'*12 + '╩' + '═'*12 + '╩' + '═'*54 + '╝')
+        self.logger.info(border_chars[8] + border_chars[0]*parameter_len + border_chars[9] + border_chars[0]*12 + border_chars[9] + border_chars[0]*12 + border_chars[9] + border_chars[0]*12 + border_chars[9] + border_chars[0]*54 + border_chars[10])
 
         # self.logger.info(f"{'Parameter':<25} {'16th':>10} {'50th':>10} {'84th':>10}")
         # self.logger.info("-"*58)
