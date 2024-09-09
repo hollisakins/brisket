@@ -330,7 +330,7 @@ class ModelGalaxy(object):
         
         if 'agn' in self.components: 
             params = self.parameters['agn']
-            
+
             sed = self.agn.accdisk.spectrum(params) * (1+self.redshift)**2
 
             if self.agn.nebular:
@@ -343,7 +343,7 @@ class ModelGalaxy(object):
                 sed += nebular_sed
 
             # Add attenuation
-            if comp.dust_atten:
+            if self.agn.dust_atten:
                 sed_atten = sed * self.agn.dust_atten.trans_cont
                 sed = sed_atten
                 # if self.nebular:
