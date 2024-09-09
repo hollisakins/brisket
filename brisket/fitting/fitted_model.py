@@ -41,8 +41,8 @@ class FittedModel(object):
         self.limits = self.parameters.free_param_limits   # Limits for fitted parameter values
         self.pdfs = self.parameters.free_param_pdfs       # Probability densities within lims
         self.hypers = self.parameters.free_param_hypers  # Hyperparameters of prior distributions
-        self.mirrors = {} # self.parameters.free_param_mirrors   # Params which mirror a fitted param
-        #self.transforms = {} # self.parameters.free_param_transforms   # Params which are a transform of another param
+        self.mirrors = self.parameters.free_param_mirrors   # Params which mirror a fitted param
+        self.transforms = self.parameters.free_param_transforms   # Params which are a transform of another param
         self.ndim = self.parameters.ndim
 
         self.prior = Prior(self.limits, self.pdfs, self.hypers)
@@ -259,6 +259,7 @@ class FittedModel(object):
         # dirichlet_comps = []
 
         # Substitute values of fit params from param into model_comp.
+
         for i in range(len(self.params)):
             split = self.params[i].split(":")
             if len(split) == 1:
@@ -267,54 +268,38 @@ class FittedModel(object):
                 self.parameters[split[0]][split[1]] = param[i]
             elif len(split) == 3:
                 self.parameters[split[0]][split[1]][split[2]] = param[i]
-        # for i in range(len(self.params)):
-        #     split = self.params[i].split(":")
-        #     if len(split) == 1:
-        #         self.model_components[self.params[i]] = param[i]
-
-        #     elif len(split) == 2:
-        #         if "dirichlet" in split[1]:
-        #             if split[0] not in dirichlet_comps:
-        #                 dirichlet_comps.append(split[0])
-        #         else:
-        #             self.model_components[split[0]][split[1]] = param[i]
-            
-        #     elif len(split) == 3:
-        #         if "dirichlet" in split[2]:
-        #             if split[1] not in dirichlet_comps:
-        #                 dirichlet_comps.append(split[1])
-        #         else:
-        #             self.model_components[split[0]][split[1]][split[2]] = param[i]
 
         # Set any mirror params to the value of the relevant fit param.
         for key in list(self.mirrors):
+            
+            if key in list(self.transforms):
+                if isinstance(self.transforms[key], (int,float)):
+                    transform = lambda x: x*self.transforms[key]
+                elif callable(self.transforms[key]): 
+                    transform = self.transforms[key]
+                else: 
+                    raise Exception()
+            else:
+                transform = lambda x: x
+                    
+
             split_par = key.split(":")
             split_val = self.mirrors[key].split(":")
-            fit_val = self.parameters[split_val[0]][split_val[1]]
-            self.parameters[split_par[0]][split_par[1]] = fit_val
 
-        # # Deal with any Dirichlet distributed parameters.
-        # if len(dirichlet_comps) > 0:
-        #     comp = dirichlet_comps[0]
-        #     n_bins = 0
-        #     for i in range(len(self.params)):
-        #         split = self.params[i].split(":")
-        #         if (split[0] == comp) and ("dirichlet" in split[1]):
-        #             n_bins += 1
-            # self.model_components[comp]["r"] = np.zeros(n_bins)
+            if len(split_val)==1:
+                fit_val = self.parameters[split_val[0]]
+            elif len(split_val)==2:
+                fit_val = self.parameters[split_val[0]][split_val[1]]
+            elif len(split_val)==3:
+                fit_val = self.parameters[split_val[0]][split_val[1]][split_val[2]]
 
-            # j = 0
-            # for i in range(len(self.params)):
-            #     split = self.params[i].split(":")
-            #     if (split[0] == comp) and "dirichlet" in split[1]:
-            #         self.model_components[comp]["r"][j] = param[i]
-            #         j += 1
-
-            # tx = dirichlet(self.model_components[comp]["r"],
-            #                self.model_components[comp]["alpha"])
-
-            # self.model_components[comp]["tx"] = tx
-
+            if len(split_par)==1:
+                self.parameters[split_par[0]] = transform(fit_val)
+            elif len(split_par)==2:
+                self.parameters[split_par[0]][split_par[1]] = transform(fit_val)
+            elif len(split_par)==3:
+                self.parameters[split_par[0]][split_par[1]][split_par[2]] = transform(fit_val)
+        
     def _update_model_galaxy(self, param):
         self._update_model_parameters(param)
         self.model_galaxy.update(self.parameters)

@@ -51,9 +51,9 @@ class Params:
         self.free_param_limits = []  # Limits for fitted parameter values
         self.free_param_pdfs = []    # Probability densities within lims
         self.free_param_hypers = []  # Hyperparameters of prior distributions
+        self.free_param_mirrors = {}
+        self.free_param_transforms = {}
         self.defaults = []
-        self.mirror_params = {}
-        self.transforms = {}
 
 
         self.data = data
@@ -97,16 +97,16 @@ class Params:
                     elif 'mirror' in val[subkey]: 
                         split = val[subkey]['mirror'].split(':')
                         if len(split)==1:
-                            self.mirror_params[f'{key}:{subkey}'] = f"{key}:{val[subkey]['mirror']}"
+                            self.free_param_mirrors[f'{key}:{subkey}'] = f"{key}:{val[subkey]['mirror']}"
                             self.add_param(f'{key}:{subkey}', val[val[subkey]['mirror']])
                         elif len(split)==2:
-                            self.mirror_params[f'{key}:{subkey}'] = val[subkey]['mirror']
+                            self.free_param_mirrors[f'{key}:{subkey}'] = val[subkey]['mirror']
                             self.add_param(f'{key}:{subkey}', data[split[0]][split[1]])
                         elif len(split)==3:
-                            self.mirror_params[f'{key}:{subkey}'] = val[subkey]['mirror']
+                            self.free_param_mirrors[f'{key}:{subkey}'] = val[subkey]['mirror']
                             self.add_param(f'{key}:{subkey}', data[split[0]][split[1]][split[2]])
                         if 'transform' in val[subkey]:
-                            self.transforms[f'{key}:{subkey}'] = val[subkey]['transform']
+                            self.free_param_transforms[f'{key}:{subkey}'] = val[subkey]['transform']
                     else:
                         self.add_param(f'{key}:{subkey}', val[subkey])
                 else:
