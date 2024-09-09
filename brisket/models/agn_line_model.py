@@ -16,6 +16,7 @@ class AGNLineModel(object):
 
     def __init__(self, wavelengths, model_comp, logger=utils.NullLogger):
         self.wavelengths = wavelengths
+        self.logger = logger
 
         self.flag = True
         if not 'nebular' in model_comp:
