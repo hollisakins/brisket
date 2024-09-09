@@ -16,6 +16,13 @@ class AGNLineModel(object):
 
     def __init__(self, wavelengths, model_comp, logger=utils.NullLogger):
         self.wavelengths = wavelengths
+
+        self.flag = True
+        if not 'nebular' in model_comp:
+            self.logger.info("Skipping AGN line module")
+            self.flag = False; return
+
+
         self.type = model_comp['nebular']['type']
 
         if self.type == 'cloudy':
@@ -177,3 +184,6 @@ class AGNLineModel(object):
         spectrum = spectrum_high * high_weight + spectrum_low * low_weight
 
         return spectrum
+
+    def __bool__(self):
+        return self.flag

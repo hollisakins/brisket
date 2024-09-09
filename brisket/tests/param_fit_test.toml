@@ -72,9 +72,9 @@
     # type = "full"
     # logLbol = 45
     type = 'dblplw'
-    Muv = {low=-26, high=-18}
-    beta1 = -2
-    beta2 = -2
+    Muv = {low=-26, high=-16}
+    beta1 = -2.33
+    beta2 = -2.33
     wav1 = 3880
     
     [agn.nebular]
