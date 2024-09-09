@@ -329,6 +329,8 @@ class ModelGalaxy(object):
             self.sed += self.sed_galaxy
         
         if 'agn' in self.components: 
+            params = self.parameters['agn']
+            
             sed = self.agn.accdisk.spectrum(params) * (1+self.redshift)**2
 
             if self.agn.nebular:

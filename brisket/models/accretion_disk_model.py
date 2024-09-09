@@ -20,6 +20,7 @@ class AccretionDiskModel(object):
 
     def __init__(self, wavelengths, model_comp, logger=utils.NullLogger):
         self.wavelengths = wavelengths
+        self.logger = logger
         self.type = model_comp['type']
         # could be optimized more
 
@@ -94,3 +95,6 @@ class AccretionDiskModel(object):
             Slam_uv = (Snu_uv * c/(1500*u.angstrom)**2).to(u.Lsun/u.angstrom).value # in Lsun/angstrom
             y *= Slam_uv/y0
             return y
+
+    # def __bool__(self):
+    #     return self.flag
