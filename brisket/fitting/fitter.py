@@ -50,6 +50,7 @@ from brisket import utils
 from brisket.fitting.fitted_model import FittedModel
 from brisket.fitting.posterior import Posterior
 from brisket.parameters import Params
+from brisket import config
 
 
 class Fitter(object):
@@ -324,14 +325,14 @@ class Fitter(object):
         parameter_len = np.max([parameter_len_max+2, 25])
 
         if config.ascii:
-            value_cahrs = ' ░▒▓█'
+            value_chars = ' ░▒▓█'
             border_chars = '═║╔╦╗╠╬╣╚╩╝'
         else:
             value_chars = ' ▁▂▃▄▅▆▇█'
             border_chars = '═║╔╦╗╠╬╣╚╩╝'
 
         self.logger.info(border_chars[2] + border_chars[0]*parameter_len + border_chars[3] + border_chars[0]*12 + border_chars[3] + border_chars[0]*12 + border_chars[3] + border_chars[0]*12 + border_chars[3] + border_chars[0]*54 + border_chars[4])
-        self.logger.info(border_chars[1] + ' ' + 'Parameter' + ' '*(parameter_len-10) + +border_chars[1]+'    16th    '+border_chars[1]+'    50th    '+border_chars[1]+'    84th    '+border_chars[1] + ' '*21 + 'Distribution' + ' '*21 + border_chars[1])
+        self.logger.info(border_chars[1] + ' ' + 'Parameter' + ' '*(parameter_len-10) +border_chars[1]+'    16th    '+border_chars[1]+'    50th    '+border_chars[1]+'    84th    '+border_chars[1] + ' '*21 + 'Distribution' + ' '*21 + border_chars[1])
         self.logger.info(border_chars[5] + border_chars[0]*parameter_len + border_chars[6] + border_chars[0]*12 + border_chars[6] + border_chars[0]*12 + border_chars[6] + border_chars[0]*12 + border_chars[6] + border_chars[0]*54 + border_chars[7])
         for i in range(self.fitted_model.ndim):
             s = f"{border_chars[1]} "
@@ -365,16 +366,24 @@ class Fitter(object):
             ys, _ = np.histogram(self.results['samples2d'][i], bins=bins)
             ys = ys/np.max(ys)
             s += f"{p00:<7}"
-            for y in ys:
-                if y<1/16: s += ' '
-                elif y<3/16: s += '▁'
-                elif y<5/16: s += '▂'
-                elif y<7/16: s += '▃'
-                elif y<9/16: s += '▄'
-                elif y<11/16: s += '▅'
-                elif y<13/16: s += '▆'
-                elif y<15/16: s += '▇'
-                else: s += '█'
+            if config.ascii:
+                for y in ys:
+                    if y<1/8: s += value_chars[0]
+                    elif y<3/8: s += value_chars[1]
+                    elif y<5/8: s += value_chars[2]
+                    elif y<7/8: s += value_chars[3]
+                    else: s += value_chars[4]
+            else:
+                for y in ys:
+                    if y<1/16: s += value_chars[0]
+                    elif y<3/16: s += value_chars[1]
+                    elif y<5/16: s += value_chars[2]
+                    elif y<7/16: s += value_chars[3]
+                    elif y<9/16: s += value_chars[4]
+                    elif y<11/16: s += value_chars[5]
+                    elif y<13/16: s += value_chars[6]
+                    elif y<15/16: s += value_chars[7]
+                    else: s += value_chars[8]
             s += f"{p99:>7}"
               
                     

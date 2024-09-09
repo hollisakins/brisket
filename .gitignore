@@ -1,5 +1,6 @@
 __pycache__/
-brisket/models/grids/*
+brisket/models/grids/*.fits
+brisket/models/grids/*.txt
 *.egg-info/
 brisket/__pycache__/
 brisket/filters/__pycache__/

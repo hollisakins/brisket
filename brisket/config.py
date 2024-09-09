@@ -29,6 +29,10 @@ res_dir = install_dir + "/models/res"
 filter_db = install_dir + '/filters/filter_db.hdf5'
 '''Stores the path to the filter database for easy reference'''
 
+
+ascii = False
+'''Whether to use ascii characters only in printing fit outputs. Defaults to false (i.e., use fancier unicode characters)'''
+
 # Cosmology is imported from astropy
 from astropy.cosmology import Planck18 as cosmo
 z_array = np.arange(0., 100., 0.01)

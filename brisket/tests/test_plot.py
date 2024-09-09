@@ -9,14 +9,14 @@ import brisket
 
 
 p = {'redshift': 7.05}
-# p['galaxy'] = {
-#     'stellar_model': 'BC03',
-#     'logMstar': 7.4,
-#     'metallicity': 0.05,
-#     'sfh': 'constant',
-#     'age_min': 0,
-#     'age_max': 0.01,
-# }
+p['galaxy'] = {
+    'stellar_model': 'BC03',
+    'logMstar': {'low':5,'high':10},
+    'metallicity': 0.05,
+    'sfh': 'constant',
+    'age_min': 0,
+    'age_max': 0.01,
+}
 # p['galaxy']['nebular'] = {
 #     'type': 'cloudy',
 #     'logU': -1.0, 
@@ -34,19 +34,30 @@ p['nebular'] = {
     # 'f_Lya_narrow': 7e-19,
     # 'dv_Lya': 2800, 
     # 'f_CIII_narrow': 1.44e-19,
-    # 'f_CIV_narrow': 2.296e-19,
+    'f_CIV_narrow': {'mirror': 'galaxy:logMstar', 'transform':lambda x: x**2},
     #'f_Ha_broad': 7.188e-19, 
     # 'f_Ha_narrow': 4.939e-19, 
     #'f_Hb_broad': 1e-20, 
     # 'f_Hb_narrow': 1.149e-19, 
     # 'f_OIII4959_narrow': 1.065e-19, 
     # 'f_OIII5007_narrow': 4.079e-19, 
+    'f_OIII5007_narrow': {'low':0, 'high':1e-19},
+    'f_OIII4959_narrow': {'mirror':'f_OIII5007_narrow', 'transform': 1/3},
     'f5100': 1.104e-21,
 }
 p['calib'] = { # 'calib' handles instrumental calibration, e.g. matching spectral resolution, or polynomial correction factors to account for slit loss/flux calibration
     'R_curve': 'JWST_NIRSpec_PRISM',
     'f_LSF': 1.3,
 }
+
+from brisket.parameters import Params
+p = Params(p)
+# print(p.free_param_names)
+print(p.mirror_params)
+print(p.transforms)
+
+
+quit()
 
 # spec_wavs = brisket.utils.prism_wavs
 spec_wavs = fits.getdata('/data/DD6585/final_cal2/jw06585004001_s66964_x1d.fits')['WAVELENGTH']
