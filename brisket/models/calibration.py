@@ -60,7 +60,7 @@ class SpectralCalibrationModel(object):
             self.spec_wavs_R = np.array(spec_wavs_R)
     
     def convolve_R_curve(self, wav_obs, spectrum, f_LSF):
-        spectrum = spectres.spectres(self.spec_wavs_R, wav_obs, spectrum, fill=0)
+        spectrum = spectres.spectres(self.spec_wavs_R, wav_obs, spectrum, fill=0, verbose=False)
         sigma_pix = self.oversample/2.35/f_LSF  # sigma width of kernel in pixels
         k_size = 4*int(sigma_pix+1)
         x_kernel_pix = np.arange(-k_size, k_size+1)

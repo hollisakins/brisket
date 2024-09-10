@@ -332,6 +332,7 @@ class ModelGalaxy(object):
             params = self.parameters['agn']
 
             sed = self.agn.accdisk.spectrum(params) * (1+self.redshift)**2
+            self.sed_accdisk = sed
 
             if self.agn.nebular:
                 # line_names = list(self.nebular.line_names)
@@ -377,6 +378,7 @@ class ModelGalaxy(object):
         if 'galaxy' in self.components: 
             self.sed_galaxy *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
         if 'agn' in self.components: 
+            self.sed_accdisk *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
             self.sed_agn *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
         if 'nebular' in self.components: 
             self.sed_nebular *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
@@ -550,6 +552,7 @@ class ModelGalaxy(object):
                 if self.phot_output: self.properties['phot_galaxy'] = self._compute_photometry(self.sed_galaxy)
                 if self.spec_output: self.properties['spec_galaxy'] = self._compute_spectrum(self.sed_galaxy)
             if 'agn' in self.components: 
+                self.properties['SED_accdisk'] = self.sed_accdisk
                 self.properties['SED_AGN'] = self.sed_agn
                 if self.phot_output: self.properties['phot_AGN'] = self._compute_photometry(self.sed_agn)
                 if self.spec_output: self.properties['spec_AGN'] = self._compute_spectrum(self.sed_agn)
