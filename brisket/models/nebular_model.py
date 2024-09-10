@@ -144,10 +144,10 @@ class NebularModel(object):
         """
         if self.type == 'cloudy':
             if 'grid' in params['nebular']:
-                if params['grid']['nebular'] == 'continuum':
+                if params['nebular']['grid'] == 'continuum':
                     self.logger.debug("Interpolating nebular continuum grid")
                     return self._interpolate_cloudy_grid(self.continuum_grid, sfh_ceh, params['t_bc'], params['nebular']['logU'])
-                if params['grid']['nebular'] == 'line':
+                if params['nebular']['grid'] == 'line':
                     self.logger.debug("Interpolating nebular line grid")
                     return self._interpolate_cloudy_grid(self.line_grid, sfh_ceh, params['t_bc'], params['nebular']['logU'])
             else:
