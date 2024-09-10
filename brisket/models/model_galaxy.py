@@ -541,6 +541,8 @@ class ModelGalaxy(object):
 
         # full SEDs (and spec, phot) for each component
         self.properties['SED'] = self.sed
+        if self.phot_output: self.properties['photometry'] = self._compute_photometry(self.sed)
+        if self.spec_output: self.properties['spectrum'] = self._compute_spectrum(self.sed)
 
         if len(self.components) >= 2:
             if 'galaxy' in self.components: 
@@ -561,7 +563,7 @@ class ModelGalaxy(object):
                 self.properties[q] = getattr(self.galaxy.sfh, q)
 
             self.properties['SFH_ages'] = self.galaxy.sfh.ages
-            self.properties['SFH_redshifts'] = config.z_at_age(self.properties['t_hubble']-self.properties['sfh_ages'])
+            self.properties['SFH_redshifts'] = config.z_at_age(self.properties['t_hubble']-self.properties['SFH_ages'])
             self.properties['SFH'] = self.galaxy.sfh.sfh
 
 

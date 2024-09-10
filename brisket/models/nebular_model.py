@@ -51,7 +51,7 @@ class NebularModel(object):
             self.cont_grid = config.nebular_models[self.model]['cont_grid']
             self.line_grid = config.nebular_models[self.model]['line_grid']
 
-            self.combined_grid, self.line_grid = self._setup_cloudy_grids()
+            self.continuum_grid, self.line_grid, self.combined_grid = self._setup_cloudy_grids()
 
         #### Prepare CLOUDY modeling 
         if self.type == 'flex':
@@ -106,6 +106,8 @@ class NebularModel(object):
                                                       raw_cont_grid[k+1, 1:],
                                                       left=0, right=0)
 
+
+        cont_grid = copy(comb_grid)
         # Add the nebular lines to the resampled nebular continuum grid.
         # for i in range(config.line_wavs.shape[0]):
         #     ind = np.abs(self.wavelengths - config.line_wavs[i]).argmin()
@@ -121,7 +123,7 @@ class NebularModel(object):
                         for l in range(self.neb_ages.shape[0]):
                             comb_grid[:, j, k, l] += self._gauss(self.wavelengths, line_grid[i, j, k, l], config.line_wavs[i], fwhm, fwhm_unit='kms')
 
-        return comb_grid, line_grid
+        return cont_grid, line_grid, comb_grid
 
     def spectrum(self, params, sfh_ceh=None):
         """ Obtain a 1D spectrum for a given star-formation and
@@ -141,8 +143,16 @@ class NebularModel(object):
             The maximum age at which to include nebular emission.
         """
         if self.type == 'cloudy':
-            self.logger.debug("Interpolating nebular continuum grid")
-            return self._interpolate_cloudy_grid(self.combined_grid, sfh_ceh, params['t_bc'], params['nebular']['logU'])
+            if 'grid' in params['nebular']:
+                if params['grid']['nebular'] == 'continuum':
+                    self.logger.debug("Interpolating nebular continuum grid")
+                    return self._interpolate_cloudy_grid(self.continuum_grid, sfh_ceh, params['t_bc'], params['nebular']['logU'])
+                if params['grid']['nebular'] == 'line':
+                    self.logger.debug("Interpolating nebular line grid")
+                    return self._interpolate_cloudy_grid(self.line_grid, sfh_ceh, params['t_bc'], params['nebular']['logU'])
+            else:
+                self.logger.debug("Interpolating combined nebular grid")
+                return self._interpolate_cloudy_grid(self.combined_grid, sfh_ceh, params['t_bc'], params['nebular']['logU'])
         elif self.type == 'flex':
             self.logger.debug("Compute flexible nebular spectrum")
             return self._flex_spectrum(params) 
