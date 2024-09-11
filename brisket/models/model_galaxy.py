@@ -382,6 +382,8 @@ class ModelGalaxy(object):
             self.sed_agn *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
         if 'nebular' in self.components: 
             self.sed_nebular *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
+            for line in self.nebular.line_grid:
+                self.nebular.line_grid[line] *= unit_conv * self.igm_trans / (self.lum_flux * (1+self.redshift))
 
     def _get_wavelength_sampling(self):
         """ Calculate the optimal wavelength sampling for the model
@@ -558,8 +560,14 @@ class ModelGalaxy(object):
                 if self.spec_output: self.properties['spec_AGN'] = self._compute_spectrum(self.sed_agn)
             if 'nebular' in self.components: 
                 self.properties['SED_nebular'] = self.sed_nebular
+                for line in self.nebular.line_grid:
+                    self.properties[f'SED_nebular_{line}'] = self.nebular.line_grid[line]
                 if self.phot_output: self.properties['phot_nebular'] = self._compute_photometry(self.sed_nebular)
-                if self.spec_output: self.properties['spec_nebular'] = self._compute_spectrum(self.sed_nebular)
+                if self.spec_output: 
+                    self.properties['spec_nebular'] = self._compute_spectrum(self.sed_nebular)
+                    for line in self.nebular.line_grid:
+                        self.properties[f'spec_nebular_{line}'] = self._compute_spectrum(self.nebular.line_grid[line])
+
 
         if 'galaxy' in self.components: 
             for q in ['stellar_mass', 'formed_mass', 'SFR_10', 'sSFR_10', 'nSFR_10', 'SFR_100', 'sSFR_100', 'nSFR_100', 'mass_weighted_age', 't_form', 't_quench']:

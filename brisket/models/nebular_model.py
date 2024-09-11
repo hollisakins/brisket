@@ -273,6 +273,7 @@ class NebularModel(object):
                 raise Exception('Need normalization')
 
         self.continuum = copy(flex_spectrum)
+        self.line_grid = {}
 
         line_names, line_wavs, line_fwhms, line_fluxes = [], [], [], []
         for key in params['nebular']:
@@ -324,6 +325,7 @@ class NebularModel(object):
 
             lum = flux * lum_flux * (1+redshift) / 3.826e33
             g = self._gauss(self.wavelengths, lum, wav, fwhm, fwhm_unit='kms')
+            self.line_grid[key.replace('f_','')] = g
             flex_spectrum += g
 
         return flex_spectrum
