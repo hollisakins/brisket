@@ -1,35 +1,62 @@
-from brisket.models import StellarModel, CloudyNebularModel, FlexibleNebularModel
+# from brisket.models import StellarModel, CloudyNebularModel, FlexibleNebularModel, SalimDustModel
 
 # create a params object
 params = brisket.Params(template=None)
 # you can also import a specific template, e.g.
-params = brisket.Params(template='Akins24a') # for fitting LRD models
+# params = brisket.Params(template='Akins24a') # for fitting LRD models
+
+class Params():
+
+    def __init__(self):
+        pass
+
+    def add_source(name, model=None):
+
+        if name=='galaxy' and model is None:
+            model = brisket.models.StellarModel
+        if name=='agn' and model is None:
+            model = brisket.models.AGNModel
 
 
+params.add_source('galaxy')
+params['galaxy']['grids'] = 'bc03'
+params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
+params['galaxy']['zmet'] = brisket.FreeParam(low=0, high=2)
 
-params.add_source('galaxy', StellarModel)
-params['galaxy'].add_absorber('gas', CloudyNebularModel)
+params['galaxy'].add_sfh('continuity')
+params['galaxy']['continuity']['bin_edges'] = [0, 10, 30, 100]
+params['galaxy']['continuity']['n_bins'] = brisket.FixedParam(7)
+params['galaxy']['continuity']['z_max'] = 20
+
+params['galaxy'].add_sfh('burst')
+params['galaxy']['burst']['age'] = brisket.FreeParam(low=0, high=1)
+
+params['galaxy'].add_nebular()
+params['galaxy']['nebular']['logU'] = brisket.FreeParam(low=-4, high=-1)
+
 params['galaxy'].add_dust()
 params['galaxy']['dust']['Av'] = brisket.FreeParam(low=0, high=5)
 params['galaxy']['dust']['delta'] = brisket.FixedParam(0)
 
-params.add_source('agn')
-params['agn'].add_absorber('gas')
-params['agn'].add_absorber('dust')
+# params.add_source('agn')
+# params['agn']['gas']['f_Ha'] = brisket.FreeParam(low=0, high=1e-17)
+# params['agn']['gas']['f_Hb'] = brisket.LinkedParam(params['agn']['gas']['f_Ha'], scale=1/2.86)
+
+# More advanced users might want to add custom sources into BRISKET. This is made possible via 
+# the `model` keyword, which tells brisket which model class to use for a given source. Parameters 
+# defined under this source must be applicable to the arbitrary source
+from my_code import CustomArbitrarySourceModel
+params.add_source('arbitrary_name', model=CustomArbitrarySourceModel)
+# For example, to fit a spectrum alone, which maybe only has nebular lines, you can add a flexible 
+# nebular model
+params.add_source('nebular', model=brisket.models.FlexibleNebularModel)
+params['nebular']['fwhm'] = brisket.FreeParam(low=100, high=500)
+
+params.add_source('dust', model=brisket.models.MBBPowerLawDustEmissionModel)
+params['nebular']['Tdust'] = brisket.FreeParam(low=20, high=60)
+params['nebular']['lum'] = brisket.FreeParam(low=20, high=60)
 
 
-params['agn']['gas']['f_Ha'] = brisket.FreeParam(low=0, high=1e-17)
-params['agn']['gas']['f_Hb'] = brisket.LinkedParam(params['agn']['gas']['f_Ha'], scale=1/2.86)
-
-params.add_absorber()
-params.add_attenuator()
-
-
-# To create a more complicated model, for example, fitting multiple stellar grids 
-custom_stellar_model = StellarModel(grids='bc03') + StellarModel(grids='bpass') + StellarModel(grids='yggdrasil')
-# or a simpler alias 
-custom_stellar_model = StellarModel(grids=['bc03','bpass','yggdrasil'])
-params.add_source('galaxy', custom_stellar_model)
 
 
 # params.validate() # <- this will check that all required parameters are defined, 
