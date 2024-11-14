@@ -173,6 +173,40 @@ class ModelGalaxy(object):
         # Initialize the base parameters -- redshift, igm transmission, luminosity distance, etc
         self._define_base_params_at_redshift() #TODO should take redshift as argument? 
         
+
+        # # by default, pass flux through each stage to total 
+        # self.incident = flux
+        # self.transmitted = self.incident
+        # self.nebular = 0
+        # # reprocessed = transmitted + nebular
+        # self.escaped = 0
+        # # intrinsic = reprocessed + escaped
+        # self.attenuated = self.intrinsic
+        # self.dust = 0
+        # # total = attenuated + dust
+
+    
+
+        # @property
+        # def reprocessed(self):
+        #     return self.transmitted + self.nebular
+        # @property
+        # def intrinsic(self):
+        #     return self.reprocessed + self.escaped
+        
+        # # the total SED is, by default, the attenuated + dust SED
+        # # can be overwritten 
+        # @property
+        # def total(self):
+        #     if self._total is not None:
+        #         return self._total
+        #     else:
+        #         return self.attenuated + self.dust
+        # @total.setter
+        # def total(self, value):
+        #     self._total = value
+
+
         # Initialize the various physical models
         if 'galaxy' in self.components: 
             params = self.parameters['galaxy']
