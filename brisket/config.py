@@ -26,8 +26,8 @@ grid_dir = install_dir + "/models/grids"
 '''Stores the path to the model grid directory for easy reference'''
 res_dir = install_dir + "/models/res"
 '''Stores the path to the resolution curve directory for easy reference'''
-filter_db = install_dir + '/filters/filter_db.hdf5'
-'''Stores the path to the filter database for easy reference'''
+filter_directory = install_dir + '/filters/filter_files/filter_directory.toml'
+'''Stores the path to the filter directory for easy reference'''
 
 
 ascii = False
@@ -42,7 +42,7 @@ def age_at_z(z):
     return cosmo.age(z).value
 def z_at_age(age):
     '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
-    return np.interp(age, age_array, z_array)
+    return np.interp(age, np.flip(age_array), np.flip(z_array))
 
 fwhm = 500
 '''Default FWHM of nebular lines, in km/s (TODO: is this implemented?)'''

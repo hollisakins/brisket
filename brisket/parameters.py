@@ -2,8 +2,8 @@ import rich, toml, os, sys
 from brisket import utils
 from collections.abc import MutableMapping
 
-base_params = ['redshift', 'igm']
-allowed_components = ['galaxy','agn','nebular','calib']
+base_params = ['redshift']
+allowed_components = ['galaxy','agn','nebular','calib','igm']
 defaults = {'igm':'Inoue14', 
             'galaxy': {
                 'stellar_model':'BC03', 

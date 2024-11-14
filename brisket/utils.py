@@ -54,18 +54,6 @@ def parse_fit_params(parameters, logger=NullLogger):
 
 
 
-def unit_parser(unit_str):
-    if unit_str in ['angstrom','AA','A','ang']: return u.angstrom
-    elif unit_str in ['micrometer', 'micron','um']: return u.um
-    elif unit_str in ['nanometer','nm']: return u.nm
-    elif unit_str in ['ergscma','erg/s/cm2/a','erg/s/cm2/aa',
-                      'ergscm2a','erg/s/cm2/A','erg/s/cm^2/A']: return u.erg/u.s/u.cm**2/u.angstrom
-    elif unit_str in ['nanojy','nanoJy','njy','nJy']: return u.nJy
-    elif unit_str in ['mujy','muJy','uJy','ujy']: return u.uJy
-    elif unit_str in ['mjy','mJy']: return u.mJy
-
-
-
 
 def make_dirs(run="."):
     working_dir = os.getcwd()

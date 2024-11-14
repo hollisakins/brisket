@@ -1,7 +1,7 @@
 from __future__ import print_function, division, absolute_import
 
 import numpy as np
-import h5py, sys
+import toml, sys
 from brisket import config
 from brisket import utils
 
@@ -33,32 +33,26 @@ class filter_set(object):
         any zeros from either of their edges. """
         
         all_nicknames = {}
-        self.filt_db = h5py.File(config.filter_db, 'r')
+        self.filt_db = toml.load(config.filter_directory)
         
-        for ds in self.filt_db:
-            for n in self.filt_db[ds].attrs['nicknames']:
-                all_nicknames[n] = ds
+        for key in self.filt_db:
+            for n in self.filt_db[key]['nicknames']:
+                all_nicknames[n] = key
 
         self.filt_dict = {}
-        new_filt_list = []
         
         self.logger.info("Loading filters")
         self.logger.info("-" * 80)
-        self.logger.info(f"Nickname -> Filter ID".rjust(32) + f": Description")
+        l = np.max([len(i) for i in self.filt_list])+3
+        self.logger.info(f"Nickname".rjust(l) + ' -> ' + "Filter ID")
         for filt in self.filt_list:
-            if filt in self.filt_db:
-                self.filt_dict[filt] = self.filt_db[filt]
-                self.logger.info(f"{filt}".rjust(32) + f": {self.filt_db[filt].attrs['description']}")
-                new_filt_list.append(filt)
-            elif filt in all_nicknames:
-                self.filt_dict[all_nicknames[filt]] = self.filt_db[all_nicknames[filt]]
-                self.logger.info(f"{filt} -> {all_nicknames[filt]}".rjust(32) + f": {self.filt_db[all_nicknames[filt]].attrs['description']}")
-                new_filt_list.append(all_nicknames[filt])
+            if filt in all_nicknames:
+                self.filt_dict[filt] = np.loadtxt(f'{config.install_dir}/filters/filter_files/{all_nicknames[filt]}')
+                self.logger.info(f"{filt}".rjust(l) + ' -> ' +  f"{all_nicknames[filt]}") #+ f"{self.filt_db[all_nicknames[filt]]['description']}".ljust(32))
             else:
                 self.logger.error(f"""Failed to match {filt} to any filter curve or nickname in database. Make sure it is named properly, or add it to the filter database using `brisket-filters add`""")
                 sys.exit(1)
 
-        self.filt_list = new_filt_list
         self.logger.info("-" * 80)
 
 

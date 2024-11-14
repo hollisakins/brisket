@@ -97,7 +97,7 @@ class Galaxy:
 
         # If photometry is provided, add filter effective wavelengths to array
         if self.photometry_exists:
-            self.filter_set = filters.filter_set(filt_list)
+            self.filter_set = filters.filter_set(filt_list, logger=logger)
             self.photometry = np.c_[self.filter_set.eff_wavs, phot_nowavs]
 
         # self._convert_units()

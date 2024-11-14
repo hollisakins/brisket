@@ -265,31 +265,12 @@ class ModelGalaxy(object):
 
     def _compute_sed(self):
         """ This method is the primary workhorse for ModelGalaxy. It combines the 
-        models for the various emission and absorption processes to 
+        models for the various emission, attenuation, and absorption processes to 
         generate the internal full galaxy SED held within the class. 
         The _compute_photometry and compute_spectrum methods generate observables 
         using this internal full spectrum. """
 
         self.sed = np.zeros(len(self.wavelengths))
-
-        # TODO define self.sources
-        for source in self.sources:
-            ### source should be pre-defined and initialized already
-            # sed_incident = source.emit() 
-            ### get absorbers specific to this source
-            # absorbers = source.absorbers()
-            # for absorber in absorbers:
-            #   sed_transmitted, emission_params = absorber.absorb(sed_incident)
-            #   sed_reprocessed = absorber.emit(emission_params)
-            #   sed
-
-
-
-
-        ### get absorbers specific to this source
-        # absorbers = source.absorbers()
-        # for absorber in absorbers:
-        #   absorber.absorb(sedi)
 
         if 'nebular' in self.components: 
             self.sed_nebular = self.nebular.spectrum(self.parameters)
