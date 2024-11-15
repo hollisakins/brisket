@@ -1,0 +1,39 @@
+figure.figsize : 4,3
+figure.dpi : 200
+savefig.dpi : 300
+figure.constrained_layout.use : True
+
+### FONTS
+font.family : serif
+font.serif : Palatino
+font.size : 8
+legend.fontsize : 7
+text.usetex : True
+
+xtick.direction : in
+ytick.direction : in
+xtick.top : True
+ytick.right : True
+xtick.minor.visible : True
+ytick.minor.visible : True
+legend.frameon : False
+image.origin : lower
+lines.linewidth : 1
+
+
+errorbar.capsize : 2
+
+axes.linewidth : 0.6
+xtick.major.width : 0.6
+xtick.minor.width : 0.4
+xtick.major.size : 2.8
+xtick.minor.size : 1.7
+ytick.major.width : 0.6
+ytick.minor.width : 0.4
+ytick.major.size : 2.8
+ytick.minor.size : 1.7
+
+### AXES
+#axes.prop_cycle : cycler(
+#    'color', ['royalblue', 'salmon', 'D55E00', 'CC79A7', 'F0E442', '56B4E9']
+#)

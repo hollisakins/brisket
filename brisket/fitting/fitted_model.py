@@ -45,7 +45,8 @@ class FittedModel(object):
         self.transforms = self.parameters.free_param_transforms   # Params which are a transform of another param
         self.ndim = self.parameters.ndim
 
-        self.prior = Prior(self.limits, self.pdfs, self.hypers)
+        # self.prior = Prior(self.limits, self.pdfs, self.hypers)
+        self.prior = PriorVolume(self.parameters.free_param_priors)
 
         # Initialize the ModelGalaxy object with a set of parameters randomly drawn from the prior cube
         self._update_model_parameters(self.prior.sample())

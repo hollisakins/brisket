@@ -6,9 +6,18 @@ from astropy.constants import h as plancks_constant
 # temporary
 from dotmap import DotMap
 import astropy.units as u
-config = DotMap(default_wavelength_unit=u.angstrom, default_frequency_unit=u.GHz, default_energy_unit=u.keV, default_fnu_unit=u.uJy, default_flam_unit=u.erg/u.s/u.cm**2/u.angstrom)
+config = DotMap(default_wavelength_unit=u.angstrom, default_frequency_unit=u.GHz, default_energy_unit=u.keV, default_fnu_unit=u.uJy, default_flam_unit=u.erg/u.s/u.cm**2/u.angstrom, ascii=False)
+
+if config.ascii:
+    value_chars = ' ░▒▓█'
+    border_chars = '═║╔╦╗╠╬╣╚╩╝'
+else:
+    value_chars = ' ▁▂▃▄▅▆▇█'
+    border_chars = '═║╔╦╗╠╬╣╚╩╝'
+
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 class SED(object):
     '''
@@ -84,72 +93,67 @@ class SED(object):
         elif nufnu is not None: self._f = nufnu
         else: self._f = None
 
-    @property
-    def _which(self):
-        '''Used internally, string specification of the flux defined at construction'''
-        if self._fnu is not None: return 'fnu'
-        if self._flam is not None: return 'flam'
-        if self._Lnu is not None: return 'Lnu'
-        if self._Llam is not None: return 'Llam'
-        if self._L is not None: return 'L'
-        if self._f is not None: return 'f'
+        if self._fnu is not None: self._which='fnu'
+        if self._flam is not None: self._which='flam'
+        if self._Lnu is not None: self._which='Lnu'
+        if self._Llam is not None: self._which='Llam'
+        if self._L is not None: self._which='L'
+        if self._f is not None: self._which='f'
 
     @property
     def _y(self):
         '''Used internally, alias for the flux specification defined at construction'''
-        if self._fnu is not None: return self._fnu
-        if self._flam is not None: return self._flam
-        if self._Lnu is not None: return self._Lnu
-        if self._Llam is not None: return self._Llam
-        if self._L is not None: return self._L
-        if self._f is not None: return self._f
+        if self._which=='fnu': return self._fnu
+        if self._which=='flam': return self._flam
+        if self._which=='Lnu': return self._Lnu
+        if self._which=='Llam': return self._Llam
+        if self._which=='L': return self._L
+        if self._which=='f': return self._f
+
     @_y.setter
     def _y(self, value):
-        if self._fnu is not None: self._fnu = value
-        if self._flam is not None: self._flam = value
-        if self._Lnu is not None: self._Lnu = value
-        if self._Llam is not None: self._Llam = value
-        if self._L is not None: self._L = value
-        if self._f is not None: self._f = value
+        if self._which=='fnu': self._fnu = value
+        if self._which=='flam': self._flam = value
+        if self._which=='Lnu': self._Lnu = value
+        if self._which=='Llam': self._Llam = value
+        if self._which=='L': self._L = value
+        if self._which=='f': self._f = value
 
     @property
     def fnu(self):
-        if self._fnu is not None:
+        if self._which=='fnu':
             return (self._fnu).to(config.default_fnu_unit)
-        elif self._flam is not None:
+        elif self._which=='flam':
             return (self._flam * self.wav_obs**2 / speed_of_light).to(config.default_fnu_unit)
-        elif self._Lnu is not None:
+        elif self._which=='Lnu':
             return (self._Lnu / (4*np.pi*self.luminosity_distance**2)).to(config.default_fnu_unit)
-        elif self._Llam is not None:
+        elif self._which=='Llam':
             return (self._Llam / (4*np.pi*self.luminosity_distance**2) * self.wav_obs**2 / speed_of_light).to(config.default_fnu_unit)
-        elif self._L is not None:
+        elif self._which=='L':
             return (self._L / self.nu_obs / (4*np.pi*self.luminosity_distance**2)).to(config.default_fnu_unit)
-        elif self._f is not None:
+        elif self._which=='f':
             return (self._f / self.nu_obs).to(config.default_fnu_unit)
         else:
             raise Exception
     
     @property
     def flam(self):
-        if self._fnu is not None:
+        if self._which=='fnu':
             return (self._fnu / self.wav_obs**2 * speed_of_light).to(config.default_flam_unit)
-        elif self._flam is not None:
+        elif self._which=='flam':
             return (self._flam).to(config.default_flam_unit)
-        elif self._Lnu is not None:
+        elif self._which=='Lnu':
             return (self._Lnu / (4*np.pi*self.luminosity_distance**2) / self.wav_obs**2 * speed_of_light).to(config.default_flam_unit)
-        elif self._Llam is not None:
+        elif self._which=='Llam':
             return (self._Llam / (4*np.pi*self.luminosity_distance**2)).to(config.default_flam_unit)
-        elif self._L is not None:
+        elif self._which=='L':
             return (self._L / self.lam_obs / (4*np.pi*self.luminosity_distance**2)).to(config.default_flam_unit)
-        elif self._f is not None:
+        elif self._which=='f':
             return (self._f / self.lam_obs).to(config.default_flam_unit)
         else:
             raise Exception
 
     #TODO define flam, Lnu, etc
-
-
-
 
     #################################################################################
     def resample(self, new_wavs, fill=0):
@@ -161,10 +165,27 @@ class SED(object):
         return self._y
 
     def __repr__(self):
+        all_flux_defs = ['fnu','flam','Lnu','Llam','nufnu','lamflam','nuLnu','lamLlam']
         w = self.wav_rest.value
-        f = self.fnu.value
-        wstr = f'[{w[0]:.2f}, {w[1]:.2f}, ..., {w[-2]:.2f}, {w[-1]:.2f}] {config.default_wavelength_unit}'
-        return f'''BRISKET-SED: wav: {wstr}, flux {np.shape(f)}'''
+        f = self._y.value
+        wstr = f'wav_rest: [{w[0]:.2f}, {w[1]:.2f}, ..., {w[-2]:.2f}, {w[-1]:.2f}] {self.wav_rest.unit} {np.shape(w)}'
+        fstr1 = f'{self._which} (base): [{f[0]:.2f}, {f[1]:.2f}, ..., {f[-2]:.2f}, {f[-1]:.2f}] {self._y.unit} {np.shape(w)}'
+        fstr2 = '(available) ' + ', '.join(map(str,[a for a in all_flux_defs if a != self._which])) 
+        betastr = f'beta: {self.beta:.2f}, Muv: ?, Lbol: ?'
+        width = config.cols-2
+        # width = np.max([width, len(wstr)+4])
+        # border_chars = '═║╔╦╗╠╬╣╚╩╝'
+        outstr = border_chars[2] + border_chars[0]*width + border_chars[4]
+        outstr += '\n' + border_chars[1] + 'BRISKET-SED'.center(width) + border_chars[1]
+        outstr += '\n' + border_chars[5] + border_chars[0]*width + border_chars[7]
+        outstr += '\n' + border_chars[1] + wstr.center(width) + border_chars[1]
+        outstr += '\n' + border_chars[5] + border_chars[0]*width + border_chars[7]
+        outstr += '\n' + border_chars[1] + fstr1.center(width) + border_chars[1]
+        outstr += '\n' + border_chars[1] + fstr2.center(width) + border_chars[1]
+        outstr += '\n' + border_chars[5] + border_chars[0]*width + border_chars[7]
+        outstr += '\n' + border_chars[1] + betastr.center(width) + border_chars[1]
+        outstr += '\n' + border_chars[8] + border_chars[0]*width + border_chars[10]
+        return outstr
         # if np.ndim(f) == 1:
             # if len(self.wav_rest) > 4:
             #     wstr = f'[{w[0]:.2f}, {w[1]:.2f}, ..., {w[-2]:.2f}, {w[-1]:.2f}] {config.default_wavelength_unit}'
@@ -195,7 +216,9 @@ class SED(object):
         if not np.all(other.wav_rest==self.wav_rest):
             other.resample(self.wav_rest)
         newobj = SED(self.wav_rest, redshift=self.redshift, verbose=False)
-        setattr(newobj, '_'+self._which, self._y + getattr(other, self._which))
+        # print(newobj._which)
+        setattr(newobj, '_which', self._which)
+        setattr(newobj, '_y', self._y + getattr(other, self._which))
         return newobj
 
 
@@ -228,7 +251,7 @@ class SED(object):
         '''UV spectral slope measured using the Calzetti et al. (1994) spectral windows'''
         w = self.wav_rest.to(u.angstrom).value
         windows = ((w>=1268)&(w<=1284))|((w>=1309)&(w<=1316))|((w>=1342)&(w<=1371))|((w>=1407)&(w<=1515))|((w>=1562)&(w<=1583))|((w>=1677)&(w<=1740))|((w>=1760)&(w<=1833))|((w>=1866)&(w<=1890))|((w>=1930)&(w<=1950))|((w>=2400)&(w<=2580))
-        p = np.polyfit(np.log10(w[windows]), np.log10(self._flam[windows].value), deg=1)
+        p = np.polyfit(np.log10(w[windows]), np.log10(self.flam[windows].value), deg=1)
         return p[0]
 
     @property
@@ -261,13 +284,62 @@ class SED(object):
     # sed.measure_beta(windows='Calzetti94')
 
 
-    def plot(self, ax=plt.gca(), x='wav_rest', y='fnu', show=True, save=False):
+    def plot(self, ax=None, x='wav_rest', y='fnu', 
+             xscale='linear', yscale='linear',
+             verbose_labels=False,
+             show=False, save=False, eng=False):
+
         x_plot = getattr(self, x)
-        y_plot = getattr(self, y)
-        ax.plot(x_plot, y_plot)
+        y_plot = getattr(self, y)        
+        if eng: 
+            x_plot = x_plot.to(u.m)
+
+        if y == 'fnu':
+            ylabel = r'$f_{\nu}$'
+        elif y == 'flam':
+            ylabel = r'$f_{\lambda}$'
+
+        if x == 'wav_rest':
+            if verbose_labels: xlabel = 'Rest Wavelength'
+            else: xlabel = r'$\lambda_{\rm rest}$'
+        elif x == 'wav_obs':
+            if verbose_labels: xlabel = 'Observed Wavelength'
+            else: xlabel = r'$\lambda_{\rm obs}$'
+        elif x == 'freq_rest':
+            if verbose_labels: xlabel = 'Rest Frequency'
+            else: xlabel = r'$\nu_{\rm rest}$'
+        elif x == 'freq_obs':
+            if verbose_labels: xlabel = 'Observed Frequency'
+            else: xlabel = r'$\nu_{\rm obs}$'
         
-        if show:
-            plt.show()
+        yunitstr = y_plot.unit.to_string(format="latex_inline")
+        if r'erg\,\mathring{A}^{-1}' in yunitstr:
+            yunitstr = yunitstr.replace(r'\,\mathring{A}^{-1}', r'\,')
+            yunitstr = yunitstr.replace(r'\,cm^{-2}', r'\,cm^{-2}\,\mathring{A}^{-1}')
+        ylabel +=  fr' [{yunitstr}]'
+        xunitstr = x_plot.unit.to_string(format="latex_inline")
+        xlabel +=  fr' [{xunitstr}]'
+
+    
+        with plt.style.context('brisket.brisket'):
+            if ax is None:
+                fig, ax = plt.subplots(figsize=(5,2.5))
+            else:
+                fig = plt.gcf()
+            ax.plot(x_plot, y_plot)
+            ax.set_ylabel(ylabel)
+            ax.set_xlabel(xlabel)
+
+            ax.set_xscale(xscale)
+            ax.set_yscale(yscale)
+
+            if eng:
+                ax.xaxis.set_major_formatter(mpl.ticker.EngFormatter(unit='m', places=1))
+
+            if show:
+                plt.show()
+
+        return fig, ax
 
 
 
@@ -282,25 +354,18 @@ class SED(object):
 import numpy as np
 import astropy.units as u
 wav = np.linspace(1, 3000, 1000) * u.angstrom
-flux = np.ones((2,len(wav))) * 1e-18 * u.erg/u.s/u.cm**2/u.angstrom
+flux = np.ones(len(wav)) * 1e-18 * u.erg/u.s/u.cm**2/u.angstrom
 s1 = SED(wav_rest=wav, flam=flux, redshift=1)
-print(s1.fnu)
 
-flux = np.zeros((2,len(wav))) * u.uJy
+flux = np.ones(len(wav)) * u.uJy
 s2 = SED(wav_rest=wav, fnu=flux, redshift=1)
+print(s2)
 
-s = s1 + s2
-print(s.fnu)
-# print(s)
+# fig, ax = s1.plot(y='flam')
+# s2.plot(y='flam', xscale='log', yscale='log', eng=True)
+# s.plot(ax=ax, y='flam')
+# plt.show()
 
-# s.plot()
-# new_wav = np.linspace(1, 3000, 500) * u.angstrom
-# s.resample(new_wav)
-# # print(y)
-
-# s.plot()
-
-# print(s.beta)
 
 
 # s.compute_photometry(['f070w'])

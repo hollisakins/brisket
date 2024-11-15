@@ -1,21 +1,14 @@
-# from brisket.models import StellarModel, CloudyNebularModel, FlexibleNebularModel, SalimDustModel
+import brisket
+
 
 # create a params object
-params = brisket.Params(template=None)
+params = brisket.Params()
+params.add_source('galaxy')
+params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
+print(params)
 # you can also import a specific template, e.g.
 # params = brisket.Params(template='Akins24a') # for fitting LRD models
-
-class Params():
-
-    def __init__(self):
-        pass
-
-    def add_source(name, model=None):
-
-        if name=='galaxy' and model is None:
-            model = brisket.models.StellarModel
-        if name=='agn' and model is None:
-            model = brisket.models.AGNModel
+quit()
 
 
 params.add_source('galaxy')

@@ -32,7 +32,7 @@ def dirichlet(r, alpha):
     return np.cumsum(x)
 
 
-class Prior(object):
+class PriorVolume(object):
     """ A class which allows for samples to be drawn from a joint prior
     distribution in several parameters and for transformations from the
     unit cube to the prior volume.
@@ -53,17 +53,13 @@ class Prior(object):
         the above prior distributions.
     """
 
-    def __init__(self, limits, pdfs, hyper_params):
-        self.limits = limits
-        self.pdfs = pdfs
-        self.hyper_params = hyper_params
-        self.ndim = len(limits)
+    def __init__(self, priors):
+        self.priors = priors
+        self.ndim = len(priors)
 
     def sample(self):
         """ Sample from the prior distribution. """
-
         cube = np.random.rand(self.ndim)
-
         return self.transform(cube)
 
     def transform(self, cube, ndim=0, nparam=0):
@@ -75,45 +71,59 @@ class Prior(object):
             
         # Call the relevant prior functions to draw random values.
         for i in range(self.ndim):
-            prior_function = self._parse_prior_function(self.pdfs[i])
-            params[i] = prior_function(params[i], self.limits[i],
-                                     self.hyper_params[i])
+            params[i] = self.priors[i].sample(params[i])
 
         return params
 
-    def uniform(self, value, limits, hyper_params):
-        """ Uniform prior in x where x is the parameter. """
 
-        value = limits[0] + (limits[1] - limits[0])*value
-        return value
+class Prior(object):
+    def __init__(self, limits, prior_type, **hyper_params):
+        self.limits = limits
+        self.prior_type = prior_type
+        self.hyper_params = hyper_params
+        self.prior_function = self._parse_prior_function(prior_type)
 
-    def log_10(self, value, limits, hyper_params):
-        """ Uniform prior in log_10(x) where x is the parameter. """
-        value = 10**((np.log10(limits[1]/limits[0]))*value
-                     + np.log10(limits[0]))
-        return value
+    def evaluate(self, value):
+        return self.prior_function(value, self.limits, self.hyper_params)
 
-    def log_e(self, value, limits, hyper_params):
-        """ Uniform prior in log_e(x) where x is the parameter. """
-        value = np.exp((np.log(limits[1]/limits[0]))*value + np.log(limits[0]))
-        return value
+    def __repr__(self):
+        if len(self.hyper_params) > 0:
+            return f'{self.prior_function.__name__}({self.limits[0]}, {self.limits[1]}, {", ".join(f"{key}={value}" for key, value in self.hyper_params.items())})'
+        else:
+            return f'{self.prior_function.__name__}({self.limits[0]}, {self.limits[1]})'
+    
+    def __str__(self):
+        return self.__repr__()
 
-    def pow_10(self, value, limits, hyper_params):
-        """ Uniform prior in 10**x where x is the parameter. """
-        value = np.log10((10**limits[1] - 10**limits[0])*value + 10**limits[0])
-        return value
+    ########################################################################
+    def Uniform(self, value, limits, hyper_params):
+        ''''Uniform prior between limits. Returns the x-coord associated with CDF=value.'''
+        return limits[0] + (limits[1] - limits[0])*value
 
-    def recip(self, value, limits, hyper_params):
-        value = 1./((1./limits[1] - 1./limits[0])*value + 1./limits[0])
-        return value
+    def LogUniform(self, value, limits, hyper_params):
+        '''Uniform prior in log10(x).'''
+        return np.power(10.,(np.log10(limits[1]/limits[0]))*value + np.log10(limits[0]))
 
-    def recipsq(self, value, limits, hyper_params):
-        """ Uniform prior in 1/x**2 where x is the parameter. """
-        value = 1./np.sqrt((1./limits[1]**2 - 1./limits[0]**2)*value
-                           + 1./limits[0]**2)
-        return value
+    def LnUniform(self, value, limits, hyper_params):
+        '''Uniform prior in ln(x).'''
+        return np.exp((np.log(limits[1]/limits[0]))*value + np.log(limits[0]))
 
-    def Gaussian(self, value, limits, hyper_params):
+    # def pow_10(self, value, limits, hyper_params):
+    #     """ Uniform prior in 10**x where x is the parameter. """
+    #     value = np.log10((10**limits[1] - 10**limits[0])*value + 10**limits[0])
+    #     return value
+
+    # def recip(self, value, limits, hyper_params):
+    #     value = 1./((1./limits[1] - 1./limits[0])*value + 1./limits[0])
+    #     return value
+
+    # def recipsq(self, value, limits, hyper_params):
+    #     """ Uniform prior in 1/x**2 where x is the parameter. """
+    #     value = 1./np.sqrt((1./limits[1]**2 - 1./limits[0]**2)*value
+    #                         + 1./limits[0]**2)
+    #     return value
+
+    def Norm(self, value, limits, hyper_params):
         """ Gaussian prior between limits with specified mu and sigma. """
         mu = hyper_params["mu"]
         sigma = hyper_params["sigma"]
@@ -136,8 +146,8 @@ class Prior(object):
         value = np.power(10., sigma*np.sqrt(2)*erfinv(value) + mu)
 
         return value
-    
-    
+
+
     def GenNorm(self, value, limits, hyper_params):
         """Generalized Normal Distribution with shape parameter beta"""
         mu = hyper_params["mu"]
@@ -151,7 +161,7 @@ class Prior(object):
 
         return value
 
-    
+
     def SkewNorm(self, value, limits, hyper_params):
         """Generalized Normal Distribution with shape parameter beta"""
         mu = hyper_params["mu"]
@@ -176,7 +186,7 @@ class Prior(object):
         value = np.power(10., skewnorm.ppf(value, loc=mu, scale=sigma, a=a))
 
         return value
-    
+
 
     def student_t(self, value, limits, hyper_params):
 
@@ -216,13 +226,13 @@ class Prior(object):
         return value
         
     def _parse_prior_function(self, pdf):
-        if pdf in ['Uniform','Unif','uniform','unif']: return self.uniform
-        elif pdf in ['log_10','log10','log','loguniform','LogUniform','LogUnif']: return self.log_10
-        elif pdf in ['log_e','loge','ln']: return self.log_e
-        elif pdf in ['pow_10','pow10']: return self.pow_10
-        elif pdf in ['recip','Recip']: return self.recip
-        elif pdf in ['recipsq','Recipsq']: return self.recipsq
-        elif pdf in ['Gaussian','Normal','normal','gaussian','gauss','Gauss']: return self.Gaussian
+        if pdf in ['Uniform','Unif','uniform','unif']: return self.Uniform
+        elif pdf in ['log_10','log10','log','loguniform','LogUniform','LogUnif']: return self.LogUniform
+        elif pdf in ['log_e','loge','ln']: return self.LnUniform
+        # elif pdf in ['pow_10','pow10']: return self.pow_10
+        # elif pdf in ['recip','Recip']: return self.recip
+        # elif pdf in ['recipsq','Recipsq']: return self.recipsq
+        elif pdf in ['Gaussian','Normal','normal','norm','Norm','gaussian','gauss','Gauss']: return self.Norm
         elif pdf in ['LogNorm','LogNormal','LogGaussian','lognorm','lognormal','loggauss','loggaussian']: return self.LogNorm
         elif pdf in ['GenNorm', 'gennorm']: return self.GenNorm
         elif pdf in ['SkewNorm', 'skewnorm']: return self.SkewNorm

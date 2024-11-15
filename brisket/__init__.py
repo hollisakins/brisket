@@ -1,14 +1,14 @@
 
-from . import models
-from . import config
-from . import utils
-from . import brisket
-from . import parameters
+# from . import models
+# from . import config
+# from . import utils
+# from . import brisket
+from .parameters import Params, FreeParam, FixedParam
 
-from .brisket import parse_toml_paramfile
-from .models.model_galaxy import ModelGalaxy
-from .input.galaxy import Galaxy
-from .fitting.fitter import Fitter
+# from .brisket import parse_toml_paramfile
+# from .models.model_galaxy import ModelGalaxy
+# from .input.galaxy import Galaxy
+# from .fitting.fitter import Fitter
 
 # from .catalogue.fit_catalogue import fit_catalogue
 

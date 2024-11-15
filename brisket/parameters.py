@@ -1,6 +1,8 @@
 import rich, toml, os, sys
-from brisket import utils
 from collections.abc import MutableMapping
+
+from brisket import config
+from brisket.fitting import priors
 
 base_params = ['redshift']
 allowed_components = ['galaxy','agn','nebular','calib','igm']
@@ -19,157 +21,95 @@ defaults = {'igm':'Inoue14',
 # if "t_bc" in list(params):
 #     t_bc = params["t_bc"]
 
-### TODO better handling of defaults, more complexity 
+### TODO better handling of defaults
 ### e.g. continuity SFH: need to add defaults for dsfr1, dsfr2, etc 
+### add default IGM model, added even if you don't run params.add_igm()
 
 
 class Params:
-    def __init__(self, data): #*args, **kwargs):
-        if isinstance(data, str):
-            if data.endswith('.toml'):
-                try:
-                    data = self._parse_from_toml(data)
-                    data.update(data['base'])
-                    del data['base']
-                except FileNotFoundError:
-                    print(f"Parameter file {data} not found."); sys.exit()
-            else:
-                try:
-                    data = self._parse_from_toml(os.path.join(utils.param_template_dir, data + '.toml'))
-                    data.update(data['base'])
-                    del data['base']
-                except FileNotFoundError:
-                    print(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
-            
-        # if 'template' in kwargs:
-        #     return load_from_toml(os.path.join(utils.param_template_dir, kwargs['template'] + '.toml'))
-
-        self.components = []
-        self.all_param_names = []
-        self.all_param_values = []
-        self.free_param_names = []   # Flattened list of parameter names for free params
-        self.free_param_limits = []  # Limits for fitted parameter values
-        self.free_param_pdfs = []    # Probability densities within lims
-        self.free_param_hypers = []  # Hyperparameters of prior distributions
-        self.free_param_mirrors = {}
-        self.free_param_transforms = {}
-        self.defaults = []
-
-
-        self.data = data
-        for key in base_params:
-            if key in data:
-                self.add_param(key, data[key])
-            else:
-                self.defaults.append(key)
-                self.add_param(key, defaults[key])
-
-        for key in allowed_components:
-            if not key in data: continue;
-            val = data[key]
-            assert isinstance(val, dict), f'Key `{key}` must provide component parameters as a dictionary'
-            
-            # handle defaults 
+    def __init__(self, template=None, file=None): #*args, **kwargs):
+        
+        if file is not None:
             try:
-                default_val = defaults[key]
-                for subkey in default_val:
-                    if isinstance(default_val[subkey], dict):
-                        if subkey not in val:
-                            for subsubkey in val[subkey]:
-                                if subsubkey not in val[subkey]:
-                                    self.data[key][subkey][subsubkey] = default_val[subkey][subsubkey]
-                                    self.add_param(f'{key}:{subkey}:{subsubkey}', default_val[subkey][subsubkey])
-                                    self.defaults.append(f'{key}:{subkey}')
-                    else:
-                        if subkey not in val:
-                            self.data[key][subkey] = default_val[subkey]
-                            self.add_param(f'{key}:{subkey}', default_val[subkey])
-                            self.defaults.append(f'{key}:{subkey}')
-            except:
-                pass
+                data = self._parse_from_toml(file)
+            except FileNotFoundError:
+                print(f"Parameter file {data} not found."); sys.exit()
+        elif template is not None:
+            try:
+                data = self._parse_from_toml(os.path.join(utils.param_template_dir, template+'.toml'))
+            except FileNotFoundError:
+                print(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
+        
+        
+        self.sources = {}
+        self.all_params = {}
+        self.free_params = {}
+        self.linked_params = {}
+        
+        #self.defaults = []
 
-            self.components.append(key)
-            for subkey in val:
-                if isinstance(val[subkey], dict):
-                    if not ('low' in val[subkey]) and not ('high' in val[subkey]) and not ('mirror' in val[subkey]):
-                        for subsubkey in val[subkey]:
-                            self.add_param(f'{key}:{subkey}:{subsubkey}', val[subkey][subsubkey])
-                    elif 'mirror' in val[subkey]: 
-                        split = val[subkey]['mirror'].split(':')
-                        if len(split)==1:
-                            self.free_param_mirrors[f'{key}:{subkey}'] = f"{key}:{val[subkey]['mirror']}"
-                            # self.add_param(f'{key}:{subkey}', val[val[subkey]['mirror']])
-                        elif len(split)==2:
-                            self.free_param_mirrors[f'{key}:{subkey}'] = val[subkey]['mirror']
-                            # self.add_param(f'{key}:{subkey}', data[split[0]][split[1]])
-                        elif len(split)==3:
-                            self.free_param_mirrors[f'{key}:{subkey}'] = val[subkey]['mirror']
-                            # self.add_param(f'{key}:{subkey}', data[split[0]][split[1]][split[2]])
-                        if 'transform' in val[subkey]:
-                            self.free_param_transforms[f'{key}:{subkey}'] = val[subkey]['transform']
-                    else:
-                        self.add_param(f'{key}:{subkey}', val[subkey])
-                else:
-                    self.add_param(f'{key}:{subkey}', val[subkey])
 
-            # val['redshift'] = self['redshift']
+    def add_source(self, name, model=None):
+
+        # if model is None:
+        #     if name=='galaxy':
+        #         model = models.BaseStellarModel
+        #     if name=='agn':
+        #         model = models.BaseAGNModel
             
-        for key in data:
-            if key not in allowed_components and key not in base_params:            
-                msg = f"Key `{key}` is not a recognized base-level parameter or model component"
-                msg += f"; supported base-level parameters are: {', '.join(map(repr, base_params))}"
-                msg += f", supported model components are: {', '.join(map(repr, allowed_components))}."
-                raise KeyError(msg) 
+        source = Source(name, model)
+        self.__setitem__(name, source)
+
+        # self.all_param_names += [name+'/'+n for n in source.all_names]
 
     def __repr__(self):
-        # dictrepr = dict.__repr__(self.data)
-        # msg = '%s(%s)' % (type(self).__name__, dictrepr)
+        self.validate()
+        # border_chars = '═║╔╦╗╠╬╣╚╩╝'
+
+        width = config.cols-2
+        if width % 2 == 0:
+            width -= 1
         if self.ndim > 0:
-            msg = '#'*34 + ' Fixed Parameters ' + '#' * 34 + '\n'
+            outstr = config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
+            outstr += config.border_chars[1] + 'Fixed Parameters'.center(width) + config.border_chars[1] + '\n'
+            outstr += config.border_chars[5] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[7] + '\n'
         else: 
-            msg = ''
-        msg += 'Parameter name           | Value \n'
-        msg += '-'*25 + '+' + '-'*60 + '\n'
+            outstr = config.border_chars[2] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[4] + '\n'
+        outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Value'.center(width//2) + config.border_chars[1] + '\n'
+        outstr += config.border_chars[5] + config.border_chars[0]*(width//2) + config.border_chars[6] + config.border_chars[0]*(width//2) + config.border_chars[7] + '\n'
+
         for i in range(self.nparam): 
             if self.all_param_names[i] in self.free_param_names: continue
-            if self.all_param_names[i] in self.defaults: df = ' *'; 
-            else: df = ''
-            msg += (self.all_param_names[i] + df).ljust(25) + '| ' + str(self.all_param_values[i]).ljust(10) + '\n'
-        msg += '(* = adopted default value) \n'
+            #if self.all_param_names[i] in self.defaults: df = ' *'; 
+            #else: df = ''
+            df = ''
+            outstr += config.border_chars[1] + ' ' + (self.all_param_names[i] + df).ljust(width//2-1) + config.border_chars[1] + ' ' +  str(self.all_params[i]).ljust(width//2-1) + config.border_chars[1] + '\n'
+        
+        outstr += config.border_chars[8] + config.border_chars[0]*(width//2) + config.border_chars[9] + config.border_chars[0]*(width//2) + config.border_chars[10] + '\n'
+        outstr += '\n'
+        # msg += '(* = adopted default value) \n'
         # for i in range(p.nparams):
             # msg += (p.all_param_names[i], p.all_param_values[i])
          
         if self.ndim > 0:
-            msg += '\n'
-            msg += '#'*34 + ' Free Parameters ' + '#'*34 + '\n'
-            msg += 'Parameter name           | Limits       | Prior        | Hyper parameters  \n'
-            msg += '-'*25 + '+' + '-'*14 + '+'+ '-'*14 + '+'+ '-'*29 + '\n'
+            outstr += config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
+            outstr += config.border_chars[1] + 'Free Parameters'.center(width) + config.border_chars[1] + '\n'
+            outstr += config.border_chars[5] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[7] + '\n'
+            outstr += config.border_chars[1] + 'Parameter name'.center(width//3) + config.border_chars[1] + 'Limits'.center(width//3) + config.border_chars[1] + 'Prior'.center(width//3) + config.border_chars[1] + '\n'
+            outstr += config.border_chars[5] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[7] + '\n'
             for i in range(self.ndim): 
-                msg += self.free_param_names[i].ljust(25) + '| ' + str(self.free_param_limits[i]).ljust(13) + '| '+ self.free_param_pdfs[i].ljust(13) + '| ' + str(self.free_param_hypers[i]) + '\n'
-        return msg
+                # outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Prior'.center(width//2) + config.border_chars[1] + '\n'
+                n = self.free_param_names[i]
+                p = self.free_params[n]
+                outstr += config.border_chars[1] + ' ' + (n).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.limits).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.prior).ljust(width//3-1) + config.border_chars[1] + '\n'
+
+                # outstr += self.free_param_names[i].ljust(25) + '| ' + '\n'
+        return outstr
         
     # def update(self, *args, **kwargs):
     #     for k, v in dict(*args, **kwargs).items():
     #         self[k] = v
     
-    def add_param(self, key, val):
-        self.all_param_names.append(key)
-        self.all_param_values.append(val)
-        if isinstance(val, dict):
-            assert ('low' in val) and ('high' in val)
-            self.free_param_names.append(key)
-            self.free_param_limits.append((val['low'], val['high']))
-            pdf = 'Uniform'
-            if 'prior' in val:
-                pdf = val['prior']
-            self.free_param_pdfs.append(pdf)
-            self.free_param_hypers.append({k:val[k] for k in val if k not in ['low','high','prior']})
-
-            # # Find any parameters which mirror the value of a fit param.
-            # if all_vals[i] in all_keys:
-            #     self.mirror_pars[all_keys[i]] = all_vals[i]
-
-
 
     @property
     def nparam(self):
@@ -179,11 +119,21 @@ class Params:
     def ndim(self):
         return len(self.free_param_names)
 
-    def __setitem__(self, key, val):
-        dict.__setitem__(self.data, key, val)
+    def __setitem__(self, key, value):
+        if isinstance(value, FreeParam) or isinstance(value, FixedParam):    
+            # setting the value of a parameter
+            self.all_params[key] = value
+        if isinstance(value, FreeParam):    
+            self.free_params[key] = value
+
+        elif isinstance(value, Source):    
+            self.sources[key] = value
 
     def __getitem__(self, key):
-        return dict.__getitem__(self.data, key)
+        if key in self.sources:
+            return dict.__getitem__(self.sources, key)
+        elif key in self.params:
+            return dict.__getitem__(self.params, key)
 
     def __contains__(self, key):
         return dict.__contains__(self.data, key)
@@ -200,6 +150,86 @@ class Params:
                         if 'DynamicInlineTableDict' in str(type(f[key][subkey][subsubkey])): 
                             f[key][subkey][subsubkey] = dict(f[key][subkey][subsubkey])
         return f
+
+    def validate(self):
+        '''This method checks that all required parameters are defined, 
+           warns you if the code is using defaults, and define several 
+           internally-used variables. 
+           Runs automatically run when printing a Params object or when
+           Params is passed to ModelGalaxy or Fitter.
+        '''
+        for source in self.sources:
+            self.all_params.update(self.sources[source].all_params)
+            self.free_params.update(self.sources[source].free_params)
+        self.all_param_names = list(self.all_params.keys())
+        self.all_param_values = list(self.all_params.values())
+
+        self.free_param_names = list(self.free_params.keys()) # Flattened list of parameter names for free params  
+        self.free_param_priors = [param.prior for param in self.free_params.values()] 
+
+        # self.linked_params
+
+
+# define class for for a source (galaxy, agn, etc) which will be a container for parameters
+class Source(Params):
+    def __init__(self, name, model):
+        self.name = name
+        self.model = model
+        self.all_params = {}
+        self.free_params = {} 
+        self.linked_params = {}
+
+    def add_source(name, model=None):
+        raise Exception('cant add source to source')
+
+    def add_nebular(model=None):
+        pass
+    
+    def add_dust(model=None):
+        pass
+
+
+class FreeParam(MutableMapping):
+    def __init__(self, low, high, prior='uniform', **hyperparams):
+        self.low = low
+        self.high = high
+        self.limits = (low, high)
+        # self.hyperparams = hyperparams
+        self.prior = priors.Prior((low, high), prior, **hyperparams)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __delitem__(self, key):
+        delattr(self, key)
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+    def __repr__(self):
+        return f'FreeParam({self.low}, {self.high}, {self.prior})'
+
+class FixedParam:
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return f'FixedParam({self.value})'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __float__(self):
+        return float(self.value)
+    
+    def __int__(self):
+        return int(self.value)
 
 
 #         pass
