@@ -5,6 +5,7 @@ from brisket import config
 from brisket.fitting import priors
 from brisket.console import console, rich_str
 from rich.table import Table
+from numpy import ndarray
 
 base_params = ['redshift']
 allowed_components = ['galaxy','agn','nebular','calib','igm']
@@ -59,7 +60,7 @@ class Params:
         #     if name=='agn':
         #         model = models.BaseAGNModel
             
-        source = Source(name, model)
+        source = Source(name, model, parent=self)
         self.__setitem__(name, source)
 
         # self.all_param_names += [name+'/'+n for n in source.all_names]
@@ -147,35 +148,42 @@ class Params:
     @property
     def nparam(self):
         return len(self.all_param_names)
+
     
     @property
     def ndim(self):
         return len(self.free_param_names)
 
     def __setitem__(self, key, value):
-        if isinstance(value, (FreeParam,FixedParam,int,float)): # setting the value of a parameter
-            if isinstance(self, Source):
-                key = self.name + '/' + key
-            if isinstance(value, (int,float)):
-                value = FixedParam(value)
-            self.all_params[key] = value
-        if isinstance(value, FreeParam):    
-            self.free_params[key] = value
 
-        elif isinstance(value, Source):    
-            if isinstance(self, Source):
-                key = self.name + '/' + key
+        if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,ndarray)): # setting the value of a parameter, add to all_params
+            
+            if isinstance(self, Source): # if adding a parameter to a source, prepend the source name to the key
+                if isinstance(self.parent, Source):
+                    key = self.parent.name + '/' + self.name + '/' + key
+                else:
+                    key = self.name + '/' + key
+            
+            if isinstance(value, (int,float,str,list,tuple,ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
+                value = FixedParam(value)
+
+            self.all_params[key] = value
+            if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
+                self.free_params[key] = value
+
+
+        elif isinstance(value, Source): # adding a source 
+            # if isinstance(self, Source): # for sources (i.e. adding a sub-source), prepend the source name to the key
+                # key = self.name + '/' + key
             self.sources[key] = value
 
     def __getitem__(self, key):
         if key in self.sources: # getting a source
             return dict.__getitem__(self.sources, key)
-        elif key in self.all_params:
+        elif key in self.all_params: # getting a parameter from the base Params object
             return dict.__getitem__(self.all_params, key)
-        elif '/' in key:
-            source, param = key.split('/')
-            return dict.__getitem__(self.sources[source], param)
         else:
+            print(self, key)
             raise Exception
 
     def __contains__(self, key):
@@ -205,9 +213,7 @@ class Params:
             self.all_params.update(self.sources[source].all_params)
             self.free_params.update(self.sources[source].free_params)
             if len(self.sources[source].sources)>0:
-                print('there are subsources!')
                 for subsource in self.sources[source].sources:
-                    print(subsource)
                     self.all_params.update(self.sources[source].sources[subsource].all_params)
                     self.free_params.update(self.sources[source].sources[subsource].free_params)
 
@@ -220,11 +226,13 @@ class Params:
         # self.linked_params
 
 
+
 # define class for for a source (galaxy, agn, etc) which will be a container for parameters
 class Source(Params):
-    def __init__(self, name, model):
+    def __init__(self, name, model, parent=None):
         self.name = name
         self.model = model
+        self.parent = parent
         self.sources = {}
         self.all_params = {}
         self.free_params = {} 
@@ -233,12 +241,19 @@ class Source(Params):
     def add_source(self, name, model=None):
         raise Exception('cant add source to source')
 
+    def add_sfh(self, sfh_type, model=None):
+        if self.name != 'galaxy':
+            raise Exception('SFH can only be added to galaxy source')
+        sfh = Source('nebular', model=model, parent=self)
+        self.__setitem__('nebular', nebular)
+    
+
     def add_nebular(self, model=None):
-        nebular = Source('nebular', model=model)
+        nebular = Source('nebular', model=model, parent=self)
         self.__setitem__('nebular', nebular)
     
     def add_dust(self, model=None):
-        dust = Source('dust', model=model)
+        dust = Source('dust', model=model, parent=self)
         self.__setitem__('dust', dust)
 
     def __repr__(self):

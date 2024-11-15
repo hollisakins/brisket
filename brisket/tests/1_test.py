@@ -4,9 +4,10 @@ import brisket
 # create a params object
 params = brisket.Params()
 params.add_source('galaxy')
-params['galaxy']['logMstar'] = 5
-# params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
+params['galaxy']['grids'] = 'bc03'
+params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
 params['galaxy']['zmet'] = brisket.FreeParam(low=0.001, high=2.5, prior='log_uniform')
+# params['galaxy']['sfh'] = 'sfh'
 
 params['galaxy'].add_nebular()
 params['galaxy']['nebular']['logU'] = brisket.FreeParam(low=-4, high=-1)
