@@ -7,10 +7,20 @@ params.add_source('galaxy')
 params['galaxy']['grids'] = 'bc03'
 params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
 params['galaxy']['zmet'] = brisket.FreeParam(low=0.001, high=2.5, prior='log_uniform')
-# params['galaxy']['sfh'] = 'sfh'
+
+params['galaxy'].add_sfh('continuity')#, model=brisket.models.ContinuitySFH)
+# if 'continuity' in name:
+#     self.model = brisket.models.sfh.ContinuitySFH
+params['galaxy']['continuity']['bin_edges'] = [0, 10, 30, 100]
+params['galaxy']['continuity']['n_bins'] = 7
+params['galaxy']['continuity']['z_max'] = 20
 
 params['galaxy'].add_nebular()
 params['galaxy']['nebular']['logU'] = brisket.FreeParam(low=-4, high=-1)
+
+params['galaxy'].add_dust()#model=brisket.models.CalzettiDustAttenuationModel)
+params['galaxy']['dust']['Av'] = brisket.FreeParam(low=0.001, high=5, prior='log_uniform')
+
 # print(params['galaxy'].sources)
 # print(params['galaxy']['nebular'].all_params)
 

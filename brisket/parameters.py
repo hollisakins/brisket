@@ -29,6 +29,13 @@ defaults = {'igm':'Inoue14',
 ### add default IGM model, added even if you don't run params.add_igm()
 
 
+
+# TODO default model choices given source names
+# TODO default parameter choices given source names
+
+
+
+
 class Params:
     def __init__(self, template=None, file=None): #*args, **kwargs):
         
@@ -241,11 +248,11 @@ class Source(Params):
     def add_source(self, name, model=None):
         raise Exception('cant add source to source')
 
-    def add_sfh(self, sfh_type, model=None):
+    def add_sfh(self, name, model=None):
         if self.name != 'galaxy':
             raise Exception('SFH can only be added to galaxy source')
-        sfh = Source('nebular', model=model, parent=self)
-        self.__setitem__('nebular', nebular)
+        sfh = Source(name, model=model, parent=self)
+        self.__setitem__(name, sfh)
     
 
     def add_nebular(self, model=None):
