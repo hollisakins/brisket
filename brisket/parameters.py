@@ -3,6 +3,8 @@ from collections.abc import MutableMapping
 
 from brisket import config
 from brisket.fitting import priors
+from brisket.console import console, rich_str
+from rich.table import Table
 
 base_params = ['redshift']
 allowed_components = ['galaxy','agn','nebular','calib','igm']
@@ -66,45 +68,76 @@ class Params:
         self.validate()
         # border_chars = '═║╔╦╗╠╬╣╚╩╝'
 
-        width = config.cols-2
-        if width % 2 == 0:
-            width -= 1
+        # width = config.cols-2
+        # if width % 2 == 0:
+        #     width -= 1
+        # if self.ndim > 0:
+        #     # outstr = config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
+        #     outstr = '' + '\n'
+        #     outstr += 'Fixed Parameters'.center(width+2) + '\n'
+        #     outstr += config.border_chars[2] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[4] + '\n'
+        # else: 
+        #     outstr = config.border_chars[2] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[4] + '\n'
+        # outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Value'.center(width//2) + config.border_chars[1] + '\n'
+        # outstr += config.border_chars[5] + config.border_chars[0]*(width//2) + config.border_chars[6] + config.border_chars[0]*(width//2) + config.border_chars[7] + '\n'
+
+        # for i in range(self.nparam): 
+        #     if self.all_param_names[i] in self.free_param_names: continue
+        #     #if self.all_param_names[i] in self.defaults: df = ' *'; 
+        #     #else: df = ''
+        #     df = ''
+        #     outstr += config.border_chars[1] + ' ' + (self.all_param_names[i] + df).ljust(width//2-1) + config.border_chars[1] + ' ' +  str(self.all_params[i]).ljust(width//2-1) + config.border_chars[1] + '\n'
+        
+        # outstr += config.border_chars[8] + config.border_chars[0]*(width//2) + config.border_chars[9] + config.border_chars[0]*(width//2) + config.border_chars[10] + '\n'
+        # outstr += '\n'
+        # # msg += '(* = adopted default value) \n'
+        # # for i in range(p.nparams):
+        #     # msg += (p.all_param_names[i], p.all_param_values[i])
+         
+        # if self.ndim > 0:
+        #     # outstr += config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
+        #     outstr += 'Free Parameters'.center(width+2) + '\n'
+        #     outstr += config.border_chars[2] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[4] + '\n'
+        #     outstr += config.border_chars[1] + 'Parameter name'.center(width//3) + config.border_chars[1] + 'Limits'.center(width//3) + config.border_chars[1] + 'Prior'.center(width//3) + config.border_chars[1] + '\n'
+        #     outstr += config.border_chars[5] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[7] + '\n'
+        #     for i in range(self.ndim): 
+        #         # outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Prior'.center(width//2) + config.border_chars[1] + '\n'
+        #         n = self.free_param_names[i]
+        #         p = self.free_params[n]
+        #         outstr += config.border_chars[1] + ' ' + (n).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.limits).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.prior).ljust(width//3-1) + config.border_chars[1] + '\n'
+        #     outstr += config.border_chars[8] + config.border_chars[0]*(width//3) + config.border_chars[9] + config.border_chars[0]*(width//3) + config.border_chars[9] + config.border_chars[0]*(width//3) + config.border_chars[10] + '\n'
+
+        #         # outstr += self.free_param_names[i].ljust(25) + '| ' + '\n'
+        # return outstr
+        
         if self.ndim > 0:
-            outstr = config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
-            outstr += config.border_chars[1] + 'Fixed Parameters'.center(width) + config.border_chars[1] + '\n'
-            outstr += config.border_chars[5] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[7] + '\n'
-        else: 
-            outstr = config.border_chars[2] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[4] + '\n'
-        outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Value'.center(width//2) + config.border_chars[1] + '\n'
-        outstr += config.border_chars[5] + config.border_chars[0]*(width//2) + config.border_chars[6] + config.border_chars[0]*(width//2) + config.border_chars[7] + '\n'
+            table = Table(title="Fixed Parameters")
+        else:
+            table = Table(title="")
+        table.add_column("Parameter name", justify="left", style="cyan", no_wrap=True)
+        table.add_column("Value", style="magenta", no_wrap=True)
 
         for i in range(self.nparam): 
-            if self.all_param_names[i] in self.free_param_names: continue
-            #if self.all_param_names[i] in self.defaults: df = ' *'; 
-            #else: df = ''
-            df = ''
-            outstr += config.border_chars[1] + ' ' + (self.all_param_names[i] + df).ljust(width//2-1) + config.border_chars[1] + ' ' +  str(self.all_params[i]).ljust(width//2-1) + config.border_chars[1] + '\n'
-        
-        outstr += config.border_chars[8] + config.border_chars[0]*(width//2) + config.border_chars[9] + config.border_chars[0]*(width//2) + config.border_chars[10] + '\n'
-        outstr += '\n'
-        # msg += '(* = adopted default value) \n'
-        # for i in range(p.nparams):
-            # msg += (p.all_param_names[i], p.all_param_values[i])
-         
+            n = self.all_param_names[i]
+            if n in self.free_param_names: continue
+            table.add_row(n, str(self.all_params[n]))
+
+        tab_str = rich_str(table)
+                     
         if self.ndim > 0:
-            outstr += config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
-            outstr += config.border_chars[1] + 'Free Parameters'.center(width) + config.border_chars[1] + '\n'
-            outstr += config.border_chars[5] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[7] + '\n'
-            outstr += config.border_chars[1] + 'Parameter name'.center(width//3) + config.border_chars[1] + 'Limits'.center(width//3) + config.border_chars[1] + 'Prior'.center(width//3) + config.border_chars[1] + '\n'
-            outstr += config.border_chars[5] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[7] + '\n'
+            table = Table(title="Free Parameters")
+            table.add_column("Parameter name", justify="left", style="cyan", no_wrap=True)
+            table.add_column("Limits", style="magenta", no_wrap=True)
+            table.add_column("Prior", style="magenta", no_wrap=True)
+        
             for i in range(self.ndim): 
-                # outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Prior'.center(width//2) + config.border_chars[1] + '\n'
                 n = self.free_param_names[i]
                 p = self.free_params[n]
-                outstr += config.border_chars[1] + ' ' + (n).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.limits).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.prior).ljust(width//3-1) + config.border_chars[1] + '\n'
-
-                # outstr += self.free_param_names[i].ljust(25) + '| ' + '\n'
-        return outstr
+                table.add_row(n, str(p.limits), str(p.prior))
+        
+            tab_str = tab_str + '\n' + rich_str(table)
+        
+        return tab_str
         
     # def update(self, *args, **kwargs):
     #     for k, v in dict(*args, **kwargs).items():
@@ -120,36 +153,46 @@ class Params:
         return len(self.free_param_names)
 
     def __setitem__(self, key, value):
-        if isinstance(value, FreeParam) or isinstance(value, FixedParam):    
-            # setting the value of a parameter
+        if isinstance(value, (FreeParam,FixedParam,int,float)): # setting the value of a parameter
+            if isinstance(self, Source):
+                key = self.name + '/' + key
+            if isinstance(value, (int,float)):
+                value = FixedParam(value)
             self.all_params[key] = value
         if isinstance(value, FreeParam):    
             self.free_params[key] = value
 
         elif isinstance(value, Source):    
+            if isinstance(self, Source):
+                key = self.name + '/' + key
             self.sources[key] = value
 
     def __getitem__(self, key):
-        if key in self.sources:
+        if key in self.sources: # getting a source
             return dict.__getitem__(self.sources, key)
-        elif key in self.params:
-            return dict.__getitem__(self.params, key)
+        elif key in self.all_params:
+            return dict.__getitem__(self.all_params, key)
+        elif '/' in key:
+            source, param = key.split('/')
+            return dict.__getitem__(self.sources[source], param)
+        else:
+            raise Exception
 
     def __contains__(self, key):
         return dict.__contains__(self.data, key)
 
-    def _parse_from_toml(self, filepath):
-        '''Fixes a bug in TOML where inline dictionaries are stored with some obscure DynamicInlineTableDict class instead of regular old python dict'''
-        f = toml.load(filepath)
-        for key in f:
-            for subkey in f[key]:
-                if 'DynamicInlineTableDict' in str(type(f[key][subkey])): 
-                    f[key][subkey] = dict(f[key][subkey])
-                if isinstance(f[key][subkey], dict):
-                    for subsubkey in f[key][subkey]:
-                        if 'DynamicInlineTableDict' in str(type(f[key][subkey][subsubkey])): 
-                            f[key][subkey][subsubkey] = dict(f[key][subkey][subsubkey])
-        return f
+    # def _parse_from_toml(self, filepath):
+    #     '''Fixes a bug in TOML where inline dictionaries are stored with some obscure DynamicInlineTableDict class instead of regular old python dict'''
+    #     f = toml.load(filepath)
+    #     for key in f:
+    #         for subkey in f[key]:
+    #             if 'DynamicInlineTableDict' in str(type(f[key][subkey])): 
+    #                 f[key][subkey] = dict(f[key][subkey])
+    #             if isinstance(f[key][subkey], dict):
+    #                 for subsubkey in f[key][subkey]:
+    #                     if 'DynamicInlineTableDict' in str(type(f[key][subkey][subsubkey])): 
+    #                         f[key][subkey][subsubkey] = dict(f[key][subkey][subsubkey])
+    #     return f
 
     def validate(self):
         '''This method checks that all required parameters are defined, 
@@ -161,6 +204,13 @@ class Params:
         for source in self.sources:
             self.all_params.update(self.sources[source].all_params)
             self.free_params.update(self.sources[source].free_params)
+            if len(self.sources[source].sources)>0:
+                print('there are subsources!')
+                for subsource in self.sources[source].sources:
+                    print(subsource)
+                    self.all_params.update(self.sources[source].sources[subsource].all_params)
+                    self.free_params.update(self.sources[source].sources[subsource].free_params)
+
         self.all_param_names = list(self.all_params.keys())
         self.all_param_values = list(self.all_params.values())
 
@@ -175,19 +225,24 @@ class Source(Params):
     def __init__(self, name, model):
         self.name = name
         self.model = model
+        self.sources = {}
         self.all_params = {}
         self.free_params = {} 
         self.linked_params = {}
 
-    def add_source(name, model=None):
+    def add_source(self, name, model=None):
         raise Exception('cant add source to source')
 
-    def add_nebular(model=None):
-        pass
+    def add_nebular(self, model=None):
+        nebular = Source('nebular', model=model)
+        self.__setitem__('nebular', nebular)
     
-    def add_dust(model=None):
-        pass
+    def add_dust(self, model=None):
+        dust = Source('dust', model=model)
+        self.__setitem__('dust', dust)
 
+    def __repr__(self):
+        return f'Source({self.name}, {self.model})'
 
 class FreeParam(MutableMapping):
     def __init__(self, low, high, prior='uniform', **hyperparams):

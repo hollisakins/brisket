@@ -3,6 +3,8 @@
 # from . import config
 # from . import utils
 # from . import brisket
+from rich.traceback import install
+install()
 from .parameters import Params, FreeParam, FixedParam
 
 # from .brisket import parse_toml_paramfile

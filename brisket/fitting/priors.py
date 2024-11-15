@@ -227,8 +227,14 @@ class Prior(object):
         
     def _parse_prior_function(self, pdf):
         if pdf in ['Uniform','Unif','uniform','unif']: return self.Uniform
-        elif pdf in ['log_10','log10','log','loguniform','LogUniform','LogUnif']: return self.LogUniform
-        elif pdf in ['log_e','loge','ln']: return self.LnUniform
+        elif pdf in ['log_10','log10','log','log_uniform','log_unif','loguniform','LogUniform','LogUnif']: 
+            if 0 in self.limits:
+                raise ValueError('LogUniform prior cannot have 0 as a limit')
+            return self.LogUniform
+        elif pdf in ['log_e','loge','ln']: 
+            if 0 in self.limits:
+                raise ValueError('LogUniform prior cannot have 0 as a limit')
+            return self.LnUniform
         # elif pdf in ['pow_10','pow10']: return self.pow_10
         # elif pdf in ['recip','Recip']: return self.recip
         # elif pdf in ['recipsq','Recipsq']: return self.recipsq

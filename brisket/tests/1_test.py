@@ -4,10 +4,23 @@ import brisket
 # create a params object
 params = brisket.Params()
 params.add_source('galaxy')
-params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
+params['galaxy']['logMstar'] = 5
+# params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
+params['galaxy']['zmet'] = brisket.FreeParam(low=0.001, high=2.5, prior='log_uniform')
+
+params['galaxy'].add_nebular()
+params['galaxy']['nebular']['logU'] = brisket.FreeParam(low=-4, high=-1)
+# print(params['galaxy'].sources)
+# print(params['galaxy']['nebular'].all_params)
+
 print(params)
+# print(params.free_param_names)
+# print(params.free_param_priors)
 # you can also import a specific template, e.g.
 # params = brisket.Params(template='Akins24a') # for fitting LRD models
+# table = params.__repr__()
+
+# console.print(table)
 quit()
 
 
