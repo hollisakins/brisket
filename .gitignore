@@ -10,7 +10,5 @@ brisket/models/__pycache__/
 brisket/models/making/__pycache__/
 brisket/.DS_Store
 .DS_Store
-brisket/models_old/grids/*.fits
-brisket/models_old/grids/*.txt
-brisket/models_old/__pycache__/
-brisket/models_old/making/__pycache__/
+brisket/_archive
+brisket/_archive/*
