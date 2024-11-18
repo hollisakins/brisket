@@ -77,7 +77,7 @@ class ModelGalaxy(object):
     """
     def __init__(self, 
                  parameters, 
-                 filt_list=None,
+                 filters=None,
                  spec_wavs=None,
                  wav_units=u.micron,
                  sed_units=u.uJy,
@@ -87,7 +87,7 @@ class ModelGalaxy(object):
 
         self.logger = logger
         self.spec_wavs = spec_wavs
-        self.filt_list = filt_list
+        self.fitlers = filters
         self.wav_units = wav_units
         self.sed_units = sed_units
         self.spec_units = spec_units
@@ -97,17 +97,9 @@ class ModelGalaxy(object):
         if self.filt_list is not None: self.phot_output = True
         if self.spec_wavs is not None: self.spec_output = True
 
-        # Handl the input parameters, whether provided in dictionary form or in Params object.
-        if isinstance(parameters, Params):
-            self.logger.debug(f'Parameters loaded')            
-            self.parameters = parameters
-        elif isinstance(parameters, dict):
-            self.logger.info(f'Loading parameter dictionary')           
-            self.parameters = Params(parameters)
-        else:
-            msg = "Input `parameters` must be either a brisket.parameters.Params object or python dictionary"
-            self.logger.error(msg)
-            raise TypeError(msg)
+        # Handle the input parameters, whether provided in dictionary form or in Params object.
+        # self.logger.debug(f'Parameters loaded')            
+        self.parameters = parameters
 
         self.components = self.parameters.components
 
@@ -115,35 +107,35 @@ class ModelGalaxy(object):
         #     self.spec_wavs = self._get_index_spec_wavs(model_components)
 
         
-        # Initialize unit conversion logic
-        if isinstance(self.sed_units, str): self.sed_units = utils.unit_parser(self.sed_units)
-        if isinstance(self.wav_units, str): self.wav_units = utils.unit_parser(self.wav_units)
-        if 'spectral flux density' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Converting SED flux units to f_nu ({self.sed_units})")
-            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2 * (1 * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
-            self.flam = False
-        elif 'spectral flux density wav' in list(self.sed_units.physical_type):
-            self.logger.debug(f"Keeping SED flux units in f_lam ({self.sed_units})")
-            self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
-            self.flam = True
-        else:
-            self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
-            sys.exit()
+        # # Initialize unit conversion logic
+        # if isinstance(self.sed_units, str): self.sed_units = utils.unit_parser(self.sed_units)
+        # if isinstance(self.wav_units, str): self.wav_units = utils.unit_parser(self.wav_units)
+        # if 'spectral flux density' in list(self.sed_units.physical_type):
+        #     self.logger.debug(f"Converting SED flux units to f_nu ({self.sed_units})")
+        #     self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2 * (1 * self.wav_units)**2 / speed_of_light).to(self.sed_units).value
+        #     self.flam = False
+        # elif 'spectral flux density wav' in list(self.sed_units.physical_type):
+        #     self.logger.debug(f"Keeping SED flux units in f_lam ({self.sed_units})")
+        #     self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+        #     self.flam = True
+        # else:
+        #     self.logger.error(f"Could not determine units for final SED -- input astropy.units ")
+        #     sys.exit()
 
-        if self.spec_output:
-            self.spec_wavs_internal = (self.spec_wavs*self.wav_units).to(u.angstrom).value # store an internal spec_wavs array in angstroms
-            if isinstance(self.spec_units, str): self.spec_units = utils.unit_parser(self.spec_units)
-            if 'spectral flux density' in list(self.spec_units.physical_type): self.spec_flam = False
-            elif 'spectral flux density wav' in list(self.spec_units.physical_type): self.spec_flam = True
-            if (self.flam and self.spec_flam) or (not self.flam and not self.spec_flam): # easy conversion, just scaling
-                self.spec_unit_conv = (1*self.sed_units).to(self.spec_units).value
-            elif self.flam and not self.spec_flam: # if SED is in f_lam but spectrum is in f_nu... 
-                self.spec_unit_conv = (1*self.sed_units * (1 * self.wav_units)**2 / speed_of_light).to(self.spec_units).value
-            elif not self.flam and self.spec_flam: # if SED is in f_nu but spectrum is in f_lam...
-                self.spec_unit_conv = (1*self.sed_units / (1 * self.wav_units)**2 * speed_of_light).to(self.spec_units).value
-            else:
-                self.logger.error(f"Could not determine units for spectrum -- input astropy.units ")
-                sys.exit()
+        # if self.spec_output:
+        #     self.spec_wavs_internal = (self.spec_wavs*self.wav_units).to(u.angstrom).value # store an internal spec_wavs array in angstroms
+        #     if isinstance(self.spec_units, str): self.spec_units = utils.unit_parser(self.spec_units)
+        #     if 'spectral flux density' in list(self.spec_units.physical_type): self.spec_flam = False
+        #     elif 'spectral flux density wav' in list(self.spec_units.physical_type): self.spec_flam = True
+        #     if (self.flam and self.spec_flam) or (not self.flam and not self.spec_flam): # easy conversion, just scaling
+        #         self.spec_unit_conv = (1*self.sed_units).to(self.spec_units).value
+        #     elif self.flam and not self.spec_flam: # if SED is in f_lam but spectrum is in f_nu... 
+        #         self.spec_unit_conv = (1*self.sed_units * (1 * self.wav_units)**2 / speed_of_light).to(self.spec_units).value
+        #     elif not self.flam and self.spec_flam: # if SED is in f_nu but spectrum is in f_lam...
+        #         self.spec_unit_conv = (1*self.sed_units / (1 * self.wav_units)**2 * speed_of_light).to(self.spec_units).value
+        #     else:
+        #         self.logger.error(f"Could not determine units for spectrum -- input astropy.units ")
+        #         sys.exit()
 
         # Create a spectral calibration object to handle spectroscopic calibration and resolution.
         self.calib = False
@@ -208,24 +200,42 @@ class ModelGalaxy(object):
 
 
         # Initialize the various physical models
-        if 'galaxy' in self.components: 
-            params = self.parameters['galaxy']
-            params['redshift'] = self.parameters['redshift']
+        # TODO change the initialization stage a bit; the parameter validataion and assignment of defaults 
+        # happens already at the construction of Params; other initialization steps, such as the resampling 
+        # wavelength sampling of ModelGalaxy, should be done here.
 
-            self.galaxy = DotMap(sfh=StarFormationHistoryModel(params, logger=logger), 
-                                 stellar=StellarModel(self.wavelengths, params, logger=logger),
-                                 nebular=NebularModel(self.wavelengths, params, logger=logger),
-                                 dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger),
-                                 dust_emission=DustEmissionModel(self.wavelengths, params, logger=logger))
-        if 'agn' in self.components:
-            params = self.parameters['agn']
-            params['redshift'] = self.parameters['redshift']
-            self.agn = DotMap(accdisk=AccretionDiskModel(self.wavelengths, params, logger=logger), 
-                              nebular=AGNLineModel(self.wavelengths, params, logger=logger),
-                              dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger))
 
-        if 'nebular' in self.components: # stand-alone nebular model
-            self.nebular = NebularModel(self.wavelengths, self.parameters, logger=logger)
+        # resample the various models to the internal, optimized wavelength grid
+
+        for component in self.components: 
+            params_i = self.parameters[component]
+            model = params_i.model
+            model._resample(self.wavelengths, params_i)
+            for group in params_i.groups:
+                params_ii = params_i[group]
+                model = params_ii.model
+                model._resample(self.wavelengths, params_ii)
+
+
+        # if 'galaxy' in self.components: 
+        #     params = self.parameters['galaxy']
+        #     params['redshift'] = self.parameters['redshift']
+
+        #     self.galaxy = DotMap(sfh=StarFormationHistoryModel(params, logger=logger), 
+        #                          stellar=StellarModel(self.wavelengths, params, logger=logger),
+        #                          nebular=NebularModel(self.wavelengths, params, logger=logger),
+        #                          dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger),
+        #                          dust_emission=DustEmissionModel(self.wavelengths, params, logger=logger))
+
+        # if 'agn' in self.components:
+        #     params = self.parameters['agn']
+        #     params['redshift'] = self.parameters['redshift']
+        #     self.agn = DotMap(accdisk=AccretionDiskModel(self.wavelengths, params, logger=logger), 
+        #                       nebular=AGNLineModel(self.wavelengths, params, logger=logger),
+        #                       dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger))
+
+        # if 'nebular' in self.components: # stand-alone nebular model
+        #     self.nebular = NebularModel(self.wavelengths, self.parameters, logger=logger)
 
 
         # Compute the full internal model SED
@@ -243,26 +253,26 @@ class ModelGalaxy(object):
 
 
     def _define_base_params_at_redshift(self):
+        # TODO remove, all these functionality (except for IGM transmission) are now built into SED
 
         ########################## Configure base-level parameters. ##########################
-        self.redshift = self.parameters['redshift']
-        if self.redshift > config.max_redshift:
-            raise ValueError("""Attempted to create a model with too high redshift. 
-                                Please increase max_redshift in brisket/config.py 
-                                before making this model.""")
+        # self.redshift = self.parameters['redshift']
+        # if self.redshift > config.max_redshift:
+        #     raise ValueError("""Attempted to create a model with too high redshift. 
+        #                         Please increase max_redshift in brisket/config.py 
+        #                         before making this model.""")
 
         # Compute IGM transmission at the given redshift
         self.igm_trans = self.igm.trans(self.redshift, self.parameters['igm'])
-        # Convert from luminosity to observed flux at redshift z.
-        self.lum_flux = 1.
-        if self.redshift > 0.:
-            dL = config.cosmo.luminosity_distance(self.redshift).to(u.cm).value
-            self.lum_flux = 4*np.pi*dL**2
 
+        # Convert from luminosity to observed flux at redshift z.
+        # self.lum_flux = 1.
+        # if self.redshift > 0.:
+            # dL = config.cosmo.luminosity_distance(self.redshift).to(u.cm).value
+            # self.lum_flux = 4*np.pi*dL**2
         # self.damping = damping(self.wavelengths, parameters['base']['damping'])
         # self.MWdust = MWdust(self.wavelengths, components['base']['MWdust'])
-
-        self.wav_obs = self.wav_rest * (1 + self.redshift)
+        # self.wav_obs = self.wav_rest * (1 + self.redshift)
 
 
 
@@ -270,21 +280,8 @@ class ModelGalaxy(object):
         """ Update the model outputs (spectra, photometry) to reflect 
         new parameter values in the parameters dictionary. Note that 
         only the changing of numerical values is supported."""
-        self._define_base_params_at_redshift()
+        self.parameters.update(parameters)
 
-        if 'galaxy' in self.components: 
-            params = parameters['galaxy']
-            params['redshift'] = parameters['redshift']
-            self.galaxy.sfh.update(params)
-            if self.galaxy.dust_atten:
-                self.galaxy.dust_atten.update(params["dust_atten"])
-        
-        if 'agn' in self.components:
-            params = parameters['agn']
-            params['redshift'] = parameters['redshift']
-            if self.agn.dust_atten:
-                self.agn.dust_atten.update(params["dust_atten"])
-    
         # Compute the internal full SED 
         self._compute_sed()
 
@@ -309,9 +306,22 @@ class ModelGalaxy(object):
         # TODO define self.sources
         for source in self.sources:
             ### source should be pre-defined and initialized already
-            # sed_incident = source.emit() 
+            sed_incident = source.emit() 
             ### get absorbers specific to this source
-            # absorbers = source.absorbers()
+            groups = source.groups
+            for group in groups:
+                if source.groups[group].type == 'absorber':
+                    sed_transmitted = source.groups[group].absorb(sed_incident)
+                    sed_total = sed_transmitted
+                elif source.groups[group].type == 'reprocessor':
+                    sed_transmitted, emission_params = source.groups[group].absorb(sed_incident)
+                    sed_reprocessed = source.groups[group].emit(emission_params)
+                    sed_total = sed_transmitted + sed_reprocessed
+                elif source.groups[group].type == 'source':
+                    sed_total = source.groups[group].emit()
+                # elif source.groups[group].type == 'group':
+
+            # absorbers = source.absorbers
             # for absorber in absorbers:
             #   sed_transmitted, emission_params = absorber.absorb(sed_incident)
             #   sed_reprocessed = absorber.emit(emission_params)

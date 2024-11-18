@@ -7,25 +7,22 @@ trade-off between speed and accuracy, you may find changing them
 negatively affects one or both of these things.
 '''
 
-
-from __future__ import print_function,  division,  absolute_import
-
 import os
 import numpy as np
 
 from astropy.io import fits
 from astropy.units import cm
 
-# from brisket.utils import *
-# from brisket.models.making import igm_inoue2014
-
 ########################## Set up directory structure ##########################
 install_dir = os.path.dirname(os.path.realpath(__file__))
 '''Stores the install directory for easy reference'''
+
 grid_dir = install_dir + "/models/grids"
 '''Stores the path to the model grid directory for easy reference'''
+
 res_dir = install_dir + "/models/res"
 '''Stores the path to the resolution curve directory for easy reference'''
+
 filter_directory = install_dir + '/filters/filter_files/filter_directory.toml'
 '''Stores the path to the filter directory for easy reference'''
 
@@ -33,28 +30,11 @@ filter_directory = install_dir + '/filters/filter_files/filter_directory.toml'
 ascii = False
 '''Whether to use ascii characters only in printing fit outputs. Defaults to false (i.e., use fancier unicode characters)'''
 
-# Cosmology is imported from astropy
 from astropy.cosmology import Planck18 as cosmo
-z_array = np.arange(0., 100., 0.01)
-age_array = cosmo.age(z_array).value
-def age_at_z(z):
-    '''Returns the age of the universe, in Gyr, at redshift z'''
-    return cosmo.age(z).value
-def z_at_age(age):
-    '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
-    return np.interp(age, np.flip(age_array), np.flip(z_array))
-
-fwhm = 500
-'''Default FWHM of nebular lines, in km/s (TODO: is this implemented?)'''
-
-max_wavelength = 1 * cm
-'''Maximum wavelength at which the full SED models are computed.'''
-
-max_redshift = 20.
-'''Sets the maximum redshift the code is set up to calculate models for.'''
+'''The cosmology used in the code. Defaults to Planck 2018 cosmology, but can be changed to any astropy cosmology object.'''
 
 # These variables control the wavelength sampling for models.
-R_spec = 600.
+R_spec = 1000.
 '''Sets the R = lambda/dlambda value for spectroscopic outputs.'''
 R_phot = 100.
 '''Sets the R value for photometric regions.'''
@@ -68,6 +48,26 @@ r = fits.getdata(os.path.join(res_dir,'jwst_nirspec_g395m_disp.fits'))
 R_curves['JWST_NIRSpec_G395M'] = np.array([r['WAVELENGTH']*1e4, r['R']]).T
 #TODO add the rest of the JWST resolution curves
 
+
+fwhm = 500
+'''Default FWHM of nebular lines, in km/s (TODO: is this implemented?)'''
+
+max_wavelength = 1 * cm
+'''Maximum wavelength at which the full SED models are computed.'''
+
+max_redshift = 20.
+'''Sets the maximum redshift the code is set up to calculate models for.'''
+
+
+import shutil
+cols = shutil.get_terminal_size((80, 20)).columns
+
+if ascii:
+    value_chars = ' ░▒▓█'
+    border_chars = '═║╔╦╗╠╬╣╚╩╝'
+else:
+    value_chars = ' ▁▂▃▄▅▆▇█'
+    border_chars = '═║╔╦╗╠╬╣╚╩╝'
 
 
 # # These variables control the age sampling for the stellar and nebular
@@ -281,12 +281,3 @@ R_curves['JWST_NIRSpec_G395M'] = np.array([r['WAVELENGTH']*1e4, r['R']]).T
 #     print('Failed to load QSOGEN BLR/NLR models, these should be placed in the brisket/models/grids/ directory.')
 
 
-import shutil
-cols = shutil.get_terminal_size((80, 20)).columns
-
-if ascii:
-    value_chars = ' ░▒▓█'
-    border_chars = '═║╔╦╗╠╬╣╚╩╝'
-else:
-    value_chars = ' ▁▂▃▄▅▆▇█'
-    border_chars = '═║╔╦╗╠╬╣╚╩╝'

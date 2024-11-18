@@ -6,7 +6,7 @@ from brisket import config
 from brisket import utils
 
 
-class StellarModel(object):
+class BaseStellarModel(object):
     """ Allows access to and maniuplation of stellar emission models.
 
     Parameters
@@ -16,22 +16,33 @@ class StellarModel(object):
         1D array of wavelength values desired for the stellar models.
     """
 
-    def __init__(self, wavelengths, parameters, logger=utils.NullLogger):
-        self.wavelengths = wavelengths
-        model = parameters['stellar_model']
+    def __init__(self, params):
+        self.type == 'Source'
+        #self.wavelengths = wavelengths
         
-        self.logger = logger
-        self.logger.info(f'Initializing stellar module'.ljust(50) + f'(model: {model})'.rjust(20))
+        self.params = params
+        grids = params['grids']
 
+        ### load in the stellar grids
+        # self.template_metallicities = config.stellar_models[model]['metallicities']
+        # self.template_wavelengths = config.stellar_models[model]['wavelengths']
+        # self.template_raw_stellar_ages = config.stellar_models[model]['raw_stellar_ages']
+        # self.template_raw_stellar_grid = config.stellar_models[model]['raw_stellar_grid']
+    
 
-        self.template_metallicities = config.stellar_models[model]['metallicities']
-        self.template_wavelengths = config.stellar_models[model]['wavelengths']
-        self.template_raw_stellar_ages = config.stellar_models[model]['raw_stellar_ages']
-        self.template_raw_stellar_grid = config.stellar_models[model]['raw_stellar_grid']
+        # # Resample the grid in wavelength and then in age.
+        # grid_raw_ages = self._resample_in_wavelength()
+        # self.grid = self._resample_in_age(grid_raw_ages)
+        pass
+    
+    def __repr__(self):
+        return f'BaseStellarModel'
+    
+    def __str__(self):
+        return self.__repr__()
 
-        # Resample the grid in wavelength and then in age.
-        grid_raw_ages = self._resample_in_wavelength()
-        self.grid = self._resample_in_age(grid_raw_ages)
+    def _resample(self):
+        pass
 
     def _resample_in_wavelength(self):
         """ Resamples the raw stellar grids to the input wavs. """
@@ -116,7 +127,8 @@ class StellarModel(object):
 
         return grid
 
-    def spectrum(self, sfh_ceh, t_bc=0.):
+    def spectrum(emit):#, sfh_ceh, t_bc=0.):
+    
         """ Obtain a split 1D spectrum for a given star-formation and
         chemical enrichment history, one for ages lower than t_bc, one
         for ages higher than t_bc. This allows extra dust to be applied
@@ -132,8 +144,15 @@ class StellarModel(object):
         t_bc : float
             The age at which to split the spectrum in Gyr.
         """
-
         self.logger.debug(f'Computing stellar spectrum')
+
+        # TODO compute sfh_ceh from input SFH parameters
+        sfh_components = self.params.sfh_components
+        for sfh_comp in sfh_components:
+
+
+
+
 
         t_bc *= 10**9
         spectrum_young = np.zeros_like(self.wavelengths)

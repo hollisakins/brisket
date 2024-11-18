@@ -7,34 +7,15 @@ from brisket.console import console, rich_str
 from rich.table import Table
 from numpy import ndarray
 
-base_params = ['redshift']
-allowed_components = ['galaxy','agn','nebular','calib','igm']
-defaults = {'igm':'Inoue14', 
-            'galaxy': {
-                'stellar_model':'BC03', 
-                't_bc':0.01
-                },
-            'calib': {
-                'f_LSF': 1.0,
-                'oversample': 4,
-            }}
+from brisket.models import BaseStellarModel, BaseSFHModel, BaseAGNModel
 
-## ADD TO DEFAULTS
-# t_bc = 0.01
-# if "t_bc" in list(params):
-#     t_bc = params["t_bc"]
-
-### TODO better handling of defaults
-### e.g. continuity SFH: need to add defaults for dsfr1, dsfr2, etc 
-### add default IGM model, added even if you don't run params.add_igm()
-
+model_defaults = {'galaxy': BaseStellarModel, 
+                  'agn': BaseAGNModel, 
+                  'igm': InoueIGMModel}
 
 
 # TODO default model choices given source names
 # TODO default parameter choices given source names
-
-
-
 
 class Params:
     def __init__(self, template=None, file=None): #*args, **kwargs):
@@ -50,74 +31,98 @@ class Params:
             except FileNotFoundError:
                 print(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
         
-        
-        self.sources = {}
+        self.groups = {}
         self.all_params = {}
         self.free_params = {}
         self.linked_params = {}
-        
-        #self.defaults = []
+        self.validated = False
 
+    def add_group(self, name, model=None, model_type=None):
+        if model is None:
+            for key in model_defaults:
+                if key in name:
+                    model = model_defaults[key]
+            else:
+                raise Exception(f'No default model for source {name}, please specify model')
+        group = Group(name, model, parent=self, model_type=model_type)
+        self.__setitem__(name, group)
 
     def add_source(self, name, model=None):
+        group = Group(name, model, parent=self, model_type='source')
+        self.__setitem__(name, group)
 
-        # if model is None:
-        #     if name=='galaxy':
-        #         model = models.BaseStellarModel
-        #     if name=='agn':
-        #         model = models.BaseAGNModel
+    def add_absorber(self, name, model=None):
+        group = Group(name, model, parent=self, model_type='absorber')
+        self.__setitem__(name, group)
+        
+    def add_reprocessor(self, name, model=None):
+        group = Group(name, model, parent=self, model_type='reprocessor')
+        self.__setitem__(name, group)
+
+    def add_nebular(self, model=None):
+        self.add_reprocessor('nebular', model=model)
+    
+    def add_dust(self, model=None):
+        self.add_reprocessor('dust', model=model)
+    
+    def add_igm(self, model=None):
+        self.add_absorber('igm', model=model)
+
+    def __setitem__(self, key, value):
+
+        if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,ndarray)): # setting the value of a parameter, add to all_params
             
-        source = Source(name, model, parent=self)
-        self.__setitem__(name, source)
+            if isinstance(self, Group): # if adding a parameter to a group, prepend the group name to the key
+                if isinstance(self.parent, Group):
+                    key = self.parent.name + '/' + self.name + '/' + key
+                else:
+                    key = self.name + '/' + key
+            
+            if isinstance(value, (int,float,str,list,tuple,ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
+                value = FixedParam(value)
 
-        # self.all_param_names += [name+'/'+n for n in source.all_names]
+            self.all_params[key] = value
+            if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
+                self.free_params[key] = value
+
+
+        elif isinstance(value, Group): # adding a group 
+            if value.model_type == 'source':
+                self.sources[key] = value
+            elif value.model_type == 'absorber':
+                self.absorbers[key] = value
+            elif value.model_type == 'reprocessor':
+                self.reprocessors[key] = value
+            else:
+                self.groups[key] = value
+
+    def __getitem__(self, key):
+        if key in self.sources: # getting a source
+            return self.sources[key]
+        elif key in self.absorbers: # getting a absorber
+            return self.absorbers[key]
+        elif key in self.reprocessors: # getting a reprocessor
+            return self.reprocessors[key]
+        elif key in self.groups: # getting a group
+            return self.groups[key]
+        elif key in self.all_params: # getting a parameter from the base Params object
+            return self.all_params[key]
+        else:
+            raise Exception(f"No key {key} found in {self}")
+
+    # def __contains__(self, key):
+    #     return dict.__contains__(self.data, key)
+
 
     def __repr__(self):
         self.validate()
-        # border_chars = '═║╔╦╗╠╬╣╚╩╝'
-
-        # width = config.cols-2
-        # if width % 2 == 0:
-        #     width -= 1
-        # if self.ndim > 0:
-        #     # outstr = config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
-        #     outstr = '' + '\n'
-        #     outstr += 'Fixed Parameters'.center(width+2) + '\n'
-        #     outstr += config.border_chars[2] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[4] + '\n'
-        # else: 
-        #     outstr = config.border_chars[2] + config.border_chars[0]*(width//2) + config.border_chars[3] + config.border_chars[0]*(width//2) + config.border_chars[4] + '\n'
-        # outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Value'.center(width//2) + config.border_chars[1] + '\n'
-        # outstr += config.border_chars[5] + config.border_chars[0]*(width//2) + config.border_chars[6] + config.border_chars[0]*(width//2) + config.border_chars[7] + '\n'
-
-        # for i in range(self.nparam): 
-        #     if self.all_param_names[i] in self.free_param_names: continue
-        #     #if self.all_param_names[i] in self.defaults: df = ' *'; 
-        #     #else: df = ''
-        #     df = ''
-        #     outstr += config.border_chars[1] + ' ' + (self.all_param_names[i] + df).ljust(width//2-1) + config.border_chars[1] + ' ' +  str(self.all_params[i]).ljust(width//2-1) + config.border_chars[1] + '\n'
+        if config.params_print_summary:
+            return self.summary
+        elif config.params_print_tree:
+            return self.tree
         
-        # outstr += config.border_chars[8] + config.border_chars[0]*(width//2) + config.border_chars[9] + config.border_chars[0]*(width//2) + config.border_chars[10] + '\n'
-        # outstr += '\n'
-        # # msg += '(* = adopted default value) \n'
-        # # for i in range(p.nparams):
-        #     # msg += (p.all_param_names[i], p.all_param_values[i])
-         
-        # if self.ndim > 0:
-        #     # outstr += config.border_chars[2] + config.border_chars[0]*width + config.border_chars[4] + '\n'
-        #     outstr += 'Free Parameters'.center(width+2) + '\n'
-        #     outstr += config.border_chars[2] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[3] + config.border_chars[0]*(width//3) + config.border_chars[4] + '\n'
-        #     outstr += config.border_chars[1] + 'Parameter name'.center(width//3) + config.border_chars[1] + 'Limits'.center(width//3) + config.border_chars[1] + 'Prior'.center(width//3) + config.border_chars[1] + '\n'
-        #     outstr += config.border_chars[5] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[6] + config.border_chars[0]*(width//3) + config.border_chars[7] + '\n'
-        #     for i in range(self.ndim): 
-        #         # outstr += config.border_chars[1] + 'Parameter name'.center(width//2) + config.border_chars[1] + 'Prior'.center(width//2) + config.border_chars[1] + '\n'
-        #         n = self.free_param_names[i]
-        #         p = self.free_params[n]
-        #         outstr += config.border_chars[1] + ' ' + (n).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.limits).ljust(width//3-1) + config.border_chars[1] + ' ' +  str(p.prior).ljust(width//3-1) + config.border_chars[1] + '\n'
-        #     outstr += config.border_chars[8] + config.border_chars[0]*(width//3) + config.border_chars[9] + config.border_chars[0]*(width//3) + config.border_chars[9] + config.border_chars[0]*(width//3) + config.border_chars[10] + '\n'
-
-        #         # outstr += self.free_param_names[i].ljust(25) + '| ' + '\n'
-        # return outstr
-        
+    @property
+    def summary(self):
         if self.ndim > 0:
             table = Table(title="Fixed Parameters")
         else:
@@ -144,9 +149,12 @@ class Params:
                 table.add_row(n, str(p.limits), str(p.prior))
         
             tab_str = tab_str + '\n' + rich_str(table)
-        
         return tab_str
-        
+
+    @property
+    def tree(self):
+        return ''
+
     # def update(self, *args, **kwargs):
     #     for k, v in dict(*args, **kwargs).items():
     #         self[k] = v
@@ -160,41 +168,6 @@ class Params:
     @property
     def ndim(self):
         return len(self.free_param_names)
-
-    def __setitem__(self, key, value):
-
-        if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,ndarray)): # setting the value of a parameter, add to all_params
-            
-            if isinstance(self, Source): # if adding a parameter to a source, prepend the source name to the key
-                if isinstance(self.parent, Source):
-                    key = self.parent.name + '/' + self.name + '/' + key
-                else:
-                    key = self.name + '/' + key
-            
-            if isinstance(value, (int,float,str,list,tuple,ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
-                value = FixedParam(value)
-
-            self.all_params[key] = value
-            if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
-                self.free_params[key] = value
-
-
-        elif isinstance(value, Source): # adding a source 
-            # if isinstance(self, Source): # for sources (i.e. adding a sub-source), prepend the source name to the key
-                # key = self.name + '/' + key
-            self.sources[key] = value
-
-    def __getitem__(self, key):
-        if key in self.sources: # getting a source
-            return dict.__getitem__(self.sources, key)
-        elif key in self.all_params: # getting a parameter from the base Params object
-            return dict.__getitem__(self.all_params, key)
-        else:
-            print(self, key)
-            raise Exception
-
-    def __contains__(self, key):
-        return dict.__contains__(self.data, key)
 
     # def _parse_from_toml(self, filepath):
     #     '''Fixes a bug in TOML where inline dictionaries are stored with some obscure DynamicInlineTableDict class instead of regular old python dict'''
@@ -217,13 +190,28 @@ class Params:
            Params is passed to ModelGalaxy or Fitter.
         '''
         for source in self.sources:
+            self.sources[source].model = self.sources[source]._model_func(params=self.sources[source])
+            
             self.all_params.update(self.sources[source].all_params)
             self.free_params.update(self.sources[source].free_params)
             if len(self.sources[source].sources)>0:
                 for subsource in self.sources[source].sources:
                     self.all_params.update(self.sources[source].sources[subsource].all_params)
                     self.free_params.update(self.sources[source].sources[subsource].free_params)
+        
+        for absorber in self.absorbers:
+            self.absorbers[absorber].model = self.absorbers[absorber]._model_func(params=self.absorbers[absorber])
+            
+            self.all_params.update(self.absorbers[absorber].all_params)
+            self.free_params.update(self.absorbers[absorber].free_params)
 
+        for reprocessor in self.reprocessors:
+            self.reprocessors[reprocessor].model = self.reprocessors[reprocessor]._model_func(params=self.reprocessors[reprocessor])
+            
+            self.all_params.update(self.reprocessors[reprocessor].all_params)
+            self.free_params.update(self.reprocessors[reprocessor].free_params)
+
+        # initialize self.sources[source].model with params=self.sources[source]
         self.all_param_names = list(self.all_params.keys())
         self.all_param_values = list(self.all_params.values())
 
@@ -232,39 +220,42 @@ class Params:
 
         # self.linked_params
 
+        self.validated = True
 
 
-# define class for for a source (galaxy, agn, etc) which will be a container for parameters
-class Source(Params):
-    def __init__(self, name, model, parent=None):
+class Group(Params):
+    def __init__(self, name, model, parent=None, model_type=None):
         self.name = name
-        self.model = model
+        self.type = model_type
+        self._model_func = model
         self.parent = parent
         self.sources = {}
+        self.groups = {}
+        self.absorbers = {}
+        self.reprocessors = {}
         self.all_params = {}
         self.free_params = {} 
         self.linked_params = {}
 
     def add_source(self, name, model=None):
-        raise Exception('cant add source to source')
+        raise Exception('can only add source to base Params object')
 
     def add_sfh(self, name, model=None):
-        if self.name != 'galaxy':
-            raise Exception('SFH can only be added to galaxy source')
-        sfh = Source(name, model=model, parent=self)
+        if not (self.name=='galaxy' and self.model_type=='source'):
+            raise Exception('SFH is special, can only be added to galaxy source')
+        sfh = Group(name, model=model, parent=self)
         self.__setitem__(name, sfh)
-    
-
-    def add_nebular(self, model=None):
-        nebular = Source('nebular', model=model, parent=self)
-        self.__setitem__('nebular', nebular)
-    
-    def add_dust(self, model=None):
-        dust = Source('dust', model=model, parent=self)
-        self.__setitem__('dust', dust)
 
     def __repr__(self):
-        return f'Source({self.name}, {self.model})'
+        if len(self.sources)>0:
+            outstr = f"Source(name='{self.name}', model={self._model_func.__name__})"
+            for source in self.sources:
+                s = self.sources[source]
+                outstr += '\n' + f"\-> Source(name='{s.name}', model={s._model_func.__name__})"
+            return outstr
+        else:
+            return f"Source(name='{self.name}', model={self._model_func.__name__})"
+
 
 class FreeParam(MutableMapping):
     def __init__(self, low, high, prior='uniform', **hyperparams):

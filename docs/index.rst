@@ -1,14 +1,13 @@
 BRISKET
 ========
 
-**Bagpipes, Repurposed for Ism, Stellar, and blacK holE fitting in Texas**
+BRISKET (loosely, **Baeysian Retrieval and Inference for Stellar and blacK holeE fitting in Texas**) is a full-featured SED fitting code for fitting galaxy and AGN SEDs. 
+
 
 .. note::
     
     This project is in very early stages of development.
 
-``brisket`` is a galaxy/quasar SED fitting code based on ``bagpipes`` by Adam Carnall.
-``brisket`` adopts the base code of ``bagpipes`` but expands it to provide additional modeling options, easier customizability/modularity, and more flexibility. Specifically: 
  
 * new nested parameter structure to allow multi-component models, each component with its own specification of dust/nebular parameters
 
@@ -29,24 +28,28 @@ As well as some QOL changes
 Source and installation
 -----------------------
 
-.. Bagpipes is `developed at GitHub <https://github.com/ACCarnall/bagpipes>`_, however the code cannot be installed from there, as the large model grid files aren't included in the repository. The code should instead be installed with pip:
+For now, the code should be installed by cloning this repository and installing locally with ``pip``:
 
-..     pip install bagpipes
+```bash
+git clone https://github.com/hollisakins/brisket.git
+cd brisket
+pip install -e .
+```
 
-
-.. All of the code's Python dependencies will be automatically installed.
+Note that the ``-e`` flag installs the package in "editable" mode, so that any changes to the files in your install directory will be reflected in the installed package. 
+This is useful while the code is in active development, but may not be necessary for normal use.
 
 
 Getting started
 ---------------
 
-.. The best place to get started is by looking at the `iPython notebook examples <https://github.com/ACCarnall/bagpipes/tree/master/examples>`_. It's a good idea to tackle them in order as the later examples build on the earlier ones. These documentation pages contain a more complete reference guide.
-
+TBD
 
 Acknowledgements
 ----------------
 
-``brisket`` is fundamentally an "expansion pack" for ``bagpipes``, which is itself a very popular SED fitting code. ``brisket`` therefore owes a huge debt to Adam Carnall for his work developing ``bagpipes``, as well as many of the project ``bagpipes`` relies on:
+``brisket`` is heavily inspired by other existing SED fitting codes, including ``bagpipes`` by Adam Carnall and ``synthesizer`` by the FLARES simulation team.  
+The goal of ``brisket`` is to provide a similarly user-friendly interface as ``bagpipes`` but with additional modeling options and a more modular and flexible codebase. 
 
 * The `Bruzual \& Charlot (2003) <https://arxiv.org/abs/astro-ph/0309134>`_ stellar population models.
 * The `Draine \& Li (2007) <https://arxiv.org/abs/astro-ph/0608003>`_ dust emission models.
@@ -54,8 +57,6 @@ Acknowledgements
 * The `PyMultiNest <https://johannesbuchner.github.io/PyMultiNest>`_ Python interface for Multinest `(Buchner et al. 2014) <https://arxiv.org/abs/1402.0004>`_.
 * The `Cloudy <https://www.nublado.org>`_ photoionization code `(Ferland et al. 2017) <https://arxiv.org/abs/1705.10877>`_.
 * The `nautilus <https://nautilus-sampler.readthedocs.io/en/stable/>`_ importance nested sampling algorithm `(Lange 2023) <https://arxiv.org/abs/2306.16923>`_.
-
-As well as several projects incorporated into ``brisket``:
 
 * Empirical QSO SED templates from ``qsogen`` `Temple et al. (2021) <https://arxiv.org/abs/2109.04472>`_ 
 * The `UltraNest <https://johannesbuchner.github.io/UltraNest/index.html>`_ nested sampling algorithm `(Buchner et al. 2021) <https://arxiv.org/abs/2101.09604>`_
