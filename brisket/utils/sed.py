@@ -3,21 +3,11 @@ import spectres
 from astropy.constants import c as speed_of_light
 from astropy.constants import h as plancks_constant
 
-# temporary
-from dotmap import DotMap
-import astropy.units as u
-config = DotMap(default_wavelength_unit=u.angstrom, default_frequency_unit=u.GHz, default_energy_unit=u.keV, default_fnu_unit=u.uJy, default_flam_unit=u.erg/u.s/u.cm**2/u.angstrom, ascii=False)
-
-if config.ascii:
-    value_chars = ' ░▒▓█'
-    border_chars = '═║╔╦╗╠╬╣╚╩╝'
-else:
-    value_chars = ' ▁▂▃▄▅▆▇█'
-    border_chars = '═║╔╦╗╠╬╣╚╩╝'
-
-
+from brisket import config
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+
+border_chars = config.border_chars
 
 class SED(object):
     '''
@@ -253,6 +243,10 @@ class SED(object):
         windows = ((w>=1268)&(w<=1284))|((w>=1309)&(w<=1316))|((w>=1342)&(w<=1371))|((w>=1407)&(w<=1515))|((w>=1562)&(w<=1583))|((w>=1677)&(w<=1740))|((w>=1760)&(w<=1833))|((w>=1866)&(w<=1890))|((w>=1930)&(w<=1950))|((w>=2400)&(w<=2580))
         p = np.polyfit(np.log10(w[windows]), np.log10(self.flam[windows].value), deg=1)
         return p[0]
+
+    @property
+    def Muv(self):
+        return -22
 
     @property
     def properties(self):

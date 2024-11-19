@@ -3,15 +3,17 @@ from collections.abc import MutableMapping
 
 from brisket import config
 from brisket.fitting import priors
-from brisket.console import console, rich_str
+from brisket.console import rich_str
 from rich.table import Table
 from numpy import ndarray
 
-from brisket.models import BaseStellarModel, BaseSFHModel, BaseAGNModel
 
-model_defaults = {'galaxy': BaseStellarModel, 
-                  'agn': BaseAGNModel, 
-                  'igm': InoueIGMModel}
+# from brisket.models import BaseStellarModel, BaseSFHModel, BaseAGNModel
+# model_defaults = {'galaxy': BaseStellarModel, 
+                #   'agn': BaseAGNModel, 
+                #   'igm': InoueIGMModel}
+from brisket.models import PowerlawAccrectionDiskModel
+model_defaults = {'agn':PowerlawAccrectionDiskModel}
 
 
 # TODO default model choices given source names
@@ -31,7 +33,11 @@ class Params:
             except FileNotFoundError:
                 print(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
         
-        self.groups = {}
+        self.sources = {}
+        self.absorbers = {}
+        self.reprocessors = {}
+        self.calibrators = {}
+
         self.all_params = {}
         self.free_params = {}
         self.linked_params = {}
@@ -40,25 +46,27 @@ class Params:
     def add_group(self, name, model=None, model_type=None):
         if model is None:
             for key in model_defaults:
+                print(key)
                 if key in name:
                     model = model_defaults[key]
-            else:
-                raise Exception(f'No default model for source {name}, please specify model')
+                else:
+                    raise Exception(f'No default model for source {name}, please specify model')
         group = Group(name, model, parent=self, model_type=model_type)
         self.__setitem__(name, group)
 
     def add_source(self, name, model=None):
-        group = Group(name, model, parent=self, model_type='source')
-        self.__setitem__(name, group)
+        self.add_group(name, model=model, model_type='source')
 
     def add_absorber(self, name, model=None):
-        group = Group(name, model, parent=self, model_type='absorber')
-        self.__setitem__(name, group)
+        self.add_group(name, model=model, model_type='absorber')
         
     def add_reprocessor(self, name, model=None):
-        group = Group(name, model, parent=self, model_type='reprocessor')
-        self.__setitem__(name, group)
+        self.add_group(name, model=model, model_type='reprocessor')
+        
+    def add_calibrator(self, name, model=None):
+        self.add_group(name, model=model, model_type='calibrator')
 
+    # specific, commongly used models
     def add_nebular(self, model=None):
         self.add_reprocessor('nebular', model=model)
     
@@ -67,16 +75,20 @@ class Params:
     
     def add_igm(self, model=None):
         self.add_absorber('igm', model=model)
+    
+    def add_calibration(self, model=None):
+        self.add_calibrator('calib', model=model)
 
+    ##############################
     def __setitem__(self, key, value):
 
         if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,ndarray)): # setting the value of a parameter, add to all_params
             
-            if isinstance(self, Group): # if adding a parameter to a group, prepend the group name to the key
-                if isinstance(self.parent, Group):
-                    key = self.parent.name + '/' + self.name + '/' + key
-                else:
-                    key = self.name + '/' + key
+            # if isinstance(self, Group): # if adding a parameter to a group, prepend the group name to the key
+                # if isinstance(self.parent, Group):
+                    # key = self.parent.name + '/' + self.name + '/' + key
+                # else:
+                    # key = self.name + '/' + key
             
             if isinstance(value, (int,float,str,list,tuple,ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
                 value = FixedParam(value)
@@ -103,15 +115,15 @@ class Params:
             return self.absorbers[key]
         elif key in self.reprocessors: # getting a reprocessor
             return self.reprocessors[key]
-        elif key in self.groups: # getting a group
-            return self.groups[key]
+        elif key in self.calibrators: # getting a calibrator
+            return self.calibrators[key]
         elif key in self.all_params: # getting a parameter from the base Params object
             return self.all_params[key]
         else:
             raise Exception(f"No key {key} found in {self}")
 
-    # def __contains__(self, key):
-    #     return dict.__contains__(self.data, key)
+    def __contains__(self, key):
+        return dict.__contains__(self.all_params, key)
 
 
     def __repr__(self):
@@ -189,15 +201,12 @@ class Params:
            Runs automatically run when printing a Params object or when
            Params is passed to ModelGalaxy or Fitter.
         '''
-        for source in self.sources:
-            self.sources[source].model = self.sources[source]._model_func(params=self.sources[source])
-            
-            self.all_params.update(self.sources[source].all_params)
-            self.free_params.update(self.sources[source].free_params)
-            if len(self.sources[source].sources)>0:
-                for subsource in self.sources[source].sources:
-                    self.all_params.update(self.sources[source].sources[subsource].all_params)
-                    self.free_params.update(self.sources[source].sources[subsource].free_params)
+        if not isinstance(self, Group):
+            for source in self.sources:
+                self.sources[source].model = self.sources[source]._model_func(params=self.sources[source])
+                
+                self.all_params.update(self.sources[source].all_params)
+                self.free_params.update(self.sources[source].free_params)
         
         for absorber in self.absorbers:
             self.absorbers[absorber].model = self.absorbers[absorber]._model_func(params=self.absorbers[absorber])
@@ -226,13 +235,15 @@ class Params:
 class Group(Params):
     def __init__(self, name, model, parent=None, model_type=None):
         self.name = name
-        self.type = model_type
+        self.model_type = model_type
         self._model_func = model
         self.parent = parent
-        self.sources = {}
-        self.groups = {}
+        
+        # self.sources = {}
         self.absorbers = {}
         self.reprocessors = {}
+        # self.calibrators = {}
+
         self.all_params = {}
         self.free_params = {} 
         self.linked_params = {}
@@ -247,14 +258,24 @@ class Group(Params):
         self.__setitem__(name, sfh)
 
     def __repr__(self):
-        if len(self.sources)>0:
-            outstr = f"Source(name='{self.name}', model={self._model_func.__name__})"
-            for source in self.sources:
-                s = self.sources[source]
-                outstr += '\n' + f"\-> Source(name='{s.name}', model={s._model_func.__name__})"
-            return outstr
+        # if len(self.sources)>0:
+        #     outstr = f"Source(name='{self.name}', model={self._model_func.__name__})"
+        #     for source in self.sources:
+        #         s = self.sources[source]
+        #         outstr += '\n' + f"\-> Source(name='{s.name}', model={s._model_func.__name__})"
+        #     return outstr
+        # else:
+        return f"Group(name='{self.name}', model={self._model_func.__name__}, model_type={self.model_type})"
+
+    def __getitem__(self, key):
+        if key in self.absorbers: # getting a absorber
+            return self.absorbers[key]
+        elif key in self.reprocessors: # getting a reprocessor
+            return self.reprocessors[key]
+        elif key in self.all_params: # getting a parameter from the base Params object
+            return self.all_params[key]
         else:
-            return f"Source(name='{self.name}', model={self._model_func.__name__})"
+            raise Exception(f"No key {key} found in {self}")
 
 
 class FreeParam(MutableMapping):

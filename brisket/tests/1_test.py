@@ -6,17 +6,19 @@ class NullModel:
 
 # create a params object
 params = brisket.Params()
-params.add_source('galaxy')
 params['redshift'] = brisket.FreeParam(low=0, high=12)
 
-params['galaxy']['grids'] = 'bc03'
-params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
-params['galaxy']['zmet'] = brisket.FreeParam(low=0.001, high=2.5, prior='log_uniform')
+params.add_source('agn')
+params['agn']['beta'] = -2
+params['agn']['Muv'] = -22
+# params['galaxy']['grids'] = 'bc03'
+# params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
+# params['galaxy']['zmet'] = brisket.FreeParam(low=0.001, high=2.5, prior='log_uniform')
 
-params['galaxy'].add_sfh('continuity', model=NullModel)#brisket.models.ContinuitySFH)
-params['galaxy']['continuity']['bin_edges'] = [0, 10, 30, 100]
-params['galaxy']['continuity']['n_bins'] = 7
-params['galaxy']['continuity']['z_max'] = 20
+# params['galaxy'].add_sfh('continuity', model=NullModel)#brisket.models.ContinuitySFH)
+# params['galaxy']['continuity']['bin_edges'] = [0, 10, 30, 100]
+# params['galaxy']['continuity']['n_bins'] = 7
+# params['galaxy']['continuity']['z_max'] = 20
 
 # params['galaxy'].add_nebular()
 # params['galaxy']['nebular']['logU'] = brisket.FreeParam(low=-4, high=-1)
@@ -28,6 +30,11 @@ params['galaxy']['continuity']['z_max'] = 20
 # print(params['galaxy']['nebular'].all_params)
 
 print(params)
+
+mod = params['agn'].model
+import numpy as np
+mod._resample(np.linspace(100,3000,1000))
+print(mod.emit(params['agn']))
 
 
 # print(params.free_param_names)

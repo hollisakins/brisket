@@ -69,6 +69,16 @@ else:
     value_chars = ' ▁▂▃▄▅▆▇█'
     border_chars = '═║╔╦╗╠╬╣╚╩╝'
 
+### units
+import astropy.units as u
+default_wavelength_unit=u.angstrom
+default_frequency_unit=u.GHz
+default_energy_unit=u.keV
+default_fnu_unit=u.uJy
+default_flam_unit=u.erg/u.s/u.cm**2/u.angstrom
+
+params_print_summary = True
+params_print_tree = False
 
 # # These variables control the age sampling for the stellar and nebular
 # # emission models. The stellar models will be automatically rebinned onto
