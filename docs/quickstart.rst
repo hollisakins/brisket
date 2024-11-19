@@ -1,5 +1,5 @@
 
-New features in BRISKET
+Quickstart
 ======================
 
 TBD
