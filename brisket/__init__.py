@@ -8,9 +8,12 @@ install()
 from .parameters import Params, FreeParam, FixedParam
 
 # from .brisket import parse_toml_paramfile
-# from .models.model_galaxy import ModelGalaxy
+from .models.model_galaxy import ModelGalaxy
 # from .input.galaxy import Galaxy
 # from .fitting.fitter import Fitter
+
+
+from .console import console, log
 
 # from .catalogue.fit_catalogue import fit_catalogue
 

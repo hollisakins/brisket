@@ -18,14 +18,28 @@ class BaseFunctionalModel(BaseModel):
         self.wavelengths = wavelengths
 
 class BaseSourceModel(BaseModel):
+    def __init__(self, params):
+        self.model_type = 'source'
+        super().__init__(params)
+        
+
     def emit(self, params):
         raise NotImplementedError("Subclasses should implement this method")
 
 class BaseAbsorberModel(BaseModel):
+    def __init__(self, params):
+        self.model_type = 'absorber'
+        super().__init__(params)
+        
+
     def absorb(self, params):
         raise NotImplementedError("Subclasses should implement this method")
 
 class BaseReprocessorModel(BaseModel):
+    def __init__(self, params):
+        self.model_type = 'reprocessor'
+        super().__init__(params)
+
     def emit(self, params):
         raise NotImplementedError("Subclasses should implement this method")
     def absorb(self, params):

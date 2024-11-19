@@ -4,6 +4,9 @@ import numpy as np
 
 from brisket import config
 import warnings
+from brisket.models.base_models import *
+from astropy.io import fits
+
 
 def miralda_escude_eq12(x):
     with warnings.catch_warnings():
@@ -28,8 +31,8 @@ def interp_discont(x, xp, fp, xdiscont, left=None, right=None):
     return y
 
 
-class IGMModel(object):
-    """ Allows access to and maniuplation of the IGM attenuation models
+class InoueIGMModel(BaseGriddedModel, BaseAbsorberModel):
+    """ Allows access to and manipulation of the IGM attenuation models
     of Inoue (2014).
 
     Parameters
@@ -39,20 +42,29 @@ class IGMModel(object):
         1D array of wavelength values desired for the DL07 models.
     """
 
-    def __init__(self, wavelengths, params):
-        self.wavelengths = wavelengths
-        self.grid = self._resample_in_wavelength()
+    order = 10  # Define the order of operations for this model
+    # TODO could define defaults as class variables
 
-    def _resample_in_wavelength(self):
+    def __init__(self, params):
+        self._build_defaults(params)
+        super().__init__(params)
+
+    def _build_defaults(self, params):
+        self.igm_redshifts = np.arange(0.0, config.max_redshift + 0.01, 0.01)
+        self.igm_wavelengths = np.arange(1.0, 1225.01, 1.0)
+        self.raw_igm_grid = fits.open(config.grid_dir + "/d_igm_grid_inoue14.fits")[1].data
+
+    def _resample(self, wavelengths):
         """ Resample the raw grid to the input wavelengths. """
+        self.wavelengths = wavelengths
 
         grid = np.zeros((self.wavelengths.shape[0],
-                         config.igm_redshifts.shape[0]))
+                         self.igm_redshifts.shape[0]))
 
-        for i in range(config.igm_redshifts.shape[0]):
+        for i in range(self.igm_redshifts.shape[0]):
             grid[:, i] = interp_discont(self.wavelengths,
-                                        config.igm_wavelengths,
-                                        config.raw_igm_grid[i, :], 1215.67,
+                                        self.igm_wavelengths,
+                                        self.raw_igm_grid[i, :], 1215.67,
                                         left=0., right=1.)
                                    
         # Make sure the pixel containing Lya is always IGM attenuated
@@ -60,17 +72,17 @@ class IGMModel(object):
         if self.wavelengths[lya_ind] > 1215.67:
             grid[lya_ind, :] = grid[lya_ind-1, :]
 
-        return grid
+        self.grid = grid
 
-    def trans(self, redshift, params):
-        """ Get the IGM transmission at a given redshift. """
+    def absorb(self, sed_incident, params):
+        """ Apply the IGM attenuation to the input SED."""
+        redshift = float(params['redshift'])
+        redshift_mask = (self.igm_redshifts < redshift)
+        zred_ind = self.igm_redshifts[redshift_mask].shape[0]
 
-        redshift_mask = (config.igm_redshifts < redshift)
-        zred_ind = config.igm_redshifts[redshift_mask].shape[0]
-
-        zred_fact = ((redshift - config.igm_redshifts[zred_ind-1])
-                     / (config.igm_redshifts[zred_ind]
-                        - config.igm_redshifts[zred_ind-1]))
+        zred_fact = ((redshift - self.igm_redshifts[zred_ind-1])
+                     / (self.igm_redshifts[zred_ind]
+                        - self.igm_redshifts[zred_ind-1]))
 
         if zred_ind == 0:
             zred_ind += 1
@@ -80,14 +92,15 @@ class IGMModel(object):
         igm_trans = np.sum(weights*self.grid[:, zred_ind-1:zred_ind+1], axis=1)
 
         if 'xhi' in params:
+            print('applying IGM damping wing')
             # apply IGM damping wing 
-            self.tdmp = self.damping_wing(redshift, params['xhi'])
+            self.tdmp = self.damping_wing(redshift, float(params['xhi']))
             igm_trans *= self.tdmp
         if 'logNH' in params:
-            # apply IGM damping wing 
+            # apply DLA 
             igm_trans *= self.dla(redshift, params['logNH'])
 
-        return igm_trans
+        return sed_incident * igm_trans
 
     def damping_wing(self, redshift, xhi):
         zn = 8.8

@@ -76,6 +76,9 @@ default_frequency_unit=u.GHz
 default_energy_unit=u.keV
 default_fnu_unit=u.uJy
 default_flam_unit=u.erg/u.s/u.cm**2/u.angstrom
+default_Llam_unit = u.Lsun/u.angstrom
+default_Lnu_unit = u.Lsun/u.Hz
+default_L_unit = u.Lsun
 
 params_print_summary = True
 params_print_tree = False

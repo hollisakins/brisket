@@ -1,16 +1,27 @@
 import brisket
 
+
 class NullModel:
+    order = 100
     def __init__(self, params):
         self.params = params
 
 # create a params object
 params = brisket.Params()
-params['redshift'] = brisket.FreeParam(low=0, high=12)
+params['redshift'] = brisket.FreeParam(low=9, high=11)
 
 params.add_source('agn')
-params['agn']['beta'] = -2
+params['agn']['beta'] = -2.5
 params['agn']['Muv'] = -22
+
+params['agn'].add_dust(model=NullModel)
+params['agn']['dust']['Av'] = brisket.FreeParam(low=0.001, high=5, prior='log_uniform')
+params['agn']['dust']['delta'] = 0
+
+
+params.add_igm()
+params['igm']['xhi'] = 0.9
+
 # params['galaxy']['grids'] = 'bc03'
 # params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
 # params['galaxy']['zmet'] = brisket.FreeParam(low=0.001, high=2.5, prior='log_uniform')
@@ -31,10 +42,40 @@ params['agn']['Muv'] = -22
 
 print(params)
 
-mod = params['agn'].model
 import numpy as np
-mod._resample(np.linspace(100,3000,1000))
-print(mod.emit(params['agn']))
+component_names = np.array(list(params.components.keys()))[np.argsort(params.component_orders)]
+components = {k:params.components[k] for k in component_names}
+
+# print(np.array(list(params.components.keys())))
+# components = {k:params.components[k] for k in np.array(params.components.keys())[np.argsort(params.component_orders)]}
+# print(components)
+# mod = brisket.ModelGalaxy(params)
+# print(mod.sed)
+# mod.sed.plot(show=True, xlim=(500, 8000))
+
+# import numpy as np
+# mod = params['agn'].model
+# mod._resample(np.linspace(100,3000,10000))
+# sed = mod.emit(params['agn'])
+
+# mod = params['igm'].model
+# mod._resample(np.linspace(100,3000,10000))
+# sed = mod.absorb(sed, params['igm'])
+
+# print(sed)
+# # sed.plot(show=True)
+
+# print(params.components)
+
+# models = {}
+# wavelengths = np.linspace(100,3000,10000)
+# for component in params.components: 
+#     params_i = params[component]
+#     model = params_i.model
+#     model._resample(wavelengths)
+#     models[component] = model
+
+# print(models['igm'].model_type)
 
 
 # print(params.free_param_names)

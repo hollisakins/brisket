@@ -3,7 +3,7 @@ from collections.abc import MutableMapping
 
 from brisket import config
 from brisket.fitting import priors
-from brisket.console import rich_str
+from brisket.console import log, rich_str, PathHighlighter, LimitsHighlighter
 from rich.table import Table
 from numpy import ndarray
 
@@ -12,8 +12,9 @@ from numpy import ndarray
 # model_defaults = {'galaxy': BaseStellarModel, 
                 #   'agn': BaseAGNModel, 
                 #   'igm': InoueIGMModel}
-from brisket.models import PowerlawAccrectionDiskModel
-model_defaults = {'agn':PowerlawAccrectionDiskModel}
+from brisket.models import PowerlawAccrectionDiskModel, InoueIGMModel
+model_defaults = {'agn':PowerlawAccrectionDiskModel, 
+                  'igm':InoueIGMModel}
 
 
 # TODO default model choices given source names
@@ -26,17 +27,20 @@ class Params:
             try:
                 data = self._parse_from_toml(file)
             except FileNotFoundError:
-                print(f"Parameter file {data} not found."); sys.exit()
+                log(f"Parameter file {data} not found."); sys.exit()
         elif template is not None:
             try:
                 data = self._parse_from_toml(os.path.join(utils.param_template_dir, template+'.toml'))
             except FileNotFoundError:
-                print(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
+                log(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
         
-        self.sources = {}
-        self.absorbers = {}
-        self.reprocessors = {}
-        self.calibrators = {}
+        # self.sources = {}
+        # self.absorbers = {}
+        # self.reprocessors = {}
+        # self.calibrators = {}
+        self.components = {}
+        self.component_types = []
+        self.component_orders = []
 
         self.all_params = {}
         self.free_params = {}
@@ -45,12 +49,14 @@ class Params:
 
     def add_group(self, name, model=None, model_type=None):
         if model is None:
+            model_def = None
             for key in model_defaults:
-                print(key)
                 if key in name:
-                    model = model_defaults[key]
-                else:
-                    raise Exception(f'No default model for source {name}, please specify model')
+                    model_def = model_defaults[key]
+                    break
+            if model_def is None:
+                raise Exception(f'No default model for source {name}, please specify model')
+            model = model_def
         group = Group(name, model, parent=self, model_type=model_type)
         self.__setitem__(name, group)
 
@@ -83,13 +89,7 @@ class Params:
     def __setitem__(self, key, value):
 
         if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,ndarray)): # setting the value of a parameter, add to all_params
-            
-            # if isinstance(self, Group): # if adding a parameter to a group, prepend the group name to the key
-                # if isinstance(self.parent, Group):
-                    # key = self.parent.name + '/' + self.name + '/' + key
-                # else:
-                    # key = self.name + '/' + key
-            
+
             if isinstance(value, (int,float,str,list,tuple,ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
                 value = FixedParam(value)
 
@@ -97,34 +97,19 @@ class Params:
             if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
                 self.free_params[key] = value
 
-
         elif isinstance(value, Group): # adding a group 
-            if value.model_type == 'source':
-                self.sources[key] = value
-            elif value.model_type == 'absorber':
-                self.absorbers[key] = value
-            elif value.model_type == 'reprocessor':
-                self.reprocessors[key] = value
-            else:
-                self.groups[key] = value
+            self.components[key] = value
 
     def __getitem__(self, key):
-        if key in self.sources: # getting a source
-            return self.sources[key]
-        elif key in self.absorbers: # getting a absorber
-            return self.absorbers[key]
-        elif key in self.reprocessors: # getting a reprocessor
-            return self.reprocessors[key]
-        elif key in self.calibrators: # getting a calibrator
-            return self.calibrators[key]
+        if key in self.components: # getting a component/group
+            return self.components[key]
         elif key in self.all_params: # getting a parameter from the base Params object
             return self.all_params[key]
         else:
             raise Exception(f"No key {key} found in {self}")
 
     def __contains__(self, key):
-        return dict.__contains__(self.all_params, key)
-
+        return dict.__contains__(self.all_params, key) or dict.__contains__(self.components, key)
 
     def __repr__(self):
         self.validate()
@@ -139,26 +124,29 @@ class Params:
             table = Table(title="Fixed Parameters")
         else:
             table = Table(title="")
-        table.add_column("Parameter name", justify="left", style="cyan", no_wrap=True)
-        table.add_column("Value", style="magenta", no_wrap=True)
 
+        table.add_column("Parameter name", justify="left", no_wrap=True)
+        table.add_column("Value", style='bold #FFE4B5', justify='center', no_wrap=True)
+
+        h = PathHighlighter()
+        l = LimitsHighlighter()
         for i in range(self.nparam): 
             n = self.all_param_names[i]
             if n in self.free_param_names: continue
-            table.add_row(n, str(self.all_params[n]))
+            table.add_row(h(n), str(self.all_params[n]))
 
         tab_str = rich_str(table)
                      
         if self.ndim > 0:
             table = Table(title="Free Parameters")
             table.add_column("Parameter name", justify="left", style="cyan", no_wrap=True)
-            table.add_column("Limits", style="magenta", no_wrap=True)
-            table.add_column("Prior", style="magenta", no_wrap=True)
+            table.add_column("Limits", style=None, justify='center', no_wrap=True)
+            table.add_column("Prior", style=None, no_wrap=True)
         
             for i in range(self.ndim): 
                 n = self.free_param_names[i]
                 p = self.free_params[n]
-                table.add_row(n, str(p.limits), str(p.prior))
+                table.add_row(h(n), l(str(p.limits)), str(p.prior))
         
             tab_str = tab_str + '\n' + rich_str(table)
         return tab_str
@@ -167,9 +155,6 @@ class Params:
     def tree(self):
         return ''
 
-    # def update(self, *args, **kwargs):
-    #     for k, v in dict(*args, **kwargs).items():
-    #         self[k] = v
     
 
     @property
@@ -201,24 +186,31 @@ class Params:
            Runs automatically run when printing a Params object or when
            Params is passed to ModelGalaxy or Fitter.
         '''
-        if not isinstance(self, Group):
-            for source in self.sources:
-                self.sources[source].model = self.sources[source]._model_func(params=self.sources[source])
-                
-                self.all_params.update(self.sources[source].all_params)
-                self.free_params.update(self.sources[source].free_params)
-        
-        for absorber in self.absorbers:
-            self.absorbers[absorber].model = self.absorbers[absorber]._model_func(params=self.absorbers[absorber])
-            
-            self.all_params.update(self.absorbers[absorber].all_params)
-            self.free_params.update(self.absorbers[absorber].free_params)
 
-        for reprocessor in self.reprocessors:
-            self.reprocessors[reprocessor].model = self.reprocessors[reprocessor]._model_func(params=self.reprocessors[reprocessor])
-            
-            self.all_params.update(self.reprocessors[reprocessor].all_params)
-            self.free_params.update(self.reprocessors[reprocessor].free_params)
+        # if not isinstance(self, Group): # first check if this is a Group object -- groups cannot have their own sources (TODO is this necessary? do we run validate on groups)
+        
+        for comp_name, comp in self.components.items():
+            if comp.model_type == 'source':
+                comp.model = comp._model_func(params=comp) # initialize model 
+                self.component_types.append('source')
+                self.component_orders.append(comp.model.order)
+                self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
+                self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
+
+                for subcomp_name, subcomp in comp.components.items():
+                    subcomp.model = subcomp._model_func(params=subcomp)
+                    comp.component_types.append(subcomp.model_type)
+                    comp.component_orders.append(subcomp.model.order)
+                    self.all_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
+                    self.free_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
+                    # subcomp.all_params.update({subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
+                    # subcomp.free_params.update({subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
+            else:
+                comp.model = comp._model_func(params=comp) # initialize model 
+                self.component_types.append(comp.model_type)
+                self.component_orders.append(comp.model.order)
+                self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
+                self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
 
         # initialize self.sources[source].model with params=self.sources[source]
         self.all_param_names = list(self.all_params.keys())
@@ -231,6 +223,10 @@ class Params:
 
         self.validated = True
 
+    def update(self, new_params):
+        assert self.validated, 'Params object must be validated before updating'
+
+
 
 class Group(Params):
     def __init__(self, name, model, parent=None, model_type=None):
@@ -239,10 +235,9 @@ class Group(Params):
         self._model_func = model
         self.parent = parent
         
-        # self.sources = {}
-        self.absorbers = {}
-        self.reprocessors = {}
-        # self.calibrators = {}
+        self.components = {}
+        self.component_types = []
+        self.component_orders = []
 
         self.all_params = {}
         self.free_params = {} 
@@ -268,14 +263,15 @@ class Group(Params):
         return f"Group(name='{self.name}', model={self._model_func.__name__}, model_type={self.model_type})"
 
     def __getitem__(self, key):
-        if key in self.absorbers: # getting a absorber
-            return self.absorbers[key]
-        elif key in self.reprocessors: # getting a reprocessor
-            return self.reprocessors[key]
+        if key in self.components: # getting a component/group
+            return self.components[key]
         elif key in self.all_params: # getting a parameter from the base Params object
             return self.all_params[key]
+        elif key == 'redshift':
+            return self.parent['redshift']
         else:
             raise Exception(f"No key {key} found in {self}")
+
 
 
 class FreeParam(MutableMapping):

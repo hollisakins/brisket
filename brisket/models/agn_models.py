@@ -8,6 +8,8 @@ from brisket.utils.sed import SED
 from brisket.models.base_models import *
 
 class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
+    order = 1
+    
     def __init__(self, params):
         self._build_defaults(params)
         super().__init__(params)
@@ -19,9 +21,9 @@ class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
             raise Exception("Key Muv must be specified in parameters")
 
     def emit(self, params):
-        beta, Muv = float(params['beta']), float(params['Muv']) # absolute magnitude
-        sed = SED(wav_rest=self.wavelengths, flam=np.power(self.wavelengths, beta))
-        sed *= np.power(10., -0.4*(sed.Muv-Muv))
+        beta, Muv, redshift = float(params['beta']), float(params['Muv']), float(params['redshift']) # absolute magnitude
+        sed = SED(wav_rest=self.wavelengths, flam=np.power(self.wavelengths, beta), redshift=redshift)
+        sed *= np.power(10., -0.4*(Muv-sed.Muv))
 
         # fnu_uv = np.power(10., -(Muv+48.60)/2.5) * u.erg/u.s/u.Hz/u.cm**2
         # Snu_uv = (fnu_uv * 4*np.pi*(10*u.pc)**2).to(u.erg/u.s/u.Hz)
@@ -29,8 +31,8 @@ class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
         # tophat = np.where((self.wavelengths > 1450)&(self.wavelengths < 1550), 1, 0)
         # y0 = np.trapz(y*tophat, x=self.wavelengths)
         # y *= Slam_uv/y0
+        return sed
 
-        return y
 
 # class DoublePowerLawAccretionDiskModel(BaseAGNModel):
 #     def __init__(self, wavelengths, model_comp):

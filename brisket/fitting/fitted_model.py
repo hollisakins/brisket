@@ -145,18 +145,8 @@ class FittedModel(object):
     def lnlike(self, x, ndim=0, nparam=0):
         """ Returns the log-likelihood for a given parameter vector. """
 
-        if self.time_calls:
-            time0 = time.time()
-
-            if self.n_calls == 0:
-                self.wall_time0 = time.time()
-
         self._update_model_galaxy(x)
-        
-        # # Return zero likelihood if SFH is older than the universe.
-        # if self.model_galaxy.sfh.unphysical:
-        #     return -9.99*10**99
-
+    
         lnlike = 0.
 
         if self.galaxy.spectrum_exists:# and self.galaxy.index_list is None:
@@ -173,15 +163,15 @@ class FittedModel(object):
             print("lnlike was nan, replaced with zero probability.")
             return -9.99*10**99
 
-        # Functionality for timing likelihood calls.
-        if self.time_calls:
-            self.times[self.n_calls] = time.time() - time0
-            self.n_calls += 1
+        # # Functionality for timing likelihood calls.
+        # if self.time_calls:
+        #     self.times[self.n_calls] = time.time() - time0
+        #     self.n_calls += 1
 
-            if self.n_calls == 1000:
-                self.n_calls = 0
-                print("Mean likelihood call time:", np.round(np.mean(self.times), 4))
-                print("Wall time per lnlike call:", np.round((time.time() - self.wall_time0)/1000., 4))
+        #     if self.n_calls == 1000:
+        #         self.n_calls = 0
+        #         print("Mean likelihood call time:", np.round(np.mean(self.times), 4))
+        #         print("Wall time per lnlike call:", np.round((time.time() - self.wall_time0)/1000., 4))
 
         return lnlike
 

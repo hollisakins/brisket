@@ -1,11 +1,16 @@
 import sys
+import astropy.units as u
+import numpy as np  
 import spectres
 from astropy.constants import c as speed_of_light
 from astropy.constants import h as plancks_constant
 
 from brisket import config
+from brisket.console import log
+
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+
 
 border_chars = config.border_chars
 
@@ -19,8 +24,9 @@ class SED(object):
                 nuLnu=None, lamLlam=None, nufnu=None, lamflam=None, redshift=0, verbose=True):
         
         self.redshift = redshift
+        self.luminosity_distance = config.cosmo.luminosity_distance(self.redshift)
         if sum(x is not None for x in (Lnu,Llam,fnu,flam,nuLnu,lamLlam,nufnu,lamflam)) == 0:
-            if verbose: print('No flux/luminosity information provided, populating with zeros. If this is intended, you can ignore this message.')
+            if verbose: log('No flux/luminosity information provided, populating with zeros. If this is intended, you can ignore this message.')
             fnu = np.zeros(len(wav_rest)) * config.default_fnu_unit
         
         if sum(x is not None for x in (Lnu,Llam,fnu,flam,nuLnu,lamLlam,nufnu,lamflam)) != 1:
@@ -28,39 +34,39 @@ class SED(object):
             raise Exception("Must supply exactly one specification of the SED fluxes")
 
         if not hasattr(wav_rest, "unit"):
-            print(f"No wavelength units specified, adopting default ({config.default_wavelength_unit})")
+            log(f"No wavelength units specified, adopting default ({config.default_wavelength_unit})")
             wav_rest = wav_rest * config.default_wavelength_unit            
         if fnu is not None:
             if not hasattr(fnu, "unit"):
-                print(f"No units specified for fnu, adopting default ({config.default_fnu_unit})")
+                log(f"No units specified for fnu, adopting default ({config.default_fnu_unit})")
                 fnu = fnu * config.default_fnu_unit
         if flam is not None:
             if not hasattr(flam, "unit"):
-                print(f"No units specified for flam, adopting default ({config.default_flam_unit})")
+                log(f"No units specified for flam, adopting default ({config.default_flam_unit})")
                 flam = flam * config.default_flam_unit
         if Lnu is not None:
             if not hasattr(Lnu, "unit"):
-                print(f"No units specified for Lnu, adopting default ({config.default_Lnu_unit})")
+                log(f"No units specified for Lnu, adopting default ({config.default_Lnu_unit})")
                 Lnu = Lnu * config.default_fnu_unit
         if Llam is not None:
             if not hasattr(Llam, "unit"):
-                print(f"No units specified for Llam, adopting default ({config.default_Llam_unit})")
+                log(f"No units specified for Llam, adopting default ({config.default_Llam_unit})")
                 Llam = Llam * config.default_Llam_unit
         if nuLnu is not None:
             if not hasattr(nuLnu, "unit"):
-                print(f"No units specified for nuLnu, adopting default ({config.default_lum_unit})")
+                log(f"No units specified for nuLnu, adopting default ({config.default_lum_unit})")
                 nuLnu = nuLnu * config.default_lum_unit
         if lamLlam is not None:
             if not hasattr(lamLlam, "unit"):
-                print(f"No units specified for lamLlam, adopting default ({config.default_lum_unit})")
+                log(f"No units specified for lamLlam, adopting default ({config.default_lum_unit})")
                 lamLlam = lamLlam * config.default_lum_unit
         if nufnu is not None:
             if not hasattr(nufnu, "unit"):
-                print(f"No units specified for nufnu, adopting default ({config.default_flux_unit})")
+                log(f"No units specified for nufnu, adopting default ({config.default_flux_unit})")
                 nufnu = nufnu * config.default_flux_unit
         if lamflam is not None:
             if not hasattr(lamflam, "unit"):
-                print(f"No units specified for lamflam, adopting default ({config.default_flux_unit})")
+                log(f"No units specified for lamflam, adopting default ({config.default_flux_unit})")
                 lamflam = lamflam * config.default_flux_unit
 
 
@@ -161,7 +167,7 @@ class SED(object):
         wstr = f'wav_rest: [{w[0]:.2f}, {w[1]:.2f}, ..., {w[-2]:.2f}, {w[-1]:.2f}] {self.wav_rest.unit} {np.shape(w)}'
         fstr1 = f'{self._which} (base): [{f[0]:.2f}, {f[1]:.2f}, ..., {f[-2]:.2f}, {f[-1]:.2f}] {self._y.unit} {np.shape(w)}'
         fstr2 = '(available) ' + ', '.join(map(str,[a for a in all_flux_defs if a != self._which])) 
-        betastr = f'beta: {self.beta:.2f}, Muv: ?, Lbol: ?'
+        betastr = f'beta: {self.beta:.2f}, Muv: {self.Muv:.1f}, Lbol: ?'
         width = config.cols-2
         # width = np.max([width, len(wstr)+4])
         # border_chars = '═║╔╦╗╠╬╣╚╩╝'
@@ -206,9 +212,16 @@ class SED(object):
         if not np.all(other.wav_rest==self.wav_rest):
             other.resample(self.wav_rest)
         newobj = SED(self.wav_rest, redshift=self.redshift, verbose=False)
-        # print(newobj._which)
+        # log(newobj._which)
         setattr(newobj, '_which', self._which)
         setattr(newobj, '_y', self._y + getattr(other, self._which))
+        return newobj
+    
+    def __mul__(self, other):
+        assert isinstance(other, (int, float, np.ndarray))
+        newobj = SED(self.wav_rest, redshift=self.redshift, verbose=False)
+        setattr(newobj, '_which', self._which)
+        setattr(newobj, '_y', self._y * other)
         return newobj
 
 
@@ -225,6 +238,9 @@ class SED(object):
         # elif 'spectral flux density wav' in list(self.sed_units.physical_type):
         #     self.logger.debug(f"Keeping SED flux units in f_lam ({self.sed_units})")
         #     self.sed_unit_conv = (1*u.Lsun/u.angstrom/u.cm**2).to(self.sed_units).value
+
+    def measure_window_luminosity(self, window):
+        pass
 
     def measure_monochromatic_luminosity(self):
         pass
@@ -246,7 +262,10 @@ class SED(object):
 
     @property
     def Muv(self):
-        return -22
+        w = self.wav_rest.to(u.angstrom).value
+        tophat = (w > 1450)&(w < 1550)
+        mUV = (np.mean(self.fnu[tophat])/(1+self.redshift)).to(u.ABmag).value
+        return mUV - 5*(np.log10(self.luminosity_distance.to(u.pc).value)-1)
 
     @property
     def properties(self):
@@ -281,7 +300,8 @@ class SED(object):
     def plot(self, ax=None, x='wav_rest', y='fnu', 
              xscale='linear', yscale='linear',
              verbose_labels=False,
-             show=False, save=False, eng=False):
+             show=False, save=False, eng=False, 
+             xlim=None, ylim=None):
 
         x_plot = getattr(self, x)
         y_plot = getattr(self, y)        
@@ -329,6 +349,11 @@ class SED(object):
 
             if eng:
                 ax.xaxis.set_major_formatter(mpl.ticker.EngFormatter(unit='m', places=1))
+            
+            if xlim is not None:
+                ax.set_xlim(*xlim)
+            if ylim is not None:
+                ax.set_ylim(*ylim)
 
             if show:
                 plt.show()
@@ -345,15 +370,15 @@ class SED(object):
 
 
 
-import numpy as np
-import astropy.units as u
-wav = np.linspace(1, 3000, 1000) * u.angstrom
-flux = np.ones(len(wav)) * 1e-18 * u.erg/u.s/u.cm**2/u.angstrom
-s1 = SED(wav_rest=wav, flam=flux, redshift=1)
+# import numpy as np
+# import astropy.units as u
+# wav = np.linspace(1, 3000, 1000) * u.angstrom
+# flux = np.ones(len(wav)) * 1e-18 * u.erg/u.s/u.cm**2/u.angstrom
+# s1 = SED(wav_rest=wav, flam=flux, redshift=1)
 
-flux = np.ones(len(wav)) * u.uJy
-s2 = SED(wav_rest=wav, fnu=flux, redshift=1)
-print(s2)
+# flux = np.ones(len(wav)) * u.uJy
+# s2 = SED(wav_rest=wav, fnu=flux, redshift=1)
+# print(s2)
 
 # fig, ax = s1.plot(y='flam')
 # s2.plot(y='flam', xscale='log', yscale='log', eng=True)

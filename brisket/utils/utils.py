@@ -6,6 +6,16 @@ import logging
 import astropy.units as u
 import sys
 
+z_array = np.arange(0., 100., 0.01)
+age_array = cosmo.age(z_array).value
+def age_at_z(z):
+    '''Returns the age of the universe, in Gyr, at redshift z'''
+    return cosmo.age(z).value
+def z_at_age(age):
+    '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
+    return np.interp(age, np.flip(age_array), np.flip(z_array))
+
+
 install_dir = os.path.dirname(os.path.realpath(__file__))
 grid_dir = install_dir + "/models/grids"
 param_template_dir = install_dir + "/defaults/templates/"
