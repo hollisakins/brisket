@@ -9,6 +9,7 @@ BRISKET (loosely, **Baeysian Retrieval and Inference for Stellar and blacK holeE
     This project is in very early stages of development.
 
 Key features of BRISKET include: 
+
 * Nested, generalizable parameter structure to allow multi-component models, custom SFHs, and more
 * Easily interchangable stellar model grids
 * AGN models including both empirical templates and theoretical SEDs passed through photoionization models
@@ -17,6 +18,7 @@ Key features of BRISKET include:
 .. * a simple least-squares optimization routine for quick tests and prior specification
 
 As well as some QOL changes
+
 * Command-line/parameter file interface and FITS file output for easy operation by non-Python users
 * Integration with astropy ``units`` package
 * Built-in plotting routines for quick visualization of fits
@@ -28,6 +30,7 @@ Source and installation
 For now, the code should be installed by cloning this repository and installing locally with ``pip``:
 
 ::
+
   git clone https://github.com/hollisakins/brisket.git
   cd brisket
   pip install -e .
@@ -49,6 +52,7 @@ Acknowledgements
 The goal of ``brisket`` is to provide a similarly user-friendly interface as ``bagpipes`` but with additional modeling options and a more modular and flexible codebase. 
 
 Many packages are used under the hood to make ``brisket`` work, including:
+
 * The `Bruzual \& Charlot (2003) <https://arxiv.org/abs/astro-ph/0309134>`_ stellar population models.
 * The `Draine \& Li (2007) <https://arxiv.org/abs/astro-ph/0608003>`_ dust emission models.
 * The `MultiNest <https://ccpforge.cse.rl.ac.uk/gf/project/multinest>`_ nested sampling algorithm `(Feroz et al. 2013) <https://arxiv.org/abs/1306.2144>`_
