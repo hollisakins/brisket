@@ -21,6 +21,7 @@ You can initialize a ``Params`` object with a template (see: :doc:`templates`.) 
 .. highlight:: python
 
 ::
+
     import brisket
     params = brisket.Params(template='default')
 
@@ -38,23 +39,27 @@ Defaults and Aliases
 We include several aliases for adding sources/absorbers/reprocessors to the params object. For example, 
 
 ::
+
     params.add_igm()
 
 is an alias for the slightly longer expression
 
 ::
+
     params.add_absorber('igm', model=briskest.models.InoueIGMModel)
 
 You'll notice that the ``add_igm()`` methods presumes the default ``InoueIGMModel`` model, though this can be changed by passing a different model: ``params.add_igm(model=MadauIGMModel)``.
 In any case, the ``add_absorber()`` method is iself an alias for the multi-step process of initializing a "parameter group" to describe the IGM model, noting that it is an "absorber," and adding it to the params object: 
 
 ::
+    
     igm = brisket.parameters.Group('igm', model=briskest.models.InoueIGMModel, model_type='absorber')
     params['igm'] = igm
 
 This is a bit more verbose, but allows for more flexibility in the parameter structure, and allows you to specify your own custom models. Say, for example, you wanted to include in your model a Damped Lyman-alpha system, you could define a custom DLA absorbption class and add it to the params object like so:
 
 ::
+    
     class CustomDLAModel(brisket.models.BaseIGMModel):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
