@@ -2,34 +2,34 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import numpy as np
-import logging
-import astropy.units as u
+# import logging
+# import astropy.units as u
 import sys
 
-z_array = np.arange(0., 100., 0.01)
-age_array = cosmo.age(z_array).value
-def age_at_z(z):
-    '''Returns the age of the universe, in Gyr, at redshift z'''
-    return cosmo.age(z).value
-def z_at_age(age):
-    '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
-    return np.interp(age, np.flip(age_array), np.flip(z_array))
+# z_array = np.arange(0., 100., 0.01)
+# age_array = cosmo.age(z_array).value
+# def age_at_z(z):
+#     '''Returns the age of the universe, in Gyr, at redshift z'''
+#     return cosmo.age(z).value
+# def z_at_age(age):
+#     '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
+#     return np.interp(age, np.flip(age_array), np.flip(z_array))
 
 
-install_dir = os.path.dirname(os.path.realpath(__file__))
-grid_dir = install_dir + "/models/grids"
-param_template_dir = install_dir + "/defaults/templates/"
+# install_dir = os.path.dirname(os.path.realpath(__file__))
+# grid_dir = install_dir + "/models/grids"
+# param_template_dir = install_dir + "/defaults/templates/"
 
-basicLogger = logging.getLogger('brisket')
-basicLogger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler(sys.stdout) # console handler
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)-8s :: %(message)s', "%H:%M:%S")
-ch.setFormatter(formatter)
-basicLogger.addHandler(ch)
+# basicLogger = logging.getLogger('brisket')
+# basicLogger.setLevel(logging.DEBUG)
+# ch = logging.StreamHandler(sys.stdout) # console handler
+# ch.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(asctime)s :: %(name)s :: %(levelname)-8s :: %(message)s', "%H:%M:%S")
+# ch.setFormatter(formatter)
+# basicLogger.addHandler(ch)
 
-NullLogger = logging.getLogger('null')
-NullLogger.addHandler(logging.NullHandler())
+# NullLogger = logging.getLogger('null')
+# NullLogger.addHandler(logging.NullHandler())
 
 def dict_to_str(d):
     # This is necessary for converting large arrays to strings
@@ -47,7 +47,7 @@ def str_to_dict(s):
 
 
 
-def parse_fit_params(parameters, logger=NullLogger):
+def parse_fit_params(parameters):
     if type(parameters)==str:
         self.logger.info(f'Loading parameters from file {parameters}')
         # parameter file input

@@ -48,6 +48,8 @@ class BaseSFHModel:
         the log of the age sampling of the SFH, defaults to 0.0025.
     """
 
+    type = 'sfh'
+
     def __init__(self, model_components):
         self.hubble_time = config.age_at_z(0)
 

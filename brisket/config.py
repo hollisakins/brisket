@@ -83,16 +83,6 @@ default_L_unit = u.Lsun
 params_print_summary = True
 params_print_tree = False
 
-# These variables control the age sampling for the stellar and nebular
-# emission models. The stellar models will be automatically rebinned onto
-# the chosen age grid. The nebular models must be re-computed with Cloudy
-# if these variables are changed.
-
-# Sets the default age sampling for stellar models in log10(Gyr).
-# Beware: if you change this you need to recompute the nebular models.
-age_sampling = np.arange(6., np.log10(cosmo.age(0.).value) + 9., 0.1)
-
-
 
 # # These variables tell the code where to find the raw stellar emission
 # # models, as well as some of their basic properties.

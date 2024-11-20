@@ -4,6 +4,8 @@ import numpy as np
 import os
 from brisket import config
 from brisket import utils
+from brisket.utils.sed import SED
+from brisket.utils import utils
 
 from brisket.data.grid_manager import GridManager
 from brisket.models.base_models import *
@@ -31,18 +33,32 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         gm.check_grid(grid_file_name)
         grid_path = os.path.join(config.grid_dir, grid_file_name)
 
+        self._load_hdf5_grid(grid_path)
+
+        self.sfh_components = {}
+        for comp_name, comp in self.params.components.items():
+            if comp.model.type == 'sfh':
+                self.sfh_components[comp_name] = comp.model
+
+        # TODO initialize SFHs
+        # stack all the SFH components into one, there's no real point in keeping them separate
+
+    def _load_hdf5_grid(self, grid_path):
+        """ Load the grid from an HDF5 file. """
+
         with h5py.File(grid_path,'r') as f:
             self.grid_wavelengths = np.array(f['wavs'])
-            # self.grid_metallicities = f['metallicities'][:]
-            # self.template_raw_stellar_ages = f['ages'][:]
-            self.grid = f['grid'][:]
+            self.grid_metallicities = np.array(f['metallicities'][:])
+            self.grid_ages = np.array(f['ages'])
+            self.grid = np.array(f['grid'])
+            # self.live_frac = np.array(f['live_frac'][:])
 
-        ### load in the stellar grids
-        # self.template_metallicities = config.stellar_models[model]['metallicities']
-        # self.template_wavelengths = config.stellar_models[model]['wavelengths']
-        # self.template_raw_stellar_ages = config.stellar_models[model]['raw_stellar_ages']
-        # self.template_raw_stellar_grid = config.stellar_models[model]['raw_stellar_grid']
-    
+        self.grid_age_bins = np.power(10., utils.make_bins(np.log10(self.grid_ages), make_rhs=True)[0])
+        self.grid_age_bins[0] = 0.
+        self.grid_age_bins[-1] = config.cosmo.age(0.).value * 1e9
+        self.grid_age_widths = self.grid_age_bins[1:] - self.grid_age_bins[:-1]
+
+
     
     def __repr__(self):
         return f'BaseStellarModel'
@@ -51,96 +67,14 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         return self.__repr__()
 
     def _resample(self, wavelengths):
-        # Resample the grid in wavelength and then in age.
-        self.wavelengths = wavelengths
-        self._resample_in_wavelength()
-        self.grid = self._resample_in_age(grid_raw_ages)
-
-
-    def _resample_in_wavelength(self):
         """ Resamples the raw stellar grids to the input wavs. """
-        self.logger.debug(f'Resampling stellar models to model wavelength grid')
+        self.wavelengths = wavelengths
 
-        grid_raw_ages = np.zeros((self.wavelengths.shape[0],
-                                  self.template_metallicities.shape[0],
-                                  self.template_raw_stellar_ages.shape[0]))
+        self.grid = SED(seld.grid_wavelengths*u.angstrom, Llam=self.grid*u.Lsun/u.AA)
+        self.grid.resample(self.wavelengths*u.angstrom).value
 
-        for i in range(self.template_metallicities.shape[0]):
-            for j in range(self.template_raw_stellar_ages.shape[0]):
 
-                raw_grid = self.template_raw_stellar_grid[i]
-                grid_raw_ages[:, i, j] = np.interp(self.wavelengths,
-                                                   self.template_wavelengths,
-                                                   raw_grid[j, :],
-                                                   left=0., right=0.)
-
-        return grid_raw_ages
-
-    def _resample_in_age(self, grid_raw_ages):
-        """ Resamples the intermediate stellar grids to the age sampling
-        which is set in the config file. This has to be done carefully
-        as summing the contributions from different ages in the correct
-        ratios is very important for obtaining realistic results. """
-
-        self.logger.debug(f'Resampling the stellar grids to the configured age sampling')
-
-        grid = np.zeros((self.wavelengths.shape[0],
-                         self.template_metallicities.shape[0],
-                         config.age_sampling.shape[0]))
-
-        raw_age_lhs, raw_age_widths = utils.make_bins(self.template_raw_stellar_ages,
-                                                      make_rhs=True)
-
-        # Force raw ages to span full range from 0 to age of Universe.
-        raw_age_widths[0] += raw_age_lhs[0]
-        raw_age_lhs[0] = 0.
-
-        if raw_age_lhs[-1] < config.age_bins[-1]:
-            raw_age_widths[-1] += config.age_bins[-1] - raw_age_lhs[-1]
-            raw_age_lhs[-1] = config.age_bins[-1]
-
-        start = 0
-        stop = 0
-
-        # Loop over the new age bins
-        for j in range(config.age_bins.shape[0] - 1):
-
-            # Find the first raw bin partially covered by the new bin
-            while raw_age_lhs[start + 1] <= config.age_bins[j]:
-                start += 1
-
-            # Find the last raw bin partially covered by the new bin
-            while raw_age_lhs[stop+1] < config.age_bins[j + 1]:
-                stop += 1
-
-            # If new bin falls completely within one raw bin
-            if stop == start:
-                grid[:, :, j] = grid_raw_ages[:, :, start]
-
-            # If new bin has contributions from more than one raw bin
-            else:
-                start_fact = ((raw_age_lhs[start + 1] - config.age_bins[j])
-                              / (raw_age_lhs[start + 1] - raw_age_lhs[start]))
-
-                end_fact = ((config.age_bins[j + 1] - raw_age_lhs[stop])
-                            / (raw_age_lhs[stop + 1] - raw_age_lhs[stop]))
-
-                raw_age_widths[start] *= start_fact
-                raw_age_widths[stop] *= end_fact
-
-                width_slice = raw_age_widths[start:stop + 1]
-
-                summed = np.sum(np.expand_dims(width_slice, axis=0)
-                                * grid_raw_ages[:, :, start:stop + 1], axis=2)
-
-                grid[:, :, j] = summed/np.sum(width_slice)
-
-                raw_age_widths[start] /= start_fact
-                raw_age_widths[stop] /= end_fact
-
-        return grid
-
-    def spectrum(emit):#, sfh_ceh, t_bc=0.):
+    def emit(self, params):
     
         """ Obtain a split 1D spectrum for a given star-formation and
         chemical enrichment history, one for ages lower than t_bc, one
@@ -157,27 +91,20 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         t_bc : float
             The age at which to split the spectrum in Gyr.
         """
-        self.logger.debug(f'Computing stellar spectrum')
 
         # TODO compute sfh_ceh from input SFH parameters
-        sfh_components = self.params.sfh_components
-        for sfh_comp in sfh_components:
-
-
-
-
 
         t_bc *= 10**9
         spectrum_young = np.zeros_like(self.wavelengths)
         spectrum = np.zeros_like(self.wavelengths)
 
-        index = config.age_bins[config.age_bins < t_bc].shape[0]
-        old_weight = (config.age_bins[index] - t_bc)/config.age_widths[index-1]
+        index = self.grid_ages[self.grid_ages < t_bc].shape[0]
+        old_weight = (self.grid_ages[index] - t_bc)/self.grid_age_widths[index-1]
 
         if index == 0:
             index += 1
 
-        for i in range(self.template_metallicities.shape[0]):
+        for i in range(len(self.grid_metallicities)):
             if sfh_ceh[i, :index].sum() > 0.:
                 sfh_ceh[:, index-1] *= (1. - old_weight)
 
