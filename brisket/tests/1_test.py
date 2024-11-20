@@ -7,24 +7,26 @@ class NullModel:
     order = 100
     def __init__(self, params):
         self.params = params
+    def _resample(self, wavs):
+        self.wavelengths = wavs
 
 # create a params object
-params1 = brisket.Params()
-params1['redshift'] = 10
+params = brisket.Params()
+params['redshift'] = 10
 
-params1.add_source('agn')
-params1['agn']['beta'] = -2.5
-params1['agn']['Muv'] = -22
+params.add_source('agn')
+params['agn']['beta'] = -2.5
+params['agn']['Muv'] = -22
 
-params1['agn'].add_dust(model=NullModel)
-params1['agn']['dust']['Av'] = 2
+# params['agn'].add_dust(model=NullModel)
+# params['agn']['dust']['Av'] = 2
 
-params1.add_igm()
-params1['igm']['xhi'] = 0.9
+params.add_igm()
+params['igm']['xhi'] = 0.9
 
-print(params1)
+mod = brisket.ModelGalaxy(params)
 
-
+mod.sed.plot(show=True, xlim=(500, 8000), ylim=(-0.1, 0.5))
 
 quit()
 

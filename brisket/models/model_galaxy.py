@@ -11,6 +11,7 @@ import astropy.units as u
 
 from brisket import config
 from brisket.utils import SED
+from brisket.console import log
 # from brisket import utils
 # from brisket import filters
 # from .. import plotting
@@ -83,7 +84,8 @@ class ModelGalaxy(object):
                  wav_units=u.micron,
                  sed_units=u.uJy,
                  spec_units=u.erg/u.s/u.cm**2/u.angstrom,
-                 phot_units=u.uJy):
+                 phot_units=u.uJy, 
+                 verbose=True):
 
         self.spec_wavs = spec_wavs
         self.filters = filters
@@ -154,12 +156,12 @@ class ModelGalaxy(object):
         
 
         # Calculate optimal wavelength sampling for the model
-        print('Calculating optimal wavelength sampling for the model...')
+        if verbose: log('Calculating optimal wavelength sampling for the model...')
         self.wavelengths = self._get_wavelength_sampling()
         self.wav_rest = (self.wavelengths*u.angstrom).to(self.wav_units).value
 
         if self.phot_output:
-            print('Resampling the filter curves onto model wavelength grid...')
+            if verbose: log('Resampling the filter curves onto model wavelength grid...')
             self.filter_set.resample_filter_curves(self.wavelengths)
 
         # self.logger.debug('Initializing IGM absorption model...')
@@ -202,50 +204,21 @@ class ModelGalaxy(object):
         #     self._total = value
 
 
+        
+        # Initialize the various models and resample to the internal, optimized wavelength grid
+        if verbose: log('Initializing the model components')
+        self.components = self.params.components
+        for comp_name, comp_params in self.components.items(): 
+            comp_params.model = comp_params.model(comp_params) # initialize the model
+            comp_params.model._resample(self.wavelengths) # resample the model
 
-        # resample the various models to the internal, optimized wavelength grid
-        import numpy as np
-        self.component_names = np.array(list(self.params.components.keys()))[np.argsort(self.params.component_orders)]
-        self.components = {k:self.params.components[k] for k in self.component_names}
-        self.models = {}
+            subcomps = comp_params.components
+            for subcomp_name, subcomp_params in subcomps.items():
+                subcomp_params.model = subcomp_params.model(subcomp_params)
+                subcomp_params.model._resample(self.wavelengths)
 
-        for component in self.components: 
-            params_i = self.params[component]
-            model = params_i.model
-            model._resample(self.wavelengths)
-            self.models[component] = model
-
-            subcomp_names = np.array(list(params_i.components.keys()))[np.argsort(params_i.component_orders)]
-            subcomps = {k:params_i.components[k] for k in subcomp_names}
-            
-            for subcomp_name, subcomp in subcomps.items():
-                params_ii = params_i[subcomp_name]
-                model = params_ii.model
-                model._resample(self.wavelengths, params_ii)
-
-
-        # if 'galaxy' in self.components: 
-        #     params = self.parameters['galaxy']
-        #     params['redshift'] = self.parameters['redshift']
-
-        #     self.galaxy = DotMap(sfh=StarFormationHistoryModel(params, logger=logger), 
-        #                          stellar=StellarModel(self.wavelengths, params, logger=logger),
-        #                          nebular=NebularModel(self.wavelengths, params, logger=logger),
-        #                          dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger),
-        #                          dust_emission=DustEmissionModel(self.wavelengths, params, logger=logger))
-
-        # if 'agn' in self.components:
-        #     params = self.parameters['agn']
-        #     params['redshift'] = self.parameters['redshift']
-        #     self.agn = DotMap(accdisk=AccretionDiskModel(self.wavelengths, params, logger=logger), 
-        #                       nebular=AGNLineModel(self.wavelengths, params, logger=logger),
-        #                       dust_atten=DustAttenuationModel(self.wavelengths, params, logger=logger))
-
-        # if 'nebular' in self.components: # stand-alone nebular model
-        #     self.nebular = NebularModel(self.wavelengths, self.parameters, logger=logger)
-
-
-        # Compute the full internal model SED
+        if verbose: log('Computing the SED')
+        # Compute the main SED 
         self._compute_sed() 
 
         # Compute observables
@@ -308,19 +281,19 @@ class ModelGalaxy(object):
 
         # TODO define the order of operations for the components -- sources must come first, then reprocessors, then absorbers 
         # also dust/nebular reprocessors may need to occur in a certain order... 
-        for component in self.components:
-            model = self.models[component]
-            if model.model_type == 'source':
-                sed_incident = model.emit(self.params[component])
+        for comp_name, comp_params in self.components.items():
+            model = comp_params.model
+            if model.type == 'source':
+                sed_incident = model.emit(comp_params)
                 # TODO sub-components of sources?
                 self.sed += sed_incident
             
-            if model.model_type == 'reprocessor':
-                sed_transmitted, emission_params = model.absorb(self.sed, self.params[component])
+            if model.type == 'reprocessor':
+                sed_transmitted, emission_params = model.absorb(self.sed, comp_params)
                 self.sed = sed_transmitted + model.emit(emission_params)
 
-            if model.model_type == 'absorber':
-                sed_transmitted = model.absorb(self.sed, self.params[component])
+            if model.type == 'absorber':
+                sed_transmitted = model.absorb(self.sed, comp_params)
                 self.sed = sed_transmitted
 
                 # for group in groups:
@@ -468,11 +441,11 @@ class ModelGalaxy(object):
         file. The way this is done is key to the speed of the code. """
 
         R_spec = config.R_spec
-        if self.calib:
-            # we don't want to generate a model on a coarser grid than we are observing it
-            self.R_curve = self.calib.R_curve
-            if self.R_curve is not None:
-                R_spec = int(4*np.max(self.R_curve[:,1]))
+        # if self.calib:
+        #     # we don't want to generate a model on a coarser grid than we are observing it
+        #     self.R_curve = self.calib.R_curve
+        #     if self.R_curve is not None:
+        #         R_spec = int(4*np.max(self.R_curve[:,1]))
 
         R_phot, R_other = config.R_phot, config.R_other
 

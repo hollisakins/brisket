@@ -17,7 +17,6 @@ class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
         super().__init__(params)
 
     def _build_defaults(self, params):
-        log('Initializing powerlawaccretiondiskmodel')
         if not 'beta' in params:
             params['beta'] = -2.0
         if not 'Muv' in params:
@@ -25,7 +24,7 @@ class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
 
     def emit(self, params):
         beta, Muv, redshift = float(params['beta']), float(params['Muv']), float(params['redshift']) # absolute magnitude
-        sed = SED(wav_rest=self.wavelengths, flam=np.power(self.wavelengths, beta), redshift=redshift)
+        sed = SED(wav_rest=self.wavelengths, flam=np.power(self.wavelengths, beta), redshift=redshift, verbose=False)
         sed *= np.power(10., -0.4*(Muv-sed.Muv))
 
         # fnu_uv = np.power(10., -(Muv+48.60)/2.5) * u.erg/u.s/u.Hz/u.cm**2

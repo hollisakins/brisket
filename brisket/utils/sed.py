@@ -34,39 +34,39 @@ class SED(object):
             raise Exception("Must supply exactly one specification of the SED fluxes")
 
         if not hasattr(wav_rest, "unit"):
-            log(f"No wavelength units specified, adopting default ({config.default_wavelength_unit})")
+            if verbose: log(f"No wavelength units specified, adopting default ({config.default_wavelength_unit})")
             wav_rest = wav_rest * config.default_wavelength_unit            
         if fnu is not None:
             if not hasattr(fnu, "unit"):
-                log(f"No units specified for fnu, adopting default ({config.default_fnu_unit})")
+                if verbose: log(f"No units specified for fnu, adopting default ({config.default_fnu_unit})")
                 fnu = fnu * config.default_fnu_unit
         if flam is not None:
             if not hasattr(flam, "unit"):
-                log(f"No units specified for flam, adopting default ({config.default_flam_unit})")
+                if verbose: log(f"No units specified for flam, adopting default ({config.default_flam_unit})")
                 flam = flam * config.default_flam_unit
         if Lnu is not None:
             if not hasattr(Lnu, "unit"):
-                log(f"No units specified for Lnu, adopting default ({config.default_Lnu_unit})")
+                if verbose: log(f"No units specified for Lnu, adopting default ({config.default_Lnu_unit})")
                 Lnu = Lnu * config.default_fnu_unit
         if Llam is not None:
             if not hasattr(Llam, "unit"):
-                log(f"No units specified for Llam, adopting default ({config.default_Llam_unit})")
+                if verbose: log(f"No units specified for Llam, adopting default ({config.default_Llam_unit})")
                 Llam = Llam * config.default_Llam_unit
         if nuLnu is not None:
             if not hasattr(nuLnu, "unit"):
-                log(f"No units specified for nuLnu, adopting default ({config.default_lum_unit})")
+                if verbose: log(f"No units specified for nuLnu, adopting default ({config.default_lum_unit})")
                 nuLnu = nuLnu * config.default_lum_unit
         if lamLlam is not None:
             if not hasattr(lamLlam, "unit"):
-                log(f"No units specified for lamLlam, adopting default ({config.default_lum_unit})")
+                if verbose: log(f"No units specified for lamLlam, adopting default ({config.default_lum_unit})")
                 lamLlam = lamLlam * config.default_lum_unit
         if nufnu is not None:
             if not hasattr(nufnu, "unit"):
-                log(f"No units specified for nufnu, adopting default ({config.default_flux_unit})")
+                if verbose: log(f"No units specified for nufnu, adopting default ({config.default_flux_unit})")
                 nufnu = nufnu * config.default_flux_unit
         if lamflam is not None:
             if not hasattr(lamflam, "unit"):
-                log(f"No units specified for lamflam, adopting default ({config.default_flux_unit})")
+                if verbose: log(f"No units specified for lamflam, adopting default ({config.default_flux_unit})")
                 lamflam = lamflam * config.default_flux_unit
 
 

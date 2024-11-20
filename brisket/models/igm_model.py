@@ -93,7 +93,6 @@ class InoueIGMModel(BaseGriddedModel, BaseAbsorberModel):
         igm_trans = np.sum(weights*self.grid[:, zred_ind-1:zred_ind+1], axis=1)
 
         if 'xhi' in params:
-            print('applying IGM damping wing')
             # apply IGM damping wing 
             self.tdmp = self.damping_wing(redshift, float(params['xhi']))
             igm_trans *= self.tdmp

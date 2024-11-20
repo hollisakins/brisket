@@ -8,6 +8,10 @@ from rich.table import Table
 from rich.tree import Tree
 import numpy as np
 
+def argsort(seq):
+    # http://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python
+    return sorted(range(len(seq)), key=seq.__getitem__)
+
 from brisket.models import PowerlawAccrectionDiskModel, InoueIGMModel
 model_defaults = {'agn':PowerlawAccrectionDiskModel, 
                   'igm':InoueIGMModel}
@@ -34,9 +38,9 @@ class Params:
         # self.absorbers = {}
         # self.reprocessors = {}
         # self.calibrators = {}
-        self.components = {}
-        self.component_types = []
-        self.component_orders = []
+        self._components = {}
+        self._component_types = {}
+        self._component_orders = {}
 
         self.all_params = {}
         self.free_params = {}
@@ -91,11 +95,11 @@ class Params:
                     self.free_params[key] = value
                 self.parent.__setitem__(self.name + '/' + key, value)
 
-        elif isinstance(value, Group): # adding a group, add to self.components
+        elif isinstance(value, Group): # adding a group, add to self._components
             # assert isintance(self, Params) or self.model_type=='source', ""
-            self.components[key] = value
-            self.component_types.append(value.model.type)
-            self.component_orders.append(value.model.order)
+            self._components[key] = value
+            self._component_types[key] = value.model.type
+            self._component_orders[key] = value.model.order
             # self.all_params.update({key+'/'+k:v for k,v in value.all_params.items()})
             # self.free_params.update({key+'/'+k:v for k,v in value.free_params.items()})
             
@@ -123,19 +127,31 @@ class Params:
     def all_param_values(self):
         return list(self.all_params.values())
 
+    @property
+    def component_names(self):
+        return sorted(list(self._components.keys()), key=self._component_orders.__getitem__)
+    
+    @property
+    def component_types(self):
+        return {k:self._component_types[k] for k in self.component_names}
+    
+    @property
+    def components(self):
+        return {k:self._components[k] for k in self.component_names}
+
             # self.free_param_priors = [param.prior for param in self.free_params.values()] 
 
 
     def __getitem__(self, key):
-        if key in self.components: # getting a component/group
-            return self.components[key]
+        if key in self._components: # getting a component/group
+            return self._components[key]
         elif key in self.all_params: # getting a parameter from the base Params object
             return self.all_params[key]
         else:
             raise Exception(f"No key {key} found in {self}")
 
     def __contains__(self, key):
-        return dict.__contains__(self.all_params, key) or dict.__contains__(self.components, key)
+        return dict.__contains__(self.all_params, key) or dict.__contains__(self._components, key)
 
     def __repr__(self):
         # self.validate()
@@ -188,7 +204,7 @@ class Params:
     @property
     def tree(self):
         tree = Tree("Params", style='bold italic white')
-        comps = np.array(list(self.components.keys()))[np.argsort(self.component_orders)]
+        comps = list(self.components.keys())
         names = [n for n in self.all_param_names if '/' not in n]
         for name in names:
             tree.add('[bold #FFE4B5 not italic]' + name + '[white]: [italic not bold #c9b89b]' + self.all_params[name].__repr__())
@@ -198,7 +214,7 @@ class Params:
             names_i = [n for n in params_i.all_param_names if '/' not in n]
             for name_i in names_i:
                 source.add('[bold #FFE4B5 not italic]' + name_i + '[white]: [italic not bold #c9b89b]' + params_i.all_params[name_i].__repr__())
-            comps_i = np.array(list(params_i.components.keys()))[np.argsort(params_i.component_orders)]
+            comps_i = list(params_i.components.keys())
             for comp_i in comps_i:
                 subsource = source.add('[bold #8fbc8f not italic]' + comp_i + '[white]: [italic not bold #869e86]' + params_i.components[comp_i].__repr__())
                 params_ii = params_i.components[comp_i]
@@ -276,13 +292,13 @@ class Params:
     #     self.validated = True
 
     def update(self, new_params):
-        assert set(new_params.components.keys()) == set(self.components.keys()), 'Cannot update Params object with different components'
+        assert set(new_params._components.keys()) == set(self._components.keys()), 'Cannot update Params object with different components'
 
         self.all_params.update(new_params.all_params)
         self.free_params.update(new_params.free_params)
 
-        for component in self.components:
-            self.components[component].update(new_params.components[component])
+        for component in self._components:
+            self._components[component].update(new_params._components[component])
 
 
 
@@ -294,9 +310,9 @@ class Group(Params):
         self.model = model
         self.parent = parent
         
-        self.components = {}
-        self.component_types = []
-        self.component_orders = []
+        self._components = {}
+        self._component_types = {}
+        self._component_orders = {}
 
         self.all_params = {}
         self.free_params = {} 
@@ -322,8 +338,8 @@ class Group(Params):
         return f"Group(name='{self.name}', model={self.model.__name__})"
 
     def __getitem__(self, key):
-        if key in self.components: # getting a component/group
-            return self.components[key]
+        if key in self._components: # getting a component/group
+            return self._components[key]
         elif key in self.all_params: # getting a parameter from the base Params object
             return self.all_params[key]
         elif key == 'redshift':
