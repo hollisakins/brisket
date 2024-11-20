@@ -1,26 +1,42 @@
 import brisket
-
+brisket.config.params_print_tree = True
+brisket.config.params_print_summary = False
 
 class NullModel:
+    type = 'reprocessor'
     order = 100
     def __init__(self, params):
         self.params = params
 
 # create a params object
-params = brisket.Params()
-params['redshift'] = brisket.FreeParam(low=9, high=11)
+params1 = brisket.Params()
+params1['redshift'] = 10
 
-params.add_source('agn')
-params['agn']['beta'] = -2.5
-params['agn']['Muv'] = -22
+params1.add_source('agn')
+params1['agn']['beta'] = -2.5
+params1['agn']['Muv'] = -22
 
-params['agn'].add_dust(model=NullModel)
-params['agn']['dust']['Av'] = brisket.FreeParam(low=0.001, high=5, prior='log_uniform')
-params['agn']['dust']['delta'] = 0
+params1['agn'].add_dust(model=NullModel)
+params1['agn']['dust']['Av'] = 2
+
+params1.add_igm()
+params1['igm']['xhi'] = 0.9
+
+print(params1)
 
 
-params.add_igm()
-params['igm']['xhi'] = 0.9
+
+quit()
+
+# from copy import deepcopy
+# params2 = deepcopy(params1)
+# params2['redshift'] = 9
+# params2['agn']['Muv'] = -21
+# params2['agn']['dust']['Av'] = 1
+
+# params1.update(params2)
+
+# print(params1['agn'].components)
 
 # params['galaxy']['grids'] = 'bc03'
 # params['galaxy']['logMstar'] = brisket.FreeParam(low=5, high=12)
@@ -40,11 +56,6 @@ params['igm']['xhi'] = 0.9
 # print(params['galaxy'].sources)
 # print(params['galaxy']['nebular'].all_params)
 
-print(params)
-
-import numpy as np
-component_names = np.array(list(params.components.keys()))[np.argsort(params.component_orders)]
-components = {k:params.components[k] for k in component_names}
 
 # print(np.array(list(params.components.keys())))
 # components = {k:params.components[k] for k in np.array(params.components.keys())[np.argsort(params.component_orders)]}

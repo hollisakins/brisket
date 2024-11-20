@@ -5,13 +5,9 @@ from brisket import config
 from brisket.fitting import priors
 from brisket.console import log, rich_str, PathHighlighter, LimitsHighlighter
 from rich.table import Table
-from numpy import ndarray
+from rich.tree import Tree
+import numpy as np
 
-
-# from brisket.models import BaseStellarModel, BaseSFHModel, BaseAGNModel
-# model_defaults = {'galaxy': BaseStellarModel, 
-                #   'agn': BaseAGNModel, 
-                #   'igm': InoueIGMModel}
 from brisket.models import PowerlawAccrectionDiskModel, InoueIGMModel
 model_defaults = {'agn':PowerlawAccrectionDiskModel, 
                   'igm':InoueIGMModel}
@@ -47,7 +43,7 @@ class Params:
         self.linked_params = {}
         self.validated = False
 
-    def add_group(self, name, model=None, model_type=None):
+    def add_group(self, name, model=None):
         if model is None:
             model_def = None
             for key in model_defaults:
@@ -57,48 +53,78 @@ class Params:
             if model_def is None:
                 raise Exception(f'No default model for source {name}, please specify model')
             model = model_def
-        group = Group(name, model, parent=self, model_type=model_type)
+        group = Group(name, model, parent=self)
         self.__setitem__(name, group)
 
-    def add_source(self, name, model=None):
-        self.add_group(name, model=model, model_type='source')
-
-    def add_absorber(self, name, model=None):
-        self.add_group(name, model=model, model_type='absorber')
-        
-    def add_reprocessor(self, name, model=None):
-        self.add_group(name, model=model, model_type='reprocessor')
-        
-    def add_calibrator(self, name, model=None):
-        self.add_group(name, model=model, model_type='calibrator')
+    add_source = add_group
 
     # specific, commongly used models
     def add_nebular(self, model=None):
-        self.add_reprocessor('nebular', model=model)
-    
+        self.add_group('nebular', model=model)
+
     def add_dust(self, model=None):
-        self.add_reprocessor('dust', model=model)
+        self.add_group('dust', model=model)
     
     def add_igm(self, model=None):
-        self.add_absorber('igm', model=model)
-    
+        self.add_group('igm', model=model)
+        
     def add_calibration(self, model=None):
-        self.add_calibrator('calib', model=model)
+        self.add_group('calib', model=model)
 
     ##############################
     def __setitem__(self, key, value):
 
-        if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,ndarray)): # setting the value of a parameter, add to all_params
-
-            if isinstance(value, (int,float,str,list,tuple,ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
+        ### adding a parameter
+        if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,np.ndarray)): # setting the value of a parameter, add to all_params
+            if isinstance(value, (int,float,str,list,tuple,np.ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
                 value = FixedParam(value)
+            
+            if isinstance(self, Params):
+                # just need to add the parameter itself, no need to update anything else
+                self.all_params[key] = value
+                if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
+                    self.free_params[key] = value
+            
+            if isinstance(self, Group): # add the parameter to the Group, add prefixed parameter to parent
+                self.all_params[key] = value
+                if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
+                    self.free_params[key] = value
+                self.parent.__setitem__(self.name + '/' + key, value)
 
-            self.all_params[key] = value
-            if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
-                self.free_params[key] = value
-
-        elif isinstance(value, Group): # adding a group 
+        elif isinstance(value, Group): # adding a group, add to self.components
+            # assert isintance(self, Params) or self.model_type=='source', ""
             self.components[key] = value
+            self.component_types.append(value.model.type)
+            self.component_orders.append(value.model.order)
+            # self.all_params.update({key+'/'+k:v for k,v in value.all_params.items()})
+            # self.free_params.update({key+'/'+k:v for k,v in value.free_params.items()})
+            
+            # if isinstance(self, Group):
+            #     for subcomp_name, subcomp in value.components.items():
+            #         subcomp.model = subcomp.model(params=subcomp)
+            #         comp.component_types.append(subcomp.model_type)
+            #         comp.component_orders.append(subcomp.model.order)
+            #         self.parent.all_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
+            #         self.parent.free_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
+
+            # # initialize self.sources[source].model with params=self.sources[source]
+
+
+    @property 
+    def free_param_names(self):
+        return list(self.free_params.keys())
+    @property 
+    def free_param_priors(self):
+        return [param.prior for param in self.free_params.values()] 
+    @property
+    def all_param_names(self):
+        return list(self.all_params.keys())
+    @property 
+    def all_param_values(self):
+        return list(self.all_params.values())
+
+            # self.free_param_priors = [param.prior for param in self.free_params.values()] 
+
 
     def __getitem__(self, key):
         if key in self.components: # getting a component/group
@@ -112,35 +138,43 @@ class Params:
         return dict.__contains__(self.all_params, key) or dict.__contains__(self.components, key)
 
     def __repr__(self):
-        self.validate()
+        # self.validate()
         if config.params_print_summary:
-            return self.summary
+            out = self.summary
         elif config.params_print_tree:
-            return self.tree
+            out = self.tree
+        out += f"Number of parameters: {self.nparam}"
+        out += '\n' + f"Dimensionality: {self.ndim}"
+
+        out += '\n'
+        return out
         
     @property
     def summary(self):
-        if self.ndim > 0:
-            table = Table(title="Fixed Parameters")
-        else:
-            table = Table(title="")
-
-        table.add_column("Parameter name", justify="left", no_wrap=True)
-        table.add_column("Value", style='bold #FFE4B5', justify='center', no_wrap=True)
-
         h = PathHighlighter()
         l = LimitsHighlighter()
-        for i in range(self.nparam): 
-            n = self.all_param_names[i]
-            if n in self.free_param_names: continue
-            table.add_row(h(n), str(self.all_params[n]))
+        if (self.ndim == 0) or (self.nparam != self.ndim):
+            if self.ndim == 0:
+                table = Table(title="")
+            else:
+                table = Table(title="Fixed Parameters")
 
-        tab_str = rich_str(table)
+            table.add_column("Parameter name", justify="left", no_wrap=True)
+            table.add_column("Value", style='bold #FFE4B5', justify='left', no_wrap=True)
+
+            for i in range(self.nparam): 
+                n = self.all_param_names[i]
+                if n in self.free_param_names: continue
+                table.add_row(h(n), str(self.all_params[n]))
+
+            tab_str = rich_str(table)
+        else:
+            tab_str = ''
                      
         if self.ndim > 0:
             table = Table(title="Free Parameters")
             table.add_column("Parameter name", justify="left", style="cyan", no_wrap=True)
-            table.add_column("Limits", style=None, justify='center', no_wrap=True)
+            table.add_column("Limits", style=None, justify='left', no_wrap=True)
             table.add_column("Prior", style=None, no_wrap=True)
         
             for i in range(self.ndim): 
@@ -153,7 +187,25 @@ class Params:
 
     @property
     def tree(self):
-        return ''
+        tree = Tree("Params", style='bold italic white')
+        comps = np.array(list(self.components.keys()))[np.argsort(self.component_orders)]
+        names = [n for n in self.all_param_names if '/' not in n]
+        for name in names:
+            tree.add('[bold #FFE4B5 not italic]' + name + '[white]: [italic not bold #c9b89b]' + self.all_params[name].__repr__())
+        for comp in comps:
+            source = tree.add('[bold #6495ED not italic]' + comp + '[white]: [italic not bold #6480b3]' + self.components[comp].__repr__())#
+            params_i = self.components[comp]
+            names_i = [n for n in params_i.all_param_names if '/' not in n]
+            for name_i in names_i:
+                source.add('[bold #FFE4B5 not italic]' + name_i + '[white]: [italic not bold #c9b89b]' + params_i.all_params[name_i].__repr__())
+            comps_i = np.array(list(params_i.components.keys()))[np.argsort(params_i.component_orders)]
+            for comp_i in comps_i:
+                subsource = source.add('[bold #8fbc8f not italic]' + comp_i + '[white]: [italic not bold #869e86]' + params_i.components[comp_i].__repr__())
+                params_ii = params_i.components[comp_i]
+                names_ii = [n for n in params_ii.all_param_names if '/' not in n]
+                for name_ii in names_ii:
+                    subsource.add('[bold #FFE4B5 not italic]' + name_ii + '[white]: [italic not bold #c9b89b]' + params_ii.all_params[name_ii].__repr__())
+        return rich_str(tree)
 
     
 
@@ -179,60 +231,67 @@ class Params:
     #                         f[key][subkey][subsubkey] = dict(f[key][subkey][subsubkey])
     #     return f
 
-    def validate(self):
-        '''This method checks that all required parameters are defined, 
-           warns you if the code is using defaults, and define several 
-           internally-used variables. 
-           Runs automatically run when printing a Params object or when
-           Params is passed to ModelGalaxy or Fitter.
-        '''
+    # def validate(self):
+    #     '''This method checks that all required parameters are defined, 
+    #        warns you if the code is using defaults, and define several 
+    #        internally-used variables. 
+    #        Runs automatically run when printing a Params object or when
+    #        Params is passed to ModelGalaxy or Fitter.
+    #     '''
 
-        # if not isinstance(self, Group): # first check if this is a Group object -- groups cannot have their own sources (TODO is this necessary? do we run validate on groups)
+    #     # if not isinstance(self, Group): # first check if this is a Group object -- groups cannot have their own sources (TODO is this necessary? do we run validate on groups)
         
-        for comp_name, comp in self.components.items():
-            if comp.model_type == 'source':
-                comp.model = comp._model_func(params=comp) # initialize model 
-                self.component_types.append('source')
-                self.component_orders.append(comp.model.order)
-                self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
-                self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
+    #     for comp_name, comp in self.components.items():
+    #         if comp.model_type == 'source':
+    #             comp.model = comp.model(params=comp) # initialize model 
+    #             self.component_types.append('source')
+    #             self.component_orders.append(comp.model.order)
+    #             self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
+    #             self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
 
-                for subcomp_name, subcomp in comp.components.items():
-                    subcomp.model = subcomp._model_func(params=subcomp)
-                    comp.component_types.append(subcomp.model_type)
-                    comp.component_orders.append(subcomp.model.order)
-                    self.all_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
-                    self.free_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
-                    # subcomp.all_params.update({subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
-                    # subcomp.free_params.update({subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
-            else:
-                comp.model = comp._model_func(params=comp) # initialize model 
-                self.component_types.append(comp.model_type)
-                self.component_orders.append(comp.model.order)
-                self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
-                self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
+    #             for subcomp_name, subcomp in comp.components.items():
+    #                 subcomp.model = subcomp.model(params=subcomp)
+    #                 comp.component_types.append(subcomp.model_type)
+    #                 comp.component_orders.append(subcomp.model.order)
+    #                 self.all_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
+    #                 self.free_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
+    #                 # subcomp.all_params.update({subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
+    #                 # subcomp.free_params.update({subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
+    #         else:
+    #             comp.model = comp.model(params=comp) # initialize model 
+    #             self.component_types.append(comp.model_type)
+    #             self.component_orders.append(comp.model.order)
+    #             self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
+    #             self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
 
-        # initialize self.sources[source].model with params=self.sources[source]
-        self.all_param_names = list(self.all_params.keys())
-        self.all_param_values = list(self.all_params.values())
+    #     # initialize self.sources[source].model with params=self.sources[source]
+    #     self.all_param_names = list(self.all_params.keys())
+    #     self.all_param_values = list(self.all_params.values())
 
-        self.free_param_names = list(self.free_params.keys()) # Flattened list of parameter names for free params  
-        self.free_param_priors = [param.prior for param in self.free_params.values()] 
+    #     self.free_param_names = list(self.free_params.keys()) # Flattened list of parameter names for free params  
+    #     self.free_param_priors = [param.prior for param in self.free_params.values()] 
 
-        # self.linked_params
+    #     # self.linked_params
 
-        self.validated = True
+    #     self.validated = True
 
     def update(self, new_params):
-        assert self.validated, 'Params object must be validated before updating'
+        assert set(new_params.components.keys()) == set(self.components.keys()), 'Cannot update Params object with different components'
+
+        self.all_params.update(new_params.all_params)
+        self.free_params.update(new_params.free_params)
+
+        for component in self.components:
+            self.components[component].update(new_params.components[component])
+
+
 
 
 
 class Group(Params):
-    def __init__(self, name, model, parent=None, model_type=None):
+    def __init__(self, name, model, parent=None):
         self.name = name
-        self.model_type = model_type
-        self._model_func = model
+        self.model = model
         self.parent = parent
         
         self.components = {}
@@ -247,20 +306,20 @@ class Group(Params):
         raise Exception('can only add source to base Params object')
 
     def add_sfh(self, name, model=None):
-        if not (self.name=='galaxy' and self.model_type=='source'):
+        if not (self.name=='galaxy' and self.model.type=='source'):
             raise Exception('SFH is special, can only be added to galaxy source')
         sfh = Group(name, model=model, parent=self)
         self.__setitem__(name, sfh)
 
     def __repr__(self):
         # if len(self.sources)>0:
-        #     outstr = f"Source(name='{self.name}', model={self._model_func.__name__})"
+        #     outstr = f"Source(name='{self.name}', model={self.model.__name__})"
         #     for source in self.sources:
         #         s = self.sources[source]
-        #         outstr += '\n' + f"\-> Source(name='{s.name}', model={s._model_func.__name__})"
+        #         outstr += '\n' + f"\-> Source(name='{s.name}', model={s.model.__name__})"
         #     return outstr
         # else:
-        return f"Group(name='{self.name}', model={self._model_func.__name__}, model_type={self.model_type})"
+        return f"Group(name='{self.name}', model={self.model.__name__})"
 
     def __getitem__(self, key):
         if key in self.components: # getting a component/group

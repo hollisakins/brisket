@@ -9,9 +9,9 @@ Classes
 -------
 
 - ``Params``: This is the main class for handling parameters. It allows adding sources, validating parameters, and provides a summary of fixed and free parameters.
-- ``Source``: A class representing a source (e.g., galaxy, AGN). It acts as a container for parameters and can have sub-sources.
+- ``Group``: A class representing a parameter group, used for further sub-dividing the parameter specification. The ``Group`` class serves as a container for parameters belonging to a given source (e.g. galaxy, AGN) or absorber (e.g. dust) and can have its own sub-Groups.
 - ``FreeParam``: A class representing a free parameter with specified limits and prior distributions.
-- ``FixedParam``: A class representing a fixed parameter with a constant value.
+- ``FixedParam``: A class representing a fixed parameter with a constant value. In practice, this is generally not used, as fixed parameters can be provided as integers or floats directly.
 
 Usage
 -----
@@ -30,6 +30,24 @@ From there, you can then add sources and parameters as needed.
 
 The parameter structure of BRISKET is broken up into sources (sources of emission), absorbers (things that absorb emission), and reprocessors (things that 
 absorb emission and re-emit as sources of emission). 
+
+Printing the parameters object will provide a nice representation of the parameter structure, including the fixed and free parameters:
+
+::
+
+    print(params)
+    
+    >>> ┏━━━━━━━━━━━━━━━━┳━━━━━━━┓
+        ┃ Parameter name ┃ Value ┃
+        ┡━━━━━━━━━━━━━━━━╇━━━━━━━┩
+        │ redshift       │   9   │
+        │ agn/beta       │ -2.5  │
+        │ agn/Muv        │  -21  │
+        │ agn/dust/Av    │   1   │
+        │ igm/xhi        │  0.9  │
+        └────────────────┴───────┘
+
+
 
 
 

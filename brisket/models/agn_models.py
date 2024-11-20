@@ -6,8 +6,10 @@ from brisket import config
 from brisket import utils
 from brisket.utils.sed import SED
 from brisket.models.base_models import *
+from brisket.console import log
 
 class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
+    type = 'source'
     order = 1
     
     def __init__(self, params):
@@ -15,6 +17,7 @@ class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
         super().__init__(params)
 
     def _build_defaults(self, params):
+        log('Initializing powerlawaccretiondiskmodel')
         if not 'beta' in params:
             params['beta'] = -2.0
         if not 'Muv' in params:

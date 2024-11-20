@@ -279,7 +279,7 @@ class ModelGalaxy(object):
 
 
 
-    def update(self, parameters):
+    def update(self, params):
         """ Update the model outputs (spectra, photometry) to reflect 
         new parameter values in the parameters dictionary. Note that 
         only the changing of numerical values is supported."""

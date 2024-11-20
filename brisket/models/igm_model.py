@@ -42,6 +42,7 @@ class InoueIGMModel(BaseGriddedModel, BaseAbsorberModel):
         1D array of wavelength values desired for the DL07 models.
     """
 
+    type = 'absorber'  # Define the type of model
     order = 10  # Define the order of operations for this model
     # TODO could define defaults as class variables
 
