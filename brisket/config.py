@@ -83,25 +83,14 @@ default_L_unit = u.Lsun
 params_print_summary = True
 params_print_tree = False
 
-# # These variables control the age sampling for the stellar and nebular
-# # emission models. The stellar models will be automatically rebinned onto
-# # the chosen age grid. The nebular models must be re-computed with Cloudy
-# # if these variables are changed.
+# These variables control the age sampling for the stellar and nebular
+# emission models. The stellar models will be automatically rebinned onto
+# the chosen age grid. The nebular models must be re-computed with Cloudy
+# if these variables are changed.
 
-# # Sets the default age sampling for stellar models in log10(Gyr).
-# # Beware: if you change this you need to recompute the nebular models.
-# age_sampling = np.arange(6., np.log10(cosmo.age(0.).value) + 9., 0.1)
-
-# # Set up edge positions for age bins for stellar + nebular models.
-# age_bins = 10**make_bins(age_sampling, make_rhs=True)[0]
-# age_bins[0] = 0.
-# age_bins[-1] = 10**9*cosmo.age(0.).value
-
-# # Set up widths for the age bins for the stellar + nebular models.
-# age_widths = age_bins[1:] - age_bins[:-1]
-
-# # Convert the age sampling from log10(Gyr) to Gyr.
-# age_sampling = 10**age_sampling
+# Sets the default age sampling for stellar models in log10(Gyr).
+# Beware: if you change this you need to recompute the nebular models.
+age_sampling = np.arange(6., np.log10(cosmo.age(0.).value) + 9., 0.1)
 
 
 
