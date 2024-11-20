@@ -13,4 +13,6 @@ brisket/.DS_Store
 brisket/_archive
 brisket/_archive/*
 brisket/data/*.fits
+brisket/data/*.hdf5
+brisket/data/raw_data
 brisket/data/raw_data/*
