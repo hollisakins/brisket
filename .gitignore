@@ -12,5 +12,5 @@ brisket/.DS_Store
 .DS_Store
 brisket/_archive
 brisket/_archive/*
-data/*.fits
-data/raw_data/*
+brisket/data/*.fits
+brisket/data/raw_data/*
