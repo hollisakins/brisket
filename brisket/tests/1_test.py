@@ -1,6 +1,6 @@
 import brisket
-brisket.config.params_print_tree = True
-brisket.config.params_print_summary = False
+# brisket.config.params_print_tree = True
+# brisket.config.params_print_summary = False
 
 class NullModel:
     type = 'reprocessor'
@@ -24,9 +24,10 @@ params['agn']['Muv'] = -22
 params.add_igm()
 params['igm']['xhi'] = 0.9
 
-mod = brisket.ModelGalaxy(params)
+print(params)
+# mod = brisket.ModelGalaxy(params)
 
-mod.sed.plot(show=True, xlim=(500, 8000), ylim=(-0.1, 0.5))
+# mod.sed.plot(show=True, xlim=(500, 8000), ylim=(-0.1, 0.5))
 
 quit()
 

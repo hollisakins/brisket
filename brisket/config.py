@@ -136,7 +136,7 @@ params_print_tree = False
 # except IOError:
 #     print("Failed to load BC03 stellar grids, these should be placed in the brisket/models/grids/ directory.")
 
-# try:
+# # try:
 #     # Name of the fits file storing the stellar models
 #     stellar_file = 'bpass_2.2.1_bin_imf135_300_stellar_grids.fits'
     

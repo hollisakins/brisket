@@ -1,27 +1,41 @@
 from __future__ import print_function, division, absolute_import
 
 import numpy as np
-
+import os
 from brisket import config
 from brisket import utils
 
+from brisket.data.grid_manager import GridManager
+from brisket.models.base_models import *
 
-class BaseStellarModel(object):
-    """ Allows access to and maniuplation of stellar emission models.
+# Set up edge positions for age bins for stellar + nebular models.
+age_bins = 10**utils.make_bins(config.age_sampling, make_rhs=True)[0]
+age_bins[0] = 0.
+age_bins[-1] = 10**9*cosmo.age(0.).value
 
-    Parameters
-    ----------
+# Set up widths for the age bins for the stellar + nebular models.
+age_widths = age_bins[1:] - age_bins[:-1]
 
-    wavelengths : np.ndarray
-        1D array of wavelength values desired for the stellar models.
-    """
+# Convert the age sampling from log10(Gyr) to Gyr.
+age_sampling = 10**age_sampling
 
+
+class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
     def __init__(self, params):
-        self.type == 'Source'
-        #self.wavelengths = wavelengths
-        
         self.params = params
-        grids = params['grids']
+        grid_file_name = params['grids']
+        if not grid_file_name.endswith('.hdf5'):
+            grid_file_name += '.hdf5'
+
+        gm = GridManager()
+        gm.check_grid(grid_file_name)
+        grid_path = os.path.join(config.grid_dir, grid_file_name)
+
+        with h5py.File(grid_path,'r') as f:
+            self.grid_wavelengths = np.array(f['wavs'])
+            # self.grid_metallicities = f['metallicities'][:]
+            # self.template_raw_stellar_ages = f['ages'][:]
+            self.grid = f['grid'][:]
 
         ### load in the stellar grids
         # self.template_metallicities = config.stellar_models[model]['metallicities']
@@ -29,11 +43,6 @@ class BaseStellarModel(object):
         # self.template_raw_stellar_ages = config.stellar_models[model]['raw_stellar_ages']
         # self.template_raw_stellar_grid = config.stellar_models[model]['raw_stellar_grid']
     
-
-        # # Resample the grid in wavelength and then in age.
-        # grid_raw_ages = self._resample_in_wavelength()
-        # self.grid = self._resample_in_age(grid_raw_ages)
-        pass
     
     def __repr__(self):
         return f'BaseStellarModel'
@@ -41,8 +50,12 @@ class BaseStellarModel(object):
     def __str__(self):
         return self.__repr__()
 
-    def _resample(self):
-        pass
+    def _resample(self, wavelengths):
+        # Resample the grid in wavelength and then in age.
+        self.wavelengths = wavelengths
+        self._resample_in_wavelength()
+        self.grid = self._resample_in_age(grid_raw_ages)
+
 
     def _resample_in_wavelength(self):
         """ Resamples the raw stellar grids to the input wavs. """
