@@ -165,8 +165,7 @@ class Params:
         out += '\n'
         return out
         
-    @property
-    def summary(self):
+    def print_summary(self):
         h = PathHighlighter()
         l = LimitsHighlighter()
         if (self.ndim == 0) or (self.nparam != self.ndim):
@@ -183,9 +182,7 @@ class Params:
                 if n in self.free_param_names: continue
                 table.add_row(h(n), str(self.all_params[n]))
 
-            tab_str = rich_str(table)
-        else:
-            tab_str = ''
+            table.print()
                      
         if self.ndim > 0:
             table = Table(title="Free Parameters")
@@ -198,11 +195,9 @@ class Params:
                 p = self.free_params[n]
                 table.add_row(h(n), l(str(p.limits)), str(p.prior))
         
-            tab_str = tab_str + '\n' + rich_str(table)
-        return tab_str
+            table.print()
 
-    @property
-    def tree(self):
+    def print_tree(self):
         tree = Tree("Params", style='bold italic white')
         comps = list(self.components.keys())
         names = [n for n in self.all_param_names if '/' not in n]
@@ -221,7 +216,7 @@ class Params:
                 names_ii = [n for n in params_ii.all_param_names if '/' not in n]
                 for name_ii in names_ii:
                     subsource.add('[bold #FFE4B5 not italic]' + name_ii + '[white]: [italic not bold #c9b89b]' + params_ii.all_params[name_ii].__repr__())
-        return rich_str(tree)
+        tree.print()
 
     
 
