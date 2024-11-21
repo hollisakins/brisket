@@ -17,7 +17,7 @@ from astropy.units import cm
 install_dir = os.path.dirname(os.path.realpath(__file__))
 '''Stores the install directory for easy reference'''
 
-grid_dir = install_dir + "/models/grids"
+grid_dir = install_dir + "/data"
 '''Stores the path to the model grid directory for easy reference'''
 
 res_dir = install_dir + "/models/res"

@@ -76,25 +76,31 @@ class BaseSFHModel:
         pass
 
     def update(self, params):
+        self.params = params
 
         # self.unphysical = False
         self.age_of_universe = utils.age_at_z(float(params['redshift'])) * 1e9
 
         # Calculate the star-formation history
         self.sfh = self.sfr(self.ages, params)
+        
+        # Normalise to 1 solar mass formed
+        mass_norm = np.trapezoid(self.sfh, x=self.ages)
+        self.sfh /= mass_norm
 
         # Sum up contributions to each age bin to create SSP weights
-        self.weights, _ = np.histogram(self.ages, bins=params.parent.model.grid_age_bins, weights=self.sfh * self.age_widths)
+        self.sfh_weights, _ = np.histogram(self.ages, bins=params.parent.model.grid_age_bins, weights=self.sfh * self.age_widths)
 
         # Check no stars formed before the Big Bang.
         if self.sfh[self.ages > self.age_of_universe].max() > 0.:
             self.unphysical = True
 
         # ceh: Chemical enrichment history object
-        self.ceh.compute_grid(params, self.weights)
+        self.ceh.compute_weights(params, self.sfh_weights)
+        self.combined_weights = self.ceh.weights
 
-        # Normalise to 1 solar mass formed
-        mass_norm = np.sum(self.grid_live_frac*self.ceh.grid)
+        # Normalise to 1 solar mass (currentt)
+        mass_norm = np.sum(self.grid_live_frac * self.ceh.grid)
         self.sfh /= mass_norm
 
         # self._calculate_derived_quantities()
@@ -140,6 +146,10 @@ class BaseSFHModel:
         mass_assembly = np.cumsum(self.sfh[::-1]*self.age_widths[::-1])[::-1]
         ind = np.argmin(np.abs(self.ages - (self.age_of_universe - t_hubble_at_z)))
         return np.log10(mass_assembly[ind])
+
+    @property
+    def redshifts(self):
+        return utils.z_at_age((self.age_of_universe - self.ages)/1e9)
 
     ###################################################################
     ######### Various choices of star-formation history model #########
@@ -436,11 +446,11 @@ class ChemicalEnrichmentHistoryModel(object):
         self.zmet_vals = params.model.grid_metallicities
         # self.zmet_lims = utils.make_bins(self.zmet_vals, fix_low=0, fix_high=10)
 
-    def compute_grid(self, params, sfh_weights):
-        self.grid = self.delta(params, sfh_weights)
-        return self.grid
+    def compute_weights(self, params, sfh_weights):
+        self.weights = self.delta(params, sfh_weights)
+        return self.weights
 
-    def delta(self, params, sfh):
+    def delta(self, params, sfh_weights):
         """ Delta function metallicity history. """
         zmet = float(params.parent["zmet"])
 
@@ -458,7 +468,7 @@ class ChemicalEnrichmentHistoryModel(object):
             weights[high_ind] = (zmet - self.zmet_vals[low_ind])/width
             weights[high_ind-1] = 1 - weights[high_ind]
 
-        return np.expand_dims(weights, axis=1)*np.expand_dims(sfh, axis=0)
+        return np.expand_dims(weights, axis=1)*np.expand_dims(sfh_weights, axis=0)
 
     def exp(self, comp, sfh):
         """ P(Z) = exp(-z/z_mean). Currently no age dependency! """
@@ -478,3 +488,16 @@ class ChemicalEnrichmentHistoryModel(object):
 
         return np.expand_dims(weights, axis=1)*np.expand_dims(sfh, axis=0)
 
+    def mass_metallicity(self, comp, sfh):
+        """ To be implemented. 
+        Assign SSP metallicity/age weights according to the mass-metallicity relation at the given redshift, i.e.
+        P(Z,t) = P(M=M(t),Z,t)
+        TBD how to fix metallicity at t=0. 
+        """
+        pass
+        # zmet = comp["metallicity"]
+        # weights = np.zeros(self.zmet_vals.shape[0])
+        # return np.expand_dims(weights, axis=1)*np.expand_dims(sfh, axis=0)
+
+
+    #TODO add non-delta function metallicity distributions? 

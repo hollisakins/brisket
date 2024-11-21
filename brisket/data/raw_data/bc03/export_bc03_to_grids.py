@@ -58,18 +58,22 @@ if type(age_sampling)==str:
 else:
     outfilepath = f'brisket/data/bc03_{spectra}_{imf}_a{len(age_sampling)}.hdf5'
     # Set up edge positions for age bins for stellar + nebular models.
-    age_bins = np.power(10., utils.make_bins(age_sampling, make_rhs=True)[0])
+    age_bins = np.power(10., utils.make_bins(age_sampling))
     age_bins[0] = 0.
     age_bins[-1] = 13.78e9
     age_widths = age_bins[1:] - age_bins[:-1]
+    age_sampling = np.power(10., age_sampling)
 
     #### set up the grids to the configured age sampling
     grid_resampled = np.zeros((Nzmets, len(age_sampling), Nwavs))
 
-    raw_age_lhs, raw_age_widths = utils.make_bins(ages, make_rhs=True)
-    # Force raw ages to span full range from 0 to age of Universe.
-    raw_age_widths[0] += raw_age_lhs[0]
-    raw_age_lhs[0] = 0.
+    # raw_age_lhs, raw_age_widths = utils.make_bins(ages, make_rhs=True)
+    # # Force raw ages to span full range from 0 to age of Universe.
+    # raw_age_widths[0] += raw_age_lhs[0]
+    # raw_age_lhs[0] = 0.
+    raw_age_bins = utils.make_bins(ages, fix_low=0)
+    raw_age_lhs = raw_age_bins[:-1]
+    raw_age_widths = np.diff(raw_age_bins)
 
     if raw_age_lhs[-1] < age_bins[-1]:
         raw_age_widths[-1] += age_bins[-1] - raw_age_lhs[-1]

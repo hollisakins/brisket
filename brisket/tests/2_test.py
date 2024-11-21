@@ -13,8 +13,8 @@ import numpy as np
 # print(interp((0.9, 2)))
 
 import brisket
-brisket.config.params_print_tree = True
-brisket.config.params_print_summary = False
+# brisket.config.params_print_tree = True
+# brisket.config.params_print_summary = False
 
 class NullModel:
     type = 'reprocessor'
@@ -31,6 +31,7 @@ params['redshift'] = 10
 params.add_source('galaxy', model=brisket.models.GriddedStellarModel)
 params['galaxy']['logMstar'] = 10
 params['galaxy']['zmet'] = 1
+params['galaxy']['grids'] = 'bc03_miles_chabrier_a50'
 params['galaxy'].add_sfh('constant', model=brisket.models.ConstantSFH)
 params['galaxy']['constant']['age_min'] = 0.1
 params['galaxy']['constant']['age_max'] = 0.2
@@ -50,6 +51,9 @@ for comp_name, comp_params in components.items():
         # break
         subcomp_params.model = subcomp_params.model(subcomp_params)
         subcomp_params.model._resample(wavelengths)
+    comp_params.model._validate_components(comp_params)
+
+
 
 # mod = params['galaxy'].model
 # sfh = mod.sfh_components['constant']
@@ -57,10 +61,18 @@ for comp_name, comp_params in components.items():
 # print(.sfh)
 sfh = subcomp_params.model
 sfh.update(subcomp_params)
-print(sfh.sfh)
+# print(np.shape(sfh.ceh.grid))
 # 
 import matplotlib.pyplot as plt
-plt.plot(sfh.ages, sfh.sfh)
+plt.stairs(sfh.ceh.grid[0,:], subcomp_params.parent.model.grid_age_bins)
+plt.stairs(sfh.ceh.grid[1,:], subcomp_params.parent.model.grid_age_bins)
+plt.stairs(sfh.ceh.grid[2,:], subcomp_params.parent.model.grid_age_bins)
+plt.stairs(sfh.ceh.grid[3,:], subcomp_params.parent.model.grid_age_bins)
+plt.stairs(sfh.ceh.grid[4,:], subcomp_params.parent.model.grid_age_bins)
+plt.stairs(sfh.ceh.grid[5,:], subcomp_params.parent.model.grid_age_bins)
+plt.stairs(sfh.ceh.grid[6,:], subcomp_params.parent.model.grid_age_bins)
+plt.step(sfh.ages, sfh.sfh*1e8/3, where='mid')
+# plt.xlim(10, 20)
 plt.show()
 # fig, ax = plt.subplots(figsize=(8,4), dpi=130, constrained_layout=True)
 

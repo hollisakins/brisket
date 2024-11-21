@@ -1,4 +1,4 @@
-import rich, toml, os, sys
+import rich, os, sys
 from collections.abc import MutableMapping
 
 from brisket import config

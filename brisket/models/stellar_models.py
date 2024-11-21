@@ -16,8 +16,10 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
     type = 'source'
     order = 0
     def __init__(self, params):
-        self._build_defaults(params)
         self.params = params
+        
+        self._build_defaults(params)
+
         grid_file_name = str(params['grids'])
         if not grid_file_name.endswith('.hdf5'):
             grid_file_name += '.hdf5'
@@ -27,14 +29,6 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         grid_path = os.path.join(config.grid_dir, grid_file_name)
 
         self._load_hdf5_grid(grid_path)
-
-        self.sfh_components = {}
-        for comp_name, comp in self.params.components.items():
-            if comp.model.type == 'sfh':
-                self.sfh_components[comp_name] = comp.model
-
-        # TODO initialize SFHs
-        # stack all the SFH components into one, there's no real point in keeping them separate
     
     def _build_defaults(self, params):
         if 'grids' not in params:
@@ -43,6 +37,18 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
             # params['logMstar'] = 10
         # if 'zmet' not in params:
             # params['zmet'] = 0.02
+
+    def _validate_components(self, params):
+        # TODO initialize SFHs
+        # stack all the SFH components into one, there's no real point in keeping them separate
+        self.sfh_components = {}
+        for comp_name, comp in self.params.components.items():
+            if comp.model.type == 'sfh':
+                self.sfh_components[comp_name] = comp.model
+        # if len(self.sfh_components) == 1:
+            # no need to define sfh weights
+        # else:
+            # self.sfh_weights = []
 
     def _load_hdf5_grid(self, grid_path):
         """ Load the grid from an HDF5 file. """
@@ -93,6 +99,9 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         """
 
         # TODO compute sfh_ceh from input SFH parameters
+        for sfh_name, sfh in self.sfh_components.items():
+            sfh.update(params)
+            sfh_ceh = sfh.update(params)
 
         t_bc *= 10**9
         spectrum_young = np.zeros_like(self.wavelengths)

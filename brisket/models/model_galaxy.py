@@ -2,7 +2,6 @@ import numpy as np
 import warnings
 import os, time
 from copy import deepcopy
-from dotmap import DotMap
 import spectres
 
 from astropy.constants import c as speed_of_light
@@ -216,6 +215,9 @@ class ModelGalaxy(object):
             for subcomp_name, subcomp_params in subcomps.items():
                 subcomp_params.model = subcomp_params.model(subcomp_params)
                 subcomp_params.model._resample(self.wavelengths)
+            
+            # then validate that sub-compnents were added correctly
+            comp_params.model._validate_components(comp_params)
 
         if verbose: log('Computing the SED')
         # Compute the main SED 
