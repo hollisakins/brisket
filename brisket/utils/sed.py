@@ -165,9 +165,14 @@ class SED(object):
         w = self.wav_rest.value
         f = self._y.value
         wstr = f'wav_rest: [{w[0]:.2f}, {w[1]:.2f}, ..., {w[-2]:.2f}, {w[-1]:.2f}] {self.wav_rest.unit} {np.shape(w)}'
-        fstr1 = f'{self._which} (base): [{f[0]:.2f}, {f[1]:.2f}, ..., {f[-2]:.2f}, {f[-1]:.2f}] {self._y.unit} {np.shape(w)}'
-        fstr2 = '(available) ' + ', '.join(map(str,[a for a in all_flux_defs if a != self._which])) 
-        betastr = f'beta: {self.beta:.2f}, Muv: {self.Muv:.1f}, Lbol: ?'
+        if np.ndim(f) > 1:
+            fstr1 = f'{self._which} (base): [...] {self._y.unit} {np.shape(f)}'
+            fstr2 = '(available) ' + ', '.join(map(str,[a for a in all_flux_defs if a != self._which])) 
+            betastr = f'beta: ?, Muv: ?, Lbol: ?'
+        else:
+            fstr1 = f'{self._which} (base): [{f[0]:.2f}, {f[1]:.2f}, ..., {f[-2]:.2f}, {f[-1]:.2f}] {self._y.unit} {np.shape(f)}'
+            fstr2 = '(available) ' + ', '.join(map(str,[a for a in all_flux_defs if a != self._which])) 
+            betastr = f'beta: {self.beta:.2f}, Muv: {self.Muv:.1f}, Lbol: ?'
         width = config.cols-2
         # width = np.max([width, len(wstr)+4])
         # border_chars = '═║╔╦╗╠╬╣╚╩╝'

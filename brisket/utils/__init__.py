@@ -2,3 +2,4 @@
 
 from .sed import SED
 from .filters import Filters
+from .utils import make_bins, age_at_z, z_at_age

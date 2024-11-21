@@ -328,14 +328,10 @@ class Group(Params):
         self.__setitem__(name, sfh)
 
     def __repr__(self):
-        # if len(self.sources)>0:
-        #     outstr = f"Source(name='{self.name}', model={self.model.__name__})"
-        #     for source in self.sources:
-        #         s = self.sources[source]
-        #         outstr += '\n' + f"\-> Source(name='{s.name}', model={s.model.__name__})"
-        #     return outstr
-        # else:
-        return f"Group(name='{self.name}', model={self.model.__name__})"
+        try:
+            return f"Group(name='{self.name}', model={self.model.__name__})"
+        except:
+            return f"Group(name='{self.name}', model={self.model.__class__.__name__})"
 
     def __getitem__(self, key):
         if key in self._components: # getting a component/group

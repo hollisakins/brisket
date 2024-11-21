@@ -83,6 +83,7 @@ default_L_unit = u.Lsun
 params_print_summary = True
 params_print_tree = False
 
+sfh_age_log_sampling=0.0025
 
 # # These variables tell the code where to find the raw stellar emission
 # # models, as well as some of their basic properties.

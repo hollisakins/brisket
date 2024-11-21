@@ -15,7 +15,7 @@ from brisket import utils
 from brisket import config
 # from .. import plotting
 
-from brisket.models.chemical_enrichment_history import ChemicalEnrichmentHistoryModel
+# from brisket.models.chemical_enrichment_history import ChemicalEnrichmentHistoryModel
 
 # TODO define sfh_log_age_sampling in config.py == 0.0025
 
@@ -45,88 +45,59 @@ class BaseSFHModel:
         history you wish to generate.
 
     log_sampling : float - optional
-        the log of the age sampling of the SFH, defaults to 0.0025.
+        the log of the age sampling of the SFH, defaults to sfh_age_log_sampling=0.0025.
     """
 
     type = 'sfh'
+    order = 0
 
-    def __init__(self, model_components):
-        self.hubble_time = config.age_at_z(0)
-
-        model = model_components['stellar_model']
+    def __init__(self, params):
+        self.hubble_time = 13.78
         
-        self.template_metallicities = config.stellar_models[model]['metallicities']
-        self.template_raw_stellar_ages = config.stellar_models[model]['raw_stellar_ages']
-        self.template_live_frac = config.stellar_models[model]['live_frac']
+        # self.template_metallicities = config.stellar_models[model]['metallicities']
+        # self.template_raw_stellar_ages = config.stellar_models[model]['raw_stellar_ages']
+        # self.template_live_frac = config.stellar_models[model]['live_frac']
 
         # Set up the age sampling for internal SFH calculations.
-        log_age_max = np.log10(self.hubble_time)+9. + 2*config.sfh_age_log_sampling
+        log_age_max = np.log10(self.hubble_time)+9 + config.sfh_age_log_sampling
         self.ages = np.arange(6., log_age_max, config.sfh_age_log_sampling)
-        self.age_lhs = utils.make_bins(self.ages, make_rhs=True)[0]
+        self.age_bins = utils.make_bins(self.ages, fix_low=-99)
         self.ages = 10**self.ages
-        self.age_lhs = 10**self.age_lhs
-        self.age_lhs[0] = 0.
-        self.age_lhs[-1] = 10**9*self.hubble_time
-        self.age_widths = self.age_lhs[1:] - self.age_lhs[:-1]
+        self.age_bins = 10**self.age_bins
+        self.age_widths = np.diff(self.age_bins)
 
-        # Detect SFH components
-        comp_list = list(model_components)
-        self.components = ([k for k in comp_list if k in dir(self)]
-                           + [k for k in comp_list if k[:-1] in dir(self)])
+        self.sfh = np.zeros_like(self.ages)
+        self.weights = np.zeros_like(params.parent.model.grid_ages)
+        self.ceh = ChemicalEnrichmentHistoryModel(params.parent)
+        self.grid_live_frac = params.parent.model.grid_live_frac
 
-        self.component_sfrs = {}  # SFR versus time for all components.
-        self.component_weights = {}  # SSP weights for all components.
+        # self.update(params)
+    def _resample(self, _):
+        pass
 
-        self._resample_live_frac_grid()
+    def update(self, params):
 
-        self.update(model_components)
-
-    def update(self, model_components):
-
-        self.model_components = model_components
-        self.redshift = self.model_components["redshift"]
-
-        self.sfh = np.zeros_like(self.ages)  # Star-formation history
-
-        self.unphysical = False
-        self.age_of_universe = 10**9 * config.age_at_z(self.redshift)
+        # self.unphysical = False
+        self.age_of_universe = utils.age_at_z(float(params['redshift'])) * 1e9
 
         # Calculate the star-formation history
-        func = model_components['sfh']
-
-        if func not in dir(self):
-            raise Exception('Missing SFH')
-            #func = name[:-1]
-
-        self.component_sfrs[func] = np.zeros_like(self.ages)
-        self.component_weights[func] = np.zeros_like(config.age_sampling)
-
-        getattr(self, func)(self.component_sfrs[func],
-                            self.model_components)
-
-        # Normalise to the correct mass.
-        mass_norm = np.sum(self.component_sfrs[func]*self.age_widths)
-        desired_mass = 10**self.model_components["logMstar"]
-
-        self.component_sfrs[func] *= desired_mass/mass_norm
-        self.sfh += self.component_sfrs[func]
+        self.sfh = self.sfr(self.ages, params)
 
         # Sum up contributions to each age bin to create SSP weights
-        weights = self.component_sfrs[func]*self.age_widths
-        self.component_weights[func] = np.histogram(self.ages,
-                                                    bins=config.age_bins,
-                                                    weights=weights)[0]
+        self.weights, _ = np.histogram(self.ages, bins=params.parent.model.grid_age_bins, weights=self.sfh * self.age_widths)
 
-                                                    
         # Check no stars formed before the Big Bang.
         if self.sfh[self.ages > self.age_of_universe].max() > 0.:
             self.unphysical = True
 
         # ceh: Chemical enrichment history object
-        self.ceh = ChemicalEnrichmentHistoryModel(self.model_components,
-                                                  self.component_weights)
+        self.ceh.compute_grid(params, self.weights)
 
-        self._calculate_derived_quantities()
+        # Normalise to 1 solar mass formed
+        mass_norm = np.sum(self.grid_live_frac*self.ceh.grid)
+        self.sfh /= mass_norm
+
+        # self._calculate_derived_quantities()
 
     def _calculate_derived_quantities(self):
         self.stellar_mass = np.log10(np.sum(self.live_frac_grid*self.ceh.grid))
@@ -164,24 +135,10 @@ class BaseSFHModel:
             quench_ind = np.argmax(normed_sfrs > 0.1)
             self.t_quench = tunivs[quench_ind]*10**-9
 
-    def _resample_live_frac_grid(self):
-        self.live_frac_grid = np.zeros((self.template_metallicities.shape[0],
-                                        config.age_sampling.shape[0]))
-
-        raw_live_frac_grid = self.template_live_frac
-
-        for i in range(self.template_metallicities.shape[0]):
-            self.live_frac_grid[i, :] = np.interp(config.age_sampling,
-                                                  self.template_raw_stellar_ages,
-                                                  raw_live_frac_grid[:, i])
-
     def massformed_at_redshift(self, redshift):
         t_hubble_at_z = 10**9 * config.age_at_z(redshift)
-
         mass_assembly = np.cumsum(self.sfh[::-1]*self.age_widths[::-1])[::-1]
-
         ind = np.argmin(np.abs(self.ages - (self.age_of_universe - t_hubble_at_z)))
-
         return np.log10(mass_assembly[ind])
 
     ###################################################################
@@ -198,14 +155,13 @@ class BurstSFH(BaseSFHModel):
     def _build_defaaults(self, params):
         pass
 
-    def sfr(self, params):
+    def sfr(self, ages, params):
         if "age" in list(param):
-            age = param["age"]*10**9
-
+            age = param["age"]*1e9
         elif "tform" in list(param):
-            age = self.age_of_universe - param["tform"]*10**9
+            age = self.age_of_universe - param["tform"]*1e9
 
-        sfr[np.argmin(np.abs(self.ages - age))] += 1
+        sfr[np.argmin(np.abs(self.ages - age*1e9))] += 1
         return sfr
 
 class ConstantSFH(BaseSFHModel):
@@ -214,25 +170,15 @@ class ConstantSFH(BaseSFHModel):
         self._build_defaults(params)
         super().__init__(params)
 
-    def _build_defaaults(self, params):
+    def _build_defaults(self, params):
         pass
 
-    def sfr(self, param):
+    def sfr(self, ages, params):
+        sfr = np.zeros_like(ages)
+        age_min = float(params['age_min'])*1e9
+        age_max = float(params['age_max'])*1e9
 
-        if "age_min" in list(param):
-            if param["age_max"] == "age_of_universe":
-                age_max = self.age_of_universe
-
-            else:
-                age_max = param["age_max"]*10**9
-
-            age_min = param["age_min"]*10**9
-
-        else:
-            age_max = self.age_of_universe - param["tstart"]*10**9
-            age_min = self.age_of_universe - param["tstop"]*10**9
-
-        mask = (self.ages > age_min) & (self.ages < age_max)
+        mask = (ages > age_min) & (ages < age_max)
         sfr[mask] += 1.
         return sfr
 
@@ -241,11 +187,11 @@ class ExponentialSFH(BaseSFHModel):
         self._build_defaults(params)
         super().__init__(params)
 
-    def _build_defaaults(self, params):
+    def _build_defaults(self, params):
         pass
 
-    def sfr(self, param):
-
+    def sfr(self, ages, param):
+        sfr = np.zeros_like(ages)
         if "age" in list(param):
             age = param["age"]*10**9
 
@@ -269,10 +215,11 @@ class RisingExponentialSFH(BaseSFHModel):
         self._build_defaults(params)
         super().__init__(params)
 
-    def _build_defaaults(self, params):
+    def _build_defaults(self, params):
         pass
 
-    def sfr(self, param):
+    def sfr(self, ages, param):
+        sfr = np.zeros_like(ages)
         if "age" in list(param):
             age = param["age"]*10**9
         else:
@@ -290,17 +237,18 @@ class DelayedSFH(BaseSFHModel):
         self._build_defaults(params)
         super().__init__(params)
 
-    def _build_defaaults(self, params):
+    def _build_defaults(self, params):
         pass
 
-    def sfr(self, param):
+    def sfr(self, ages, param):
+        sfr = np.zeros_like(ages)
 
         age = param["age"]*10**9
         tau = param["tau"]*10**9
 
-        t = age - self.ages[self.ages < age]
+        t = age - ages[ages < age]
 
-        sfr[self.ages < age] = t*np.exp(-t/tau)
+        sfr[ages < age] = t*np.exp(-t/tau)
         return sfr
 
 
@@ -449,10 +397,10 @@ class ContinuitySFH(BaseSFHModel):
         self._build_defaults(params)
         super().__init__(params)
 
-    def _build_defaaults(self, params):
+    def _build_defaults(self, params):
         pass
 
-    def sfr(self, params):
+    def sfr(self, ages, params):
         '''
         * `bin_edges` specifies the first few bins (default=[0, 10, 30, 100])
         * `n_bins` specifies how many total bins you want (default=7)
@@ -484,39 +432,26 @@ class ContinuitySFH(BaseSFHModel):
 
 class ChemicalEnrichmentHistoryModel(object):
 
-    def __init__(self, model_comp, sfh_weights):
+    def __init__(self, params):
+        self.zmet_vals = params.model.grid_metallicities
+        # self.zmet_lims = utils.make_bins(self.zmet_vals, fix_low=0, fix_high=10)
 
-        model = model_comp['stellar_model']
-        
-        self.zmet_vals = config.stellar_models[model]['metallicities']
-        self.zmet_lims = config.stellar_models[model]['metallicity_bins']
+    def compute_grid(self, params, sfh_weights):
+        self.grid = self.delta(params, sfh_weights)
+        return self.grid
 
-        self.grid_comp = {}
-        self.grid = np.zeros((self.zmet_vals.shape[0],
-                              config.age_sampling.shape[0]))
-
-        for comp in list(sfh_weights):
-            if comp != "total":
-                self.grid_comp[comp] = self.delta(model_comp,
-                                                  sfh_weights[comp])
-
-                self.grid += self.grid_comp[comp]
-
-    def delta(self, comp, sfh):
+    def delta(self, params, sfh):
         """ Delta function metallicity history. """
+        zmet = float(params.parent["zmet"])
 
-        zmet = comp["metallicity"]
 
-        weights = np.zeros(self.zmet_vals.shape[0])
+        weights = np.zeros_like(self.zmet_vals)
+        high_ind = len(self.zmet_vals[self.zmet_vals < zmet])
 
-        high_ind = self.zmet_vals[self.zmet_vals < zmet].shape[0]
-
-        if high_ind == self.zmet_vals.shape[0]:
+        if high_ind == len(self.zmet_vals):
             weights[-1] = 1.
-
         elif high_ind == 0:
             weights[0] = 1.
-
         else:
             low_ind = high_ind - 1
             width = (self.zmet_vals[high_ind] - self.zmet_vals[low_ind])

@@ -6,14 +6,16 @@ import numpy as np
 # import astropy.units as u
 import sys
 
-# z_array = np.arange(0., 100., 0.01)
-# age_array = cosmo.age(z_array).value
-# def age_at_z(z):
-#     '''Returns the age of the universe, in Gyr, at redshift z'''
-#     return cosmo.age(z).value
-# def z_at_age(age):
-#     '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
-#     return np.interp(age, np.flip(age_array), np.flip(z_array))
+from brisket.config import cosmo
+
+z_array = np.arange(0., 100., 0.01)
+age_array = cosmo.age(z_array).value
+def age_at_z(z):
+    '''Returns the age of the universe, in Gyr, at redshift z'''
+    return cosmo.age(z).value
+def z_at_age(age):
+    '''Returns the redshfit corresponding to a given age of the universe, in Gyr'''
+    return np.interp(age, np.flip(age_array), np.flip(z_array))
 
 
 # install_dir = os.path.dirname(os.path.realpath(__file__))
@@ -92,39 +94,33 @@ def make_dirs(run="."):
             os.mkdir("brisket/plots/" + run)
 
 
-def make_bins(midpoints, make_rhs=False):
+def make_bins(midpoints, fix_low=None, fix_high=None):
     """ A general function for turning an array of bin midpoints into an
-    array of bin left hand side positions and bin widths. Splits the
-    distance between bin midpoints equally in linear space.
+    array of bin positions. Splits the distance between bin midpoints equally in linear space.
 
     Parameters
     ----------
-
     midpoints : numpy.ndarray
         Array of bin midpoint positions
 
-    make_rhs : bool
-        Whether to add the position of the right hand side of the final
-        bin to bin_lhs, defaults to false.
+    fix_low : float, optional
+        If set, the left edge of the first bin will be fixed to this value
+
+    fix_high : float, optional
+        If set, the right edge of the last bin will be fixed to this value
     """
 
-    bin_widths = np.zeros_like(midpoints)
-
-    if make_rhs:
-        bin_lhs = np.zeros(midpoints.shape[0]+1)
-        bin_lhs[0] = midpoints[0] - (midpoints[1]-midpoints[0])/2
-        bin_widths[-1] = (midpoints[-1] - midpoints[-2])
-        bin_lhs[-1] = midpoints[-1] + (midpoints[-1]-midpoints[-2])/2
-        bin_lhs[1:-1] = (midpoints[1:] + midpoints[:-1])/2
-        bin_widths[:-1] = bin_lhs[1:-1]-bin_lhs[:-2]
-
+    bins = np.zeros(midpoints.shape[0]+1)
+    if fix_low is not None:
+        bins[0] = fix_low
     else:
-        bin_lhs = np.zeros_like(midpoints)
-        bin_lhs[0] = midpoints[0] - (midpoints[1]-midpoints[0])/2
-        bin_widths[-1] = (midpoints[-1] - midpoints[-2])
-        bin_lhs[1:] = (midpoints[1:] + midpoints[:-1])/2
-        bin_widths[:-1] = bin_lhs[1:]-bin_lhs[:-1]
+        bins[0] = midpoints[0] - (midpoints[1]-midpoints[0])/2
+    if fix_high is not None:
+        bins[-1] = fix_high
+    else:
+        bins[-1] = midpoints[-1] + (midpoints[-1]-midpoints[-2])/2
+    bins[1:-1] = (midpoints[1:] + midpoints[:-1])/2
 
-    return bin_lhs, bin_widths
+    return bins
 
 

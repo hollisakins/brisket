@@ -1,31 +1,24 @@
 from __future__ import print_function, division, absolute_import
 
+import astropy.units as u
 import numpy as np
 import os
 from brisket import config
 from brisket import utils
 from brisket.utils.sed import SED
 from brisket.utils import utils
+import h5py
 
 from brisket.data.grid_manager import GridManager
 from brisket.models.base_models import *
 
-# Set up edge positions for age bins for stellar + nebular models.
-age_bins = 10**utils.make_bins(config.age_sampling, make_rhs=True)[0]
-age_bins[0] = 0.
-age_bins[-1] = 10**9*cosmo.age(0.).value
-
-# Set up widths for the age bins for the stellar + nebular models.
-age_widths = age_bins[1:] - age_bins[:-1]
-
-# Convert the age sampling from log10(Gyr) to Gyr.
-age_sampling = 10**age_sampling
-
-
 class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
+    type = 'source'
+    order = 0
     def __init__(self, params):
+        self._build_defaults(params)
         self.params = params
-        grid_file_name = params['grids']
+        grid_file_name = str(params['grids'])
         if not grid_file_name.endswith('.hdf5'):
             grid_file_name += '.hdf5'
 
@@ -42,6 +35,14 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
 
         # TODO initialize SFHs
         # stack all the SFH components into one, there's no real point in keeping them separate
+    
+    def _build_defaults(self, params):
+        if 'grids' not in params:
+            params['grids'] = 'bc03_miles_chabrier'
+        # if 'logMstar' not in params:
+            # params['logMstar'] = 10
+        # if 'zmet' not in params:
+            # params['zmet'] = 0.02
 
     def _load_hdf5_grid(self, grid_path):
         """ Load the grid from an HDF5 file. """
@@ -51,11 +52,10 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
             self.grid_metallicities = np.array(f['metallicities'][:])
             self.grid_ages = np.array(f['ages'])
             self.grid = np.array(f['grid'])
-            # self.live_frac = np.array(f['live_frac'][:])
+            self.grid_live_frac = np.array(f['live_frac'][:])
 
-        self.grid_age_bins = np.power(10., utils.make_bins(np.log10(self.grid_ages), make_rhs=True)[0])
-        self.grid_age_bins[0] = 0.
-        self.grid_age_bins[-1] = config.cosmo.age(0.).value * 1e9
+        self.grid_ages[self.grid_ages == 0] = 1
+        self.grid_age_bins = np.power(10., utils.make_bins(np.log10(self.grid_ages), fix_low=-99))
         self.grid_age_widths = self.grid_age_bins[1:] - self.grid_age_bins[:-1]
 
 
@@ -70,7 +70,7 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         """ Resamples the raw stellar grids to the input wavs. """
         self.wavelengths = wavelengths
 
-        self.grid = SED(seld.grid_wavelengths*u.angstrom, Llam=self.grid*u.Lsun/u.AA)
+        self.grid = SED(self.grid_wavelengths*u.angstrom, Llam=self.grid*u.Lsun/u.angstrom)
         self.grid.resample(self.wavelengths*u.angstrom).value
 
 
