@@ -33,6 +33,8 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
     def _build_defaults(self, params):
         if 'grids' not in params:
             params['grids'] = 'bc03_miles_chabrier'
+        if 't_bc' not in params:
+            params['t_bc'] = 0.01
         # if 'logMstar' not in params:
             # params['logMstar'] = 10
         # if 'zmet' not in params:
@@ -45,10 +47,13 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         for comp_name, comp in self.params.components.items():
             if comp.model.type == 'sfh':
                 self.sfh_components[comp_name] = comp.model
-        # if len(self.sfh_components) == 1:
-            # no need to define sfh weights
-        # else:
-            # self.sfh_weights = []
+        if len(self.sfh_components) == 1:
+            self.sfh_weights = [1]
+        else:
+            if 'weight' in comp:
+                self.sfh_weights = [float(comp['weight']) for comp in self.params.components.values() if comp.model.type == 'sfh']
+            elif 'logweight' in comp:
+                self.sfh_weights = [np.power(10., float(comp['logweight'])) for comp in self.params.components.values() if comp.model.type == 'sfh']
 
     def _load_hdf5_grid(self, grid_path):
         """ Load the grid from an HDF5 file. """
@@ -75,9 +80,8 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
     def _resample(self, wavelengths):
         """ Resamples the raw stellar grids to the input wavs. """
         self.wavelengths = wavelengths
-
-        self.grid = SED(self.grid_wavelengths*u.angstrom, Llam=self.grid*u.Lsun/u.angstrom)
-        self.grid.resample(self.wavelengths*u.angstrom).value
+        self.grid = SED(self.grid_wavelengths, Llam=self.grid, verbose=False, units=False)
+        self.grid.resample(self.wavelengths)
 
 
     def emit(self, params):
@@ -99,13 +103,15 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         """
 
         # TODO compute sfh_ceh from input SFH parameters
-        for sfh_name, sfh in self.sfh_components.items():
-            sfh.update(params)
-            sfh_ceh = sfh.update(params)
+        sfh_ceh = np.zeros((len(self.grid_metallicities), len(self.grid_ages)))
+        for (sfh_name, sfh), sfh_weight in zip(self.sfh_components.items(), self.sfh_weights):
+            sfh.update(params[sfh_name], weight=sfh_weight)
+            sfh_ceh += sfh.combined_weights
 
-        t_bc *= 10**9
-        spectrum_young = np.zeros_like(self.wavelengths)
-        spectrum = np.zeros_like(self.wavelengths)
+
+        t_bc = float(params['t_bc']) * 1e9
+        young = SED(self.wavelengths, verbose=False, units=False)
+        old = SED(self.wavelengths, verbose=False, units=False)
 
         index = self.grid_ages[self.grid_ages < t_bc].shape[0]
         old_weight = (self.grid_ages[index] - t_bc)/self.grid_age_widths[index-1]
@@ -116,21 +122,17 @@ class GriddedStellarModel(BaseGriddedModel, BaseSourceModel):
         for i in range(len(self.grid_metallicities)):
             if sfh_ceh[i, :index].sum() > 0.:
                 sfh_ceh[:, index-1] *= (1. - old_weight)
-
-                spectrum_young += np.sum(self.grid[:, i, :index]
-                                         * sfh_ceh[i, :index], axis=1)
-
+                # print(type(self.grid[i, :index, :].T))
+                # print(type(sfh_ceh))
+                young += np.sum(self.grid[i, :index, :].T * sfh_ceh[i, :index].T, axis=1)
                 sfh_ceh[:, index-1] /= (1. - old_weight)
 
             if sfh_ceh[i, index-1:].sum() > 0.:
                 sfh_ceh[:, index-1] *= old_weight
-
-                spectrum += np.sum(self.grid[:, i, index-1:]
-                                   * sfh_ceh[i, index-1:], axis=1)
-
+                old += np.sum(self.grid[i, index-1:, :].T * sfh_ceh[i, index-1:].T, axis=1)
                 sfh_ceh[:, index-1] /= old_weight
 
-        if t_bc == 0.:
-            return spectrum
+        # if t_bc == 0.:
+            # return spectrum
 
-        return spectrum_young, spectrum
+        return young+old

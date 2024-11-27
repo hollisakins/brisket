@@ -1,4 +1,4 @@
-from __future__ import print_function, division, absolute_import
+from __future__ import annotations
 
 import numpy as np
 
@@ -6,6 +6,11 @@ from brisket import config
 import warnings
 from brisket.models.base_models import *
 from astropy.io import fits
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from brisket.utils import SED
+    from brisket.parameters import Params
 
 
 def miralda_escude_eq12(x):
@@ -55,6 +60,9 @@ class InoueIGMModel(BaseGriddedModel, BaseAbsorberModel):
         self.igm_wavelengths = np.arange(1.0, 1225.01, 1.0)
         self.raw_igm_grid = fits.open(config.grid_dir + "/d_igm_grid_inoue14.fits")[1].data
 
+    def _validate_components(self, params):
+        pass
+
     def _resample(self, wavelengths):
         """ Resample the raw grid to the input wavelengths. """
         self.wavelengths = wavelengths
@@ -75,7 +83,7 @@ class InoueIGMModel(BaseGriddedModel, BaseAbsorberModel):
 
         self.grid = grid
 
-    def absorb(self, sed_incident, params):
+    def absorb(self, sed_incident: SED, params: Params) -> SED:
         """ Apply the IGM attenuation to the input SED."""
         redshift = float(params['redshift'])
         redshift_mask = (self.igm_redshifts < redshift)

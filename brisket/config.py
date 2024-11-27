@@ -7,6 +7,8 @@ trade-off between speed and accuracy, you may find changing them
 negatively affects one or both of these things.
 '''
 
+loglevel = 'INFO'
+
 import os
 import numpy as np
 
@@ -43,9 +45,9 @@ R_other = 50.
 
 R_curves = {}
 r = fits.getdata(os.path.join(res_dir,'jwst_nirspec_prism_disp.fits'))
-R_curves['JWST_NIRSpec_PRISM'] = np.array([r['WAVELENGTH']*1e4, r['R']]).T
+R_curves.update(**dict.fromkeys(['JWST_NIRSpec_PRISM', 'NIRSpec_PRISM', 'PRISM'], np.array([r['WAVELENGTH']*1e4, r['R']]).T))
 r = fits.getdata(os.path.join(res_dir,'jwst_nirspec_g395m_disp.fits'))
-R_curves['JWST_NIRSpec_G395M'] = np.array([r['WAVELENGTH']*1e4, r['R']]).T
+R_curves.update(**dict.fromkeys(['JWST_NIRSpec_G395M', 'NIRSpec_G395M', 'G395M'], np.array([r['WAVELENGTH']*1e4, r['R']]).T))
 #TODO add the rest of the JWST resolution curves
 
 
@@ -78,7 +80,8 @@ default_fnu_unit=u.uJy
 default_flam_unit=u.erg/u.s/u.cm**2/u.angstrom
 default_Llam_unit = u.Lsun/u.angstrom
 default_Lnu_unit = u.Lsun/u.Hz
-default_L_unit = u.Lsun
+default_lum_unit = u.Lsun
+default_flux_unit = u.erg/u.s/u.cm**2
 
 params_print_summary = True
 params_print_tree = False

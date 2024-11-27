@@ -68,9 +68,9 @@ Many packages are used under the hood to make ``brisket`` work, including:
   :caption: Contents: 
   
   Home <self>
+  overview
   install
   quickstart
-  models
   cli
   api
 

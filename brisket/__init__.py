@@ -13,7 +13,7 @@ from .models.model_galaxy import ModelGalaxy
 # from .fitting.fitter import Fitter
 
 
-from .console import console, log
+from .console import console, setup_logger
 
 # from .catalogue.fit_catalogue import fit_catalogue
 

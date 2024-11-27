@@ -1,6 +1,21 @@
+from brisket import config
 from rich.console import Console
 console = Console()
-log = console.log
+console._log_render.omit_repeated_times = False
+
+import logging
+from rich.logging import RichHandler
+def setup_logger(name, level=config.loglevel):
+    formatter = logging.Formatter(fmt="%(message)s", datefmt="[%X]")
+    handler = RichHandler(omit_repeated_times=False, rich_tracebacks=True, markup=True)
+    handler.setFormatter(formatter)
+    logger = logging.getLogger(name)
+    logger.addHandler(handler)
+    logger.setLevel(level)
+    return logger
+
+# def log(*objects, ):
+    # console.log(*objects)
 # print = console.print
 
 def rich_str(x):
@@ -13,7 +28,7 @@ from rich.highlighter import Highlighter
 class PathHighlighter(Highlighter):
     def highlight(self, text):
         textstr = str(text)
-        splitstr = re.split("(\/)", textstr)
+        splitstr = re.split("(/)", textstr)
         if len(splitstr)==1:
             styledef = ['#FFE4B5']
         elif len(splitstr)==3:

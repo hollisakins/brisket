@@ -1,38 +1,43 @@
+from __future__ import annotations
 import rich, os, sys
 from collections.abc import MutableMapping
 
 from brisket import config
 from brisket.fitting import priors
-from brisket.console import log, rich_str, PathHighlighter, LimitsHighlighter
+from brisket.console import console, setup_logger, PathHighlighter, LimitsHighlighter
 from rich.table import Table
 from rich.tree import Tree
 import numpy as np
 
-def argsort(seq):
-    # http://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in-python
-    return sorted(range(len(seq)), key=seq.__getitem__)
+from brisket.models import PowerlawAccrectionDiskModel, InoueIGMModel, SpectralCalibrationModel
 
-from brisket.models import PowerlawAccrectionDiskModel, InoueIGMModel
 model_defaults = {'agn':PowerlawAccrectionDiskModel, 
-                  'igm':InoueIGMModel}
+                  'igm':InoueIGMModel, 
+                  'calib': SpectralCalibrationModel}
+                #   'constant':ConstantSFHModel,
+                #   'Salim':SalimDustModel,}
 
 
 # TODO default model choices given source names
 # TODO default parameter choices given source names
 
 class Params:
-    def __init__(self, template=None, file=None): #*args, **kwargs):
+    def __init__(self, template=None, file=None, verbose=False): #*args, **kwargs):
+        if verbose:
+            self.logger = setup_logger(__name__, 'INFO')
+        else:
+            self.logger = setup_logger(__name__, 'WARNING')
         
         if file is not None:
             try:
                 data = self._parse_from_toml(file)
             except FileNotFoundError:
-                log(f"Parameter file {data} not found."); sys.exit()
+                self.logger.error(f"Parameter file {data} not found."); sys.exit()
         elif template is not None:
             try:
                 data = self._parse_from_toml(os.path.join(utils.param_template_dir, template+'.toml'))
             except FileNotFoundError:
-                log(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
+                self.logger.error(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
         
         # self.sources = {}
         # self.absorbers = {}
@@ -73,7 +78,7 @@ class Params:
         self.add_group('igm', model=model)
         
     def add_calibration(self, model=None):
-        self.add_group('calib', model=model)
+        self.add_group('calibration', model=model)
 
     ##############################
     def __setitem__(self, key, value):
@@ -138,9 +143,7 @@ class Params:
     @property
     def components(self):
         return {k:self._components[k] for k in self.component_names}
-
             # self.free_param_priors = [param.prior for param in self.free_params.values()] 
-
 
     def __getitem__(self, key):
         if key in self._components: # getting a component/group
@@ -154,16 +157,7 @@ class Params:
         return dict.__contains__(self.all_params, key) or dict.__contains__(self._components, key)
 
     def __repr__(self):
-        # self.validate()
-        if config.params_print_summary:
-            out = self.summary
-        elif config.params_print_tree:
-            out = self.tree
-        out += f"Number of parameters: {self.nparam}"
-        out += '\n' + f"Dimensionality: {self.ndim}"
-
-        out += '\n'
-        return out
+        return f"Params(components=[{(', '.join(self.component_names)).rstrip()}], nparam={self.nparam}, ndim={self.ndim})"
         
     def print_summary(self):
         h = PathHighlighter()
@@ -182,7 +176,7 @@ class Params:
                 if n in self.free_param_names: continue
                 table.add_row(h(n), str(self.all_params[n]))
 
-            table.print()
+            console.print(table)
                      
         if self.ndim > 0:
             table = Table(title="Free Parameters")
@@ -195,10 +189,10 @@ class Params:
                 p = self.free_params[n]
                 table.add_row(h(n), l(str(p.limits)), str(p.prior))
         
-            table.print()
+            console.print(table)
 
     def print_tree(self):
-        tree = Tree("Params", style='bold italic white')
+        tree = Tree(f"[bold italic white]Params[/bold italic white](nparam={self.nparam}, ndim={self.ndim})")
         comps = list(self.components.keys())
         names = [n for n in self.all_param_names if '/' not in n]
         for name in names:
@@ -216,7 +210,7 @@ class Params:
                 names_ii = [n for n in params_ii.all_param_names if '/' not in n]
                 for name_ii in names_ii:
                     subsource.add('[bold #FFE4B5 not italic]' + name_ii + '[white]: [italic not bold #c9b89b]' + params_ii.all_params[name_ii].__repr__())
-        tree.print()
+        console.print(tree)
 
     
 
@@ -371,7 +365,7 @@ class FixedParam:
         self.value = value
 
     def __repr__(self):
-        return f'FixedParam({self.value})'
+        return f'{self.value}'
 
     def __str__(self):
         return str(self.value)

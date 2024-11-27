@@ -75,8 +75,9 @@ class BaseSFHModel:
     def _resample(self, _):
         pass
 
-    def update(self, params):
+    def update(self, params, weight=1):
         self.params = params
+        logMstar = np.power(10., float(params.parent['logMstar']))
 
         # self.unphysical = False
         self.age_of_universe = utils.age_at_z(float(params['redshift'])) * 1e9
@@ -85,8 +86,8 @@ class BaseSFHModel:
         self.sfh = self.sfr(self.ages, params)
         
         # Normalise to 1 solar mass formed
-        mass_norm = np.trapezoid(self.sfh, x=self.ages)
-        self.sfh /= mass_norm
+        # mass_norm = np.trapezoid(self.sfh, x=self.ages)
+        # self.sfh /= mass_norm
 
         # Sum up contributions to each age bin to create SSP weights
         self.sfh_weights, _ = np.histogram(self.ages, bins=params.parent.model.grid_age_bins, weights=self.sfh * self.age_widths)
@@ -96,12 +97,13 @@ class BaseSFHModel:
             self.unphysical = True
 
         # ceh: Chemical enrichment history object
-        self.ceh.compute_weights(params, self.sfh_weights)
+        # TODO: more complicated chemical enrichment histories may require properly normalizing the SFH first
+        self.ceh.compute_weights(params, self.sfh_weights) 
         self.combined_weights = self.ceh.weights
 
-        # Normalise to 1 solar mass (currentt)
-        mass_norm = np.sum(self.grid_live_frac * self.ceh.grid)
-        self.sfh /= mass_norm
+        # Normalise to 1 solar mass (current)
+        mass_norm = np.sum(self.grid_live_frac * self.combined_weights)
+        self.combined_weights *= logMstar * weight / mass_norm
 
         # self._calculate_derived_quantities()
 

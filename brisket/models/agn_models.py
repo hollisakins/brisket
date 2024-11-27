@@ -6,7 +6,7 @@ from brisket import config
 from brisket import utils
 from brisket.utils.sed import SED
 from brisket.models.base_models import *
-from brisket.console import log
+from brisket.console import setup_logger
 
 class PowerlawAccrectionDiskModel(BaseFunctionalModel, BaseSourceModel):
     type = 'source'
