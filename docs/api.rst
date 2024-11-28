@@ -1,9 +1,9 @@
 API Reference
 =============
+.. :template: custom-module-template.rst
 
 .. autosummary::
    :toctree: _autosummary
-   :template: custom-module-template.rst
    :recursive:
 
    brisket
