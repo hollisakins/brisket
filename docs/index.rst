@@ -49,13 +49,10 @@ Contents
   Home <self>
   1_getting_started/getting_started
   2_parameters/parameters
-  
   3_models/models
-
-
-.. toctree::
-  :maxdepth: 1
   api
+  
+
 
 
 

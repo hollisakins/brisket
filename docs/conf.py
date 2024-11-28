@@ -14,19 +14,24 @@ version = '0.1.0'
 # -- General configuration
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
+    'nbsphinx',
+    'sphinx.ext.napoleon',
+    "sphinx.ext.autodoc",  # core library for html generation from docstrings
+    "sphinx.ext.autosummary",  # create neat summary tables
+    # Add a link to the Python source code for classes, functions etc.
+    "sphinx.ext.viewcode",
+    # Automatically document param types (less noise in class signature)
+    "sphinx_autodoc_typehints",
     'sphinx.ext.mathjax',
     'sphinx.ext.doctest',
     'sphinx.ext.autosectionlabel',
-    'nbsphinx',
     'sphinx.ext.intersphinx',
     'sphinx.ext.duration',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',
+    'sphinx_copybutton',
 ]
 
 
@@ -44,10 +49,18 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 automodapi_inheritance_diagram = False
-# autosummary_generate = True  # Turn on sphinx.ext.autosummary
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
 # autodoc_typehints = 'description'
 # autoapi_dirs = ['../brisket']
 # autoapi_add_toctree_entry = False
+
+html_show_sourcelink = (
+    False  # Remove 'view source code' from top of page (for html, not python)
+)
+set_type_checking_flag = (
+    True  # Enable 'expensive' imports for sphinx_autodoc_typehints
+)
+nbsphinx_allow_errors = True  # Continue through Jupyter errors
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
@@ -77,3 +90,6 @@ exclude_patterns = ['.DS_Store', '**.ipynb_checkpoints']
 edit_on_github_project = 'hollisakins/brisket'
 edit_on_github_branch = 'master'
 # edit_on_github_src = 'docs/'
+
+
+html_title = 'BRISKET'

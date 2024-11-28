@@ -6,7 +6,7 @@ The ``brisket.parameters`` module is responsible for handling the parameters use
 This module provides classes and methods to manage, validate, and manipulate parameters for different models such as galaxies and AGN. 
 
 Classes
--------
+^^^^^^^
 
 - ``Params``: This is the main class for handling parameters. It allows adding sources, validating parameters, and provides a summary of fixed and free parameters.
 - ``Group``: A class representing a parameter group, used for further sub-dividing the parameter specification. The ``Group`` class serves as a container for parameters belonging to a given source (e.g. galaxy, AGN) or absorber (e.g. dust) and can have its own sub-Groups.
@@ -14,7 +14,7 @@ Classes
 - ``FixedParam``: A class representing a fixed parameter with a constant value. In practice, this is generally not used, as fixed parameters can be provided as integers or floats directly.
 
 Usage
------
+^^^^^
 
 You can initialize a ``Params`` object with a template (see: :doc:`templates`.) or as an emtpy object:
 
@@ -52,7 +52,7 @@ Printing the parameters object will provide a nice representation of the paramet
 
 
 Defaults and Aliases
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 We include several aliases for adding sources/absorbers/reprocessors to the params object. For example, 
 

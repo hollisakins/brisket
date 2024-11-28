@@ -1,21 +1,13 @@
 API Reference
 =============
 
+.. rubric:: Modules
 
-brisket.fitting module
-----------------------
+.. :toctree: generated
 
-.. automodule:: brisket.fitting
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
 
-
-
-brisket.fit class
------------------
-
-.. autoclass:: brisket.fitting.fit
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   synthesizer
