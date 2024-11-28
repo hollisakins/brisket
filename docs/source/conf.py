@@ -1,6 +1,10 @@
 # -- Path
 import sys, os
-sys.path.insert(0, os.path.abspath("../../brisket"))
+sys.path.insert(0, os.path.abspath("../.."))
+# sys.path.insert(0, os.path.abspath("../../brisket"))
+
+import brisket
+
 # sys.path.insert(0, os.path.abspath("../../"))
 # sys.path.insert(0, os.path.abspath("../brisket")) 
 # sys.path.insert(0, os.path.abspath("../"))
