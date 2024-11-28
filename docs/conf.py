@@ -79,4 +79,4 @@ edit_on_github_project = 'hollisakins/brisket'
 edit_on_github_branch = 'master'
 # edit_on_github_src = 'docs/'
 
-html4_writer = true
+html4_writer = True
