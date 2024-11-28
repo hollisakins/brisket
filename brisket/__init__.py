@@ -11,6 +11,7 @@ from .parameters import Params, FreeParam, FixedParam
 from .models.model_galaxy import ModelGalaxy
 # from .input.galaxy import Galaxy
 # from .fitting.fitter import Fitter
+from . import fitting
 
 
 from .console import console, setup_logger
