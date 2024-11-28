@@ -5,7 +5,7 @@ import sys, os
 sys.path.insert(0, os.path.abspath("../brisket")) 
 # sys.path.insert(0, os.path.abspath("../"))
 
-import brisket 
+# import brisket 
 
 # Configuration file for the Sphinx documentation builder.
 
