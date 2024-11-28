@@ -94,11 +94,11 @@ html_theme = 'furo'
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
 
-
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = ['.DS_Store', '**.ipynb_checkpoints', '_archive', '__pycache__', 'tests', 
+                    'fitting', 'input', 'defaults', 'data']
 
 edit_on_github_project = 'hollisakins/brisket'
 edit_on_github_branch = 'master'
