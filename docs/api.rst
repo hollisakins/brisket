@@ -10,4 +10,4 @@ API Reference
    :toctree: _autosummary
    :template: custom-module-template.rst
 
-   ../brisket
+   brisket
