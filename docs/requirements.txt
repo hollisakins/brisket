@@ -6,6 +6,6 @@ spectres
 numpy
 scipy
 matplotlib
-sphinx_rtd_theme    
+furo
 sphinx-automodapi
 nbsphinx
