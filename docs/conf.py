@@ -20,7 +20,6 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.autosectionlabel',
     'nbsphinx',
-    'sphinx_rtd_theme',
     'sphinx.ext.intersphinx',
     'sphinx.ext.duration',
     'sphinx.ext.todo',
