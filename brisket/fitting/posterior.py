@@ -6,10 +6,10 @@ import os
 
 from copy import deepcopy
 
-from brisket.fitting.fitted_model import FittedModel
-from brisket.fitting.prior import dirichlet
+# from brisket.fitting.fitted_model import FittedModel
+# from brisket.fitting.prior import dirichlet
 
-from brisket.models.star_formation_history import StarFormationHistoryModel
+# from brisket.models.star_formation_history import StarFormationHistoryModel
 from brisket.models.model_galaxy import ModelGalaxy
 from brisket.parameters import Params
 

@@ -47,8 +47,8 @@ except ImportError:
 from brisket import utils
 # from .. import plotting
 
-from brisket.fitting.fitted_model import FittedModel
-from brisket.fitting.posterior import Posterior
+# from brisket.fitting.fitted_model import FittedModel
+# from brisket.fitting.posterior import Posterior
 from brisket.parameters import Params
 from brisket import config
 

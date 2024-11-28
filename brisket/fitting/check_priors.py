@@ -4,7 +4,6 @@ import numpy as np
 
 from copy import deepcopy
 
-from brisket.models.star_formation_history import StarFormationHistoryModel
 from brisket.models.model_galaxy import ModelGalaxy
 
 from brisket.fitting.prior import Prior, dirichlet

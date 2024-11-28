@@ -5,9 +5,9 @@ import time
 
 from copy import deepcopy
 
-from brisket.fitting.prior import Prior, dirichlet
+# from brisket.fitting.prior import Prior, dirichlet
 # from brisket.fitting.calibration import calib_model
-from brisket.fitting.noise import noise_model
+# from brisket.fitting.noise import noise_model
 from brisket.models.model_galaxy import ModelGalaxy
 
 
