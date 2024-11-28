@@ -68,8 +68,6 @@ class GridManager:
 
 
 
-gm = GridManager()
-gm.check_grid('d_igm_grid_inoue14.fits')
 
 # print(dir(s3))
 
