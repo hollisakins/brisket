@@ -50,7 +50,7 @@ Contents
   1_getting_started/getting_started
   2_parameters/parameters
   3_models/models
-  api
+  .. api
   
 
 
