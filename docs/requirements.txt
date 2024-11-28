@@ -11,5 +11,5 @@ sphinx-automodapi
 nbsphinx
 sphinx_autodoc_typehints
 sphinx_copybutton
-rich
+rich==13.8.1
 boto3
