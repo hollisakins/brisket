@@ -72,6 +72,7 @@ Many packages are used under the hood to make ``brisket`` work, including:
   install
   quickstart
   cli
+  grids
   api
 
 .. toctree::
