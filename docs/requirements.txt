@@ -11,3 +11,4 @@ sphinx-automodapi
 nbsphinx
 sphinx_autodoc_typehints
 sphinx_copybutton
+rich

@@ -1,8 +1,6 @@
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
-import sys, os
-sys.path.insert(0, os.path.abspath('..'))  # Source code dir relative to this file
 
 project = 'BRISKET'
 copyright = '2024, Hollis Akins'
@@ -10,6 +8,14 @@ author = 'Hollis Akins'
 
 release = '0.1'
 version = '0.1.0'
+
+# -- Path
+import sys, os
+sys.path.insert(0, os.path.abspath("../../brisket"))
+sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../brisket")) 
+sys.path.insert(0, os.path.abspath("../"))
+
 
 # -- General configuration
 
