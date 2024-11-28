@@ -40,10 +40,21 @@ Note that the ``-e`` flag installs the package in "editable" mode, so that any c
 This is useful while the code is in active development, but may not be necessary for normal use.
 
 
-Getting started
----------------
+Contents
+--------
 
-Tutorials TBD
+.. toctree::
+  :maxdepth: 2
+  
+  Home <self>
+  1_getting_started/getting_started
+  2_parameters/parameters
+  
+  cli
+  grids
+  api
+
+
 
 Acknowledgements
 ----------------
@@ -62,22 +73,3 @@ Many packages are used under the hood to make ``brisket`` work, including:
 * Empirical QSO SED templates from ``qsogen`` `Temple et al. (2021) <https://arxiv.org/abs/2109.04472>`_ 
 * The `UltraNest <https://johannesbuchner.github.io/UltraNest/index.html>`_ nested sampling algorithm `(Buchner et al. 2021) <https://arxiv.org/abs/2101.09604>`_
 * More TBD
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Contents: 
-  
-  Home <self>
-  overview
-  install
-  quickstart
-  cli
-  grids
-  api
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials:
-
-   tutorials/1_example-model-sed.ipynb
-   tutorials/2_example-simple-fit.ipynb

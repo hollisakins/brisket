@@ -1,6 +1,6 @@
 
-Parameters Module
-=================
+Parameters
+==========
 
 The ``brisket.parameters`` module is responsible for handling the parameters used in ``brisket``. 
 This module provides classes and methods to manage, validate, and manipulate parameters for different models such as galaxies and AGN. 
@@ -103,3 +103,10 @@ More details are provided in the :doc:`custom_models` documentation.
 .. - Dust (Reprocessor)
 .. - IGM (Absorber)
 .. - Calibration (Group)
+
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+
+   templates
