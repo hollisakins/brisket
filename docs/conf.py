@@ -1,3 +1,10 @@
+# -- Path
+import sys, os
+sys.path.insert(0, os.path.abspath("../../brisket"))
+sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../brisket")) 
+sys.path.insert(0, os.path.abspath("../"))
+
 import brisket 
 
 # Configuration file for the Sphinx documentation builder.
@@ -11,12 +18,6 @@ author = 'Hollis Akins'
 release = '0.1'
 version = '0.1.0'
 
-# -- Path
-import sys, os
-sys.path.insert(0, os.path.abspath("../../brisket"))
-sys.path.insert(0, os.path.abspath("../../"))
-sys.path.insert(0, os.path.abspath("../brisket")) 
-sys.path.insert(0, os.path.abspath("../"))
 
 
 # -- General configuration
