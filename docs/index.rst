@@ -50,8 +50,11 @@ Contents
   1_getting_started/getting_started
   2_parameters/parameters
   
-  cli
-  grids
+  3_models/models
+
+
+.. toctree::
+  :maxdepth: 1
   api
 
 
