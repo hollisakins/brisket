@@ -78,5 +78,3 @@ exclude_patterns = ['.DS_Store', '**.ipynb_checkpoints']
 edit_on_github_project = 'hollisakins/brisket'
 edit_on_github_branch = 'master'
 # edit_on_github_src = 'docs/'
-
-html4_writer = True

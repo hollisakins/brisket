@@ -9,16 +9,14 @@ can also view and download grids from the browser if you want to download multip
 
 The following grids are currently available:
 
-* ``bc03``: Bruzual & Charlot (2003) stellar population models
+ * ``bc03``: Bruzual & Charlot (2003) stellar population models
 
-    * ``bc03_miles_chabrier.hdf5``: MILES stellar library, Chabrier IMF, native resolution (221 ages, 7 metallicities)
+   * ``bc03_miles_chabrier.hdf5``: MILES stellar library, Chabrier IMF, native resolution (221 ages, 7 metallicities)
+   * ``bc03_miles_chabrier_a50.hdf5``: downsampled to 50 ages
+   * ``bc03_miles_kroupa.hdf5``: MILES stellar library, Kroupa IMF, native resolution (221 ages, 7 metallicities)
 
-    * ``bc03_miles_chabrier_a50.hdf5``: downsampled to 50 ages
+ * ``bc03+cloudy``: Bruzual & Charlot (2003) stellar population models ran through Cloudy photoionization models
 
-    * ``bc03_miles_kroupa.hdf5``: MILES stellar library, Kroupa IMF, native resolution (221 ages, 7 metallicities)
+   * ``bc03+cloudy_miles_chabrier_a50_zfixed.hdf5``: MILES stellar library, Chabrier IMF, (50 ages, 7 metallicities)
 
-* ``bc03+cloudy``: Bruzual & Charlot (2003) stellar population models ran through Cloudy photoionization models
-
-    * ``bc03+cloudy_miles_chabrier_a50_zfixed.hdf5``: MILES stellar library, Chabrier IMF, (50 ages, 7 metallicities)
-
-* ``d_igm_grid_inoue14.fits``: IGM model grid from `Inoue et al. (2014)<https://ui.adsabs.harvard.edu/abs/2014MNRAS.442.1805I/abstract>`_ 
+ * ``d_igm_grid_inoue14.fits``: IGM model grid from `Inoue et al. (2014)<https://ui.adsabs.harvard.edu/abs/2014MNRAS.442.1805I/abstract>`_ 
