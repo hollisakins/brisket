@@ -1,0 +1,15 @@
+astropy
+dotmap
+h5py
+toml
+spectres
+numpy
+scipy
+matplotlib
+furo
+sphinx-automodapi
+nbsphinx
+sphinx_autodoc_typehints
+sphinx_copybutton
+rich==13.8.1
+boto3
