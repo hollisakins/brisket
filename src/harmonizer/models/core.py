@@ -71,29 +71,114 @@ class Model(object):
 
     def compute_sed():
 
+        emitters, emission_models = [], []
 
-        from synthesizer.emission_models import TotalEmission
+
+        if self.params.has_emitter('stars'):
+            emitter = self.params[emitter_name]
+            
+            # load the stellar grid
+            grid = Grid(emitter['grid_file'])
+
+            # define the metallicity history
+            zh = ZDist.DeltaConstant(metallicity = emitter['zmet'])
+
+            # Define the star formation history
+            sfh_p = {"max_age": 100 * Myr}
+            sfh = SFH.Constant(**sfh_p)
+
+
+
+            stars = ParametricStars(
+                grid.log10age,
+                grid.metallicity,
+                sf_hist = sfh, 
+                metal_dist = zh, 
+                initital_mass = np.power(10., emitter['logMstar']) * Msun,
+            )
+
+            # next, handle emission models for the stars
+            if emitter.include_photoionization and emitter.include_dust_attenuation and emitter.include_dust_emission: 
+                # use TotalEmission model
+                pass
+            
+            elif emitter.include_photoionization and emitter.include_dust_attenuation:
+                # use EmergentEmission model
+                pass
+
+            elif emitter.include_photoionization:
+                # use IntrisicEmission model
+                pass
+
+            elif emitter.include_dust_attenuation and emitter.include_dust_emission:
+                # use IncidentEmission + DustAttenuation + DustEmission
+                pass
+        
+            elif emitter.include_dust_attenuation:
+                # use IncidentEmission + DustAttenuation
+                pass
+
+            else:
+                # use IncidentEmission
+                pass
+
+            emission_models.append(emission_model)
+
+                
+        if self.params.has_emitter('agn'):
+            pass
+
+
+        # now that we've assigned all the emission models, we can combine them
+        galaxy = Galaxy(
+            stars = stars,
+            black_holes = blackholes,
+            redshift = self.params['redshift'],
+        )
+
+        total_emission_model = EmissionModel(
+            label="total",
+            combine=emission_models,
+            emitter="galaxy",
+        )
+        total_emission_model.save_spectra("total")#, "dust_emission", "total_attenuated", "total_intrinsic")
+
+        if self.params.include_igm:
+            # do something to figure out which IGM model the user wants to use
+            pass
+        else:
+            igm_model = None
+
+        spectra = galaxy.get_spectra(total_emission_model)
+        obs_spectra = galaxy.get_observed_spectra(cosmo, igm=igm_model)
+
+
+
+
+
         from synthesizer.emission_models import UnifiedAGN
 
 
-params = harmonizer.Params()
-params['redshift'] = 7
+        if params.has_emitter('agn'):
+            agn = params.get_emitter('agn')
+        
+            bh = agn.emitter_model(
+                mass=np.power(10., agn['logMBH']) * Msun,
+                inclination=agn['inclination'] * deg,
+                accretion_rate=agn['acc_rate'] * Msun / yr,
+                metallicity=agn['zmet'], # metallicity for the gas around the black hole
+            )
 
-stars = params.add_emitter('stars', emitter_function=synthesizer.parametric.Stars)
-stars['grid'] = 'bc03'
-stars['logMstar'] = 10 # Uniform(8, 11)
-stars['zmet'] = 1
-stars.add_photoionization()
-stars.add_dust_attenuation()
-stars.add_dust_emission(dust_emission_model=synthesizer.emission_models.dust.emission.Blackbody)
-sfh = stars.add_sfh('constant', sfh_function=synthesizer.parametric.SFH.Constant)
-sfh['age_min'] = 0.1 # Uniform(0.05, 0.15)
-sfh['age_max'] = 0.4 # Uniform(0.4, 0.6)
+            if agn['model'] == 'UnifiedAGN':
+                uniagn = UnifiedAGN(
+                    nlr_grid,
+                    blr_grid,
+                    covering_fraction_nlr=0.1,
+                    covering_fraction_blr=0.1,
+                    torus_emission_model=Greybody(1000 * K, 1.5),
+                    ionisation_parameter=0.1,
+                    hydrogen_density=1e5,
+                )
 
+                spectra = bh.get_spectra(uniagn)
 
-params.add_emitter('agn', ) # UnifiedAGN
-params.stars['nlr_grid'] = ...
-params.stars['blr_grid'] = ...
-params.stars.add_photoionization() # whether to include BLR/NLR emission
-params.stars.add_dust_attenuation() # -> separate attenuation emissionmodel
-params.stars.add_dust_emission() # -> torus, +reprocessing of attenuating dust

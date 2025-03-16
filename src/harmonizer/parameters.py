@@ -18,15 +18,32 @@ from .models.agn import PowerlawAccrectionDiskModel
 from .models.igm import InoueIGMModel
 from .models.calibration import SpectralCalibrationModel
 
-'''Default models to use for for different components.'''
-model_defaults = {'agn':PowerlawAccrectionDiskModel, 
-                  'igm':InoueIGMModel, 
-                  'calib': SpectralCalibrationModel}
-                #   'constant':ConstantSFHModel,
-                #   'Salim':SalimDustModel,}
+from synthesizer.parametric import Stars as ParametricStars
+from synthesizer.parametric import BlackHole as ParametricBlackHole
 
 # TODO default model choices given source names
 # TODO default parameter choices given source names
+
+emitter_model_defaults = {
+    'stars': ParametricStars, 
+    'agn': ParametricBlackHole
+}
+
+
+
+
+def _flattener(d, parent=None, sep='/'):
+    for key, value in d.items():
+        new_key = parent + sep + key if parent else key
+        if isinstance(value, dict):
+            yield from _flattener(value, parent=key, sep=sep)
+        else:
+            yield new_key, value
+
+def flatten(d, sep='/'):
+    return dict(_flattener(d, sep=sep))
+
+
 
 class Params:
     '''
@@ -47,149 +64,108 @@ class Params:
         else:
             self.logger = setup_logger(__name__, 'WARNING')
         
-        if file is not None:
-            try:
-                data = self._parse_from_toml(file)
-            except FileNotFoundError:
-                self.logger.error(f"Parameter file {data} not found."); sys.exit()
-        elif template is not None:
-            try:
-                data = self._parse_from_toml(os.path.join(utils.param_template_dir, template+'.toml'))
-            except FileNotFoundError:
-                self.logger.error(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
+        # if file is not None:
+        #     try:
+        #         data = self._parse_from_toml(file)
+        #     except FileNotFoundError:
+        #         self.logger.error(f"Parameter file {data} not found."); sys.exit()
+        # elif template is not None:
+        #     try:
+        #         data = self._parse_from_toml(os.path.join(utils.param_template_dir, template+'.toml'))
+        #     except FileNotFoundError:
+        #         self.logger.error(f"Parameter template {data} not found. Place template parameter files in the brisket/defaults/templates/."); sys.exit()
         
-        # self.sources = {}
-        # self.absorbers = {}
-        # self.reprocessors = {}
-        # self.calibrators = {}
-        self._components = {}
-        self._component_types = {}
-        self._component_orders = {}
+        self._data = {}
+        self._emitters = []
 
         self.all_params = {}
         self.free_params = {}
         self.linked_params = {}
         self.validated = False
 
-    def add_group(self, name, model_func=None):
-        '''
-        Add a group to the Params object. Groups are used to organize parameters into... well, groups.
-
-        Args:
-            name (str)
-                Name of the group, used to reference it in later calls to the Params object. 
-            model (class, optional)
-                The model class to use for this group of parameters. If not specified, the 
-                model will be chosen based on the name of the group based on the model_defaults dict. 
-        '''
-        if model_func is None:
-            model_def = None
-            for key in model_defaults:
-                if key in name:
-                    model_def = model_defaults[key]
-                    break
-            if model_def is None:
-                raise Exception(f'No default model for source {name}, please specify model')
-            model_func = model_def
-        group = Group(name, model_func, parent=self)
-        self.__setitem__(name, group)
-
-    add_source = add_group
-
-    # specific, commongly used models
-    def add_nebular(self, model_func=None):
-        """Alias for adding a 'nebular' group."""
-        self.add_group('nebular', model_func=model_func)
-
-    def add_dust(self, model_func=None):
-        """Alias for adding a 'dust' group."""
-        self.add_group('dust', model_func=model_func)
-    
-    def add_igm(self, model_func=None):
-        """Alias for adding a 'igm' group."""
-        self.add_group('igm', model_func=model_func)
+    # def add_emitter(name, emitter_model=None):
+    #     '''
+    #     Args:
+    #         name (str)
+    #             Name of the group, used to reference it in later calls to the Params object. 
+    #         emitter_model (class, optional)
+    #             The model class to use for this group of parameters. If not specified, the 
+    #             model will be chosen based on the name of the group based on the model_defaults dict. 
+    #     '''
+    #     if emitter_model is None:
+    #         model_def = None
+    #         for key in emitter_model_defaults:
+    #             if key in name:
+    #                 model_def = emitter_model_defaults[key]
+    #                 break
+    #         if model_def is None:
+    #             raise Exception(f'No default model for emitter {name}, please specify emitter_model')
+    #         emitter_model = model_def
         
-    def add_calibration(self, model_func=None):
-        """Alias for adding a 'calibration' group."""
-        self.add_group('calibration', model_func=model_func)
+    #     group = Group(name, emitter_model, parent=self)
+    #     self.__setitem__(name, group)
+
+    #     self._emitters.append(name)
+
+    def add_stars(self):
+        self._emitters.append('stars')
+        self._data['stars'] = {}
+    
+    def add_agn(self):
+        self._emitters.append('agn')
+        self._data['agn'] = {}
+    
+    def add_igm(self):
+        self.include_igm = True
+        self._data['agn'] = {}
+
+    def has_emitter(name):
+        return name in self._emitters
+
 
     ##############################
     def __setitem__(self, key, value):
-
-        ### adding a parameter
-        if isinstance(value, (FreeParam,FixedParam,int,float,str,list,tuple,np.ndarray)): # setting the value of a parameter, add to all_params
-            if isinstance(value, (int,float,str,list,tuple,np.ndarray)): # for fixed parameters entered as ints or floats, convert to FixedParam
-                value = FixedParam(value)
-            
-            if isinstance(self, Params):
-                # just need to add the parameter itself, no need to update anything else
-                self.all_params[key] = value
-                if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
-                    self.free_params[key] = value
-            
-            if isinstance(self, Group): # add the parameter to the Group, add prefixed parameter to parent
-                self.all_params[key] = value
-                if isinstance(value, FreeParam): # if setting a free parameter, add to free_params
-                    self.free_params[key] = value
-                self.parent.__setitem__(self.name + '/' + key, value)
-
-        elif isinstance(value, Group): # adding a group, add to self._components
-            # assert isintance(self, Params) or self.model_type=='source', ""
-            self._components[key] = value
-            self._component_types[key] = value.model_func.type
-            self._component_orders[key] = value.model_func.order
-            # self.all_params.update({key+'/'+k:v for k,v in value.all_params.items()})
-            # self.free_params.update({key+'/'+k:v for k,v in value.free_params.items()})
-            
-            # if isinstance(self, Group):
-            #     for subcomp_name, subcomp in value.components.items():
-            #         subcomp.model = subcomp.model(params=subcomp)
-            #         comp.component_types.append(subcomp.model_type)
-            #         comp.component_orders.append(subcomp.model.order)
-            #         self.parent.all_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
-            #         self.parent.free_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
-
-            # # initialize self.sources[source].model with params=self.sources[source]
-
-
-    @property 
-    def free_param_names(self):
-        """List of names of free parameters in the model."""
-        return list(self.free_params.keys())
-    @property 
-    def free_param_priors(self):
-        """List of priors for free parameters in the model."""
-        return [param.prior for param in self.free_params.values()] 
-    @property
-    def all_param_names(self):
-        """List of names of parameters in the model."""
-        return list(self.all_params.keys())
-    @property 
-    def all_param_values(self):
-        """List of values of parameters in the model."""
-        return list(self.all_params.values())
-    
-    @property
-    def component_names(self):
-        return sorted(list(self._components.keys()), key=self._component_orders.__getitem__)
-    
-    @property
-    def component_types(self):
-        return {k:self._component_types[k] for k in self.component_names}
-    
-    @property
-    def components(self):
-        return {k:self._components[k] for k in self.component_names}
-            # self.free_param_priors = [param.prior for param in self.free_params.values()] 
+        self._data[key] = value
 
     def __getitem__(self, key):
-        if key in self._components: # getting a component/group
+        if key in self._emitters: # getting an emitter
             return self._components[key]
         elif key in self.all_params: # getting a parameter from the base Params object
             return self.all_params[key]
         else:
             raise Exception(f"No key {key} found in {self}")
     
+
+    @property
+    def all_params(self):
+        return flatten(self._data)
+
+    @property
+    def free_params(self):
+        for key, value in self.all_params:
+            if isinstance(value, CommonPrior): 
+                self.free_params[key] = value
+
+    @property 
+    def free_param_names(self):
+        """List of names of free parameters in the model."""
+        return list(self.free_params.keys())
+    
+    # @property 
+    # def free_param_priors(self):
+    #     """List of priors for free parameters in the model."""
+    #     return [param.prior for param in self.free_params.values()] 
+
+    @property
+    def all_param_names(self):
+        """List of names of parameters in the model."""
+        return list(self.all_params.keys())
+    
+    @property 
+    def all_param_values(self):
+        """List of values of parameters in the model."""
+        return list(self.all_params.values())
+
     def __delitem__(self, key):
         if key in self._components:
             del self._components[key]
