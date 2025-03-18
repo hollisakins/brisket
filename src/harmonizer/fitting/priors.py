@@ -1,4 +1,7 @@
 from synthesizer import exceptions
+from scipy.stats import beta, t, skewnorm
+
+__all__ = ["Uniform", "LogUniform"]
 
 class Common:
     """
@@ -12,7 +15,7 @@ class Common:
         parameters (dict)
             A dictionary containing the parameters of the model.
     """
-    def __init__(self, name, kwargs):
+    def __init__(self, name, **kwargs):
         """
         Initialise the parent.
 
@@ -44,24 +47,9 @@ class Common:
     def plot(self, show=True, save=False, **kwargs):
         pass
 
-    def __str__(self):
-        """
-        Print basic summary of the parameterised star formation history.
-        """
-
-        pstr = ""
-        pstr += "-" * 10 + "\n"
-        pstr += "SUMMARY OF PARAMETERISED STAR FORMATION HISTORY" + "\n"
-        pstr += str(self.__class__) + "\n"
-        for parameter_name, parameter_value in self.parameters.items():
-            pstr += f"{parameter_name}: {parameter_value}" + "\n"
-        pstr += (
-            f"median age: {self.calculate_median_age().to('Myr'):.2f}" + "\n"
-        )
-        pstr += f"mean age: {self.calculate_mean_age().to('Myr'):.2f}" + "\n"
-        pstr += "-" * 10 + "\n"
-
-        return pstr
+    def __repr__(self):
+        params = ', '.join([f'{k}={v}' for k, v in self.parameters.items()])
+        return f"{self.name}({params})"
 
 
 
@@ -107,3 +95,33 @@ class LogUniform(Common):
     def _ppf(prob):
         '''Returns the value where the CDF = prob.'''
         return np.power(10.,(np.log10(self.high/self.low))*prob + np.log10(self.low))
+
+class StudentsT(Common):
+    """
+    Student's t-distribution.
+
+    Attributes:
+        low (unyt_quantity)
+        high (unyt_quantity)
+    """
+
+    def __init__(self, low, high, loc=0, scale=0.3, df=2):
+        # Initialise the parent
+        Common.__init__(self, name="StudentsT", low=low, high=high, loc=loc, scale=scale, df=df)
+
+        # Set the model parameters
+        self.low = low
+        self.high = high
+        self.loc = loc
+        self.scale = scale
+        self.df = df
+
+    def _ppf(prob):
+        '''Returns the value where the CDF = prob.'''
+        return np.power(10.,(np.log10(self.high/self.low))*prob + np.log10(self.low))
+
+    def _ppf(prob):
+        umin = t.cdf(self.low, df=self.df, scale=self.scale, loc=self.loc)
+        umax = t.cdf(self.high, df=self.df, scale=self.scale, loc=self.loc)
+        return t.ppf((umax-umin)*prob + umin, df=self.df, scale=self.scale, loc=self.loc)
+        

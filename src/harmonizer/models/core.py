@@ -71,17 +71,19 @@ class Model(object):
 
     def compute_sed():
 
-        emitters, emission_models = [], []
-
+        redshift = self.params['redshift']
+        emission_models = []
 
         if self.params.has_emitter('stars'):
-            emitter = self.params[emitter_name]
+            star_params = self.params['stars']
             
             # load the stellar grid
             grid = Grid(emitter['grid_file'])
+            if len(grid.axes) > 2:
+                raise ValueError('Grid must have only two axes (log10age, metallicity)')
 
             # define the metallicity history
-            zh = ZDist.DeltaConstant(metallicity = emitter['zmet'])
+            zh = ZDist.DeltaConstant(metallicity = star_params['zmet'])
 
             # Define the star formation history
             sfh_p = {"max_age": 100 * Myr}
@@ -92,27 +94,32 @@ class Model(object):
                 grid.metallicity,
                 sf_hist = sfh, 
                 metal_dist = zh, 
-                initital_mass = np.power(10., emitter['logMstar']) * Msun,
+                initital_mass = np.power(10., star_params['logMstar']) * Msun,
             )
+            print(stars.total_mass)
 
             # next, handle emission models for the stars
-            if emitter.include_photoionization and emitter.include_dust_attenuation and emitter.include_dust_emission: 
+            if (star_params.include_photoionization and 
+                star_params.include_dust_attenuation and 
+                star_params.include_dust_emission): 
                 # use TotalEmission model
                 pass
             
-            elif emitter.include_photoionization and emitter.include_dust_attenuation:
+            elif (star_params.include_photoionization and 
+                  star_params.include_dust_attenuation):
                 # use EmergentEmission model
                 pass
 
-            elif emitter.include_photoionization:
+            elif star_params.include_photoionization:
                 # use IntrisicEmission model
                 pass
 
-            elif emitter.include_dust_attenuation and emitter.include_dust_emission:
+            elif (star_params.include_dust_attenuation and 
+                  star_params.include_dust_emission):
                 # use IncidentEmission + DustAttenuation + DustEmission
                 pass
         
-            elif emitter.include_dust_attenuation:
+            elif star_params.include_dust_attenuation:
                 # use IncidentEmission + DustAttenuation
                 pass
 
@@ -120,11 +127,15 @@ class Model(object):
                 # use IncidentEmission
                 pass
 
-            emission_models.append(emission_model)
-
+            emission_models.append(None)
+        else:
+            stars = None
                 
         if self.params.has_emitter('agn'):
             pass
+
+        else: 
+            blackholes = None
 
 
         # now that we've assigned all the emission models, we can combine them

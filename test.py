@@ -1,106 +1,26 @@
+import harmonizer
 
-import numpy as np
-import matplotlib.pyplot as plt
-from synthesizer import Grid
-# from synthesizer.emission_models import IncidentEmission
-# from synthesizer.parametric import SFH, Stars, ZDist
-
-grid = Grid("test_grid", grid_dir="/Users/hollis/codes/synthesizer/tests/test_grid/")
-print(dir(grid))
-# line_lams (dict, dist, float)
-#     A dictionary of line wavelengths.
-# line_lums (dict, dict, float)
-#     A dictionary of line luminosities.
-# line_conts (dict, dict, float)
-#     A dictionary of line continuum luminosities.
+params = harmonizer.Params()
+params['redshift'] = harmonizer.priors.Uniform(0, 10)
+stars = params.add_stars()
+stars['logZ'] = 0
+stars['logMstar'] = 10
+sfh = stars.add_sfh('continuity', n_bins=5, z_max=20, bin_edges=[0, 10, 30])
 
 
-# print(grid.get_lines())
-fig, ax = plt.subplots(figsize=(8, 5))
+print(params.all_params)
+print(params.free_params)
 
-age_index = 1
-
-for i in range(grid.spectra['incident'].shape[1]):
-    ax.scatter(grid.line_lams['H 1 6562.80A'], grid.line_lums['nebular']['H 1 6562.80A'][age_index, i], label=f'Z = {grid.metallicities[i]:.5f}')
-
-ax.set_xlabel(r'$\lambda$ [\AA]')
-ax.set_xlim(10, 1e5)
-# ax.set_ylim(1e1, 1e22)
-ax.legend()
-ax.loglog()
-
-value = 0.0035
-grid.collapse('metallicities', method='interpolate', value=value)
-ax.scatter(grid.line_lams['H 1 6562.80A'], grid.line_lums['nebular']['H 1 6562.80A'][age_index], linewidth=2, color='k', label=f'Z = {value:.5f}')
-
-# value = 0.0035
-# grid.collapse('metallicities', method='interpolate', value=value, pre_interp_function=np.log10)
-# ax.loglog(grid.lam, grid.spectra['incident'][age_index, :], linewidth=2, color='r', label=f'Z = {value:.5f}')
-
-plt.show()
-
-quit()
+params.print_tree()
 
 
-print(grid.axes)
-print(grid.spectra['incident'].shape)
-print(grid.axes)
-
-
-
-
-quit()
-
-a = 'alpha_enhancement'
-x = 0.35
-v = grid._axes_values[a]
-
-if np.min(np.abs(v - x)) < 1e-5:
-    # x is (essentially) already in the grid, so just collapse to that value
-    pass
-
-else:
-    i0 = np.argmax(v[v <= x])
-    i1 = i0 + 1
-    x0 = v[i0]
-    x1 = v[i1]
-    print(x0, x1)
-    c0 = (x1 - x)/(x1 - x0)
-    c1 = (x - x0)/(x1 - x0)
-    print(c0, c1)
-
-
-print(grid.spectra['incident'])
+# print(params.all_params)
 
 
 quit()
 
 
-# stars = Stars(
-#     grid.log10age,
-#     grid.metallicity,
-#     sf_hist = SFH.Constant(max_age = 100 * Myr),
-#     metal_dist = ZDist.Normal(mean = 0.01, sigma = 0.05),
-#     initial_mass = 1e11 * Msun,
-# )
-# emission_model = IncidentEmission(grid=grid)
-# spectra = stars.get_spectra(emission_model)
 
-
-
-def get_spectra(mass, max_age, metallicity, logU): 
-    grid = Grid("hypothetical_grid")
-    grid.interpolate_axis('logU', logU) # interpolate the entire grid to the desired logU
-
-    stars = Stars(
-        grid.log10age,
-        grid.metallicity,
-        sf_hist = SFH.Constant(max_age = max_age),
-        metal_dist = ZDist.DeltaConstant(metallicity=metallicity),
-        initial_mass = mass,
-    )
-    emission_model = IncidentEmission(grid=grid)
-    return stars.get_spectra(emission_model)
 from synthesizer import Grid
 from synthesizer.emission_models import UnifiedAGN
 from synthesizer.emission_models.dust.emission import Greybody
