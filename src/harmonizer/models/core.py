@@ -87,8 +87,6 @@ class Model(object):
             sfh_p = {"max_age": 100 * Myr}
             sfh = SFH.Constant(**sfh_p)
 
-
-
             stars = ParametricStars(
                 grid.log10age,
                 grid.metallicity,
