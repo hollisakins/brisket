@@ -1,12 +1,56 @@
 
 import numpy as np
-from unyt import Msun, Myr
+import matplotlib.pyplot as plt
 from synthesizer import Grid
-from synthesizer.emission_models import IncidentEmission
-from synthesizer.parametric import SFH, Stars, ZDist
+# from synthesizer.emission_models import IncidentEmission
+# from synthesizer.parametric import SFH, Stars, ZDist
 
-grid = Grid("bpass-2.3-bin_chabrier03-0.1,300.0", grid_dir="/Users/hba423/Downloads/", read_lines=False)
+grid = Grid("test_grid", grid_dir="/Users/hollis/codes/synthesizer/tests/test_grid/")
+print(dir(grid))
+# line_lams (dict, dist, float)
+#     A dictionary of line wavelengths.
+# line_lums (dict, dict, float)
+#     A dictionary of line luminosities.
+# line_conts (dict, dict, float)
+#     A dictionary of line continuum luminosities.
+
+
+# print(grid.get_lines())
+fig, ax = plt.subplots(figsize=(8, 5))
+
+age_index = 1
+
+for i in range(grid.spectra['incident'].shape[1]):
+    ax.scatter(grid.line_lams['H 1 6562.80A'], grid.line_lums['nebular']['H 1 6562.80A'][age_index, i], label=f'Z = {grid.metallicities[i]:.5f}')
+
+ax.set_xlabel(r'$\lambda$ [\AA]')
+ax.set_xlim(10, 1e5)
+# ax.set_ylim(1e1, 1e22)
+ax.legend()
+ax.loglog()
+
+value = 0.0035
+grid.collapse('metallicities', method='interpolate', value=value)
+ax.scatter(grid.line_lams['H 1 6562.80A'], grid.line_lums['nebular']['H 1 6562.80A'][age_index], linewidth=2, color='k', label=f'Z = {value:.5f}')
+
+# value = 0.0035
+# grid.collapse('metallicities', method='interpolate', value=value, pre_interp_function=np.log10)
+# ax.loglog(grid.lam, grid.spectra['incident'][age_index, :], linewidth=2, color='r', label=f'Z = {value:.5f}')
+
+plt.show()
+
+quit()
+
+
+print(grid.axes)
 print(grid.spectra['incident'].shape)
+print(grid.axes)
+
+
+
+
+quit()
+
 a = 'alpha_enhancement'
 x = 0.35
 v = grid._axes_values[a]
