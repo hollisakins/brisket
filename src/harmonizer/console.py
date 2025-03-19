@@ -8,7 +8,8 @@ console._log_render.omit_repeated_times = False
 
 import logging
 from rich.logging import RichHandler
-def setup_logger(name, level):
+def setup_logger(name, verbose):
+    level = logging.DEBUG if verbose else logging.INFO
     formatter = logging.Formatter(fmt="%(message)s", datefmt="[%X]")
     handler = RichHandler(omit_repeated_times=False, rich_tracebacks=True, markup=True)
     handler.setFormatter(formatter)

@@ -5,6 +5,7 @@ src/harmonizer/console.py
 src/harmonizer/galaxy.py
 src/harmonizer/junk.py
 src/harmonizer/parameters.py
+src/harmonizer/test.py
 src/harmonizer.egg-info/PKG-INFO
 src/harmonizer.egg-info/SOURCES.txt
 src/harmonizer.egg-info/dependency_links.txt

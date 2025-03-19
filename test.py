@@ -1,21 +1,77 @@
+
+from synthesizer.emission_models import IntrinsicEmission
+from synthesizer.parametric import SFH, Stars, ZDist
+from synthesizer.grid import Grid
+from unyt import Msun, Myr
+
+grid = Grid("test_grid", grid_dir="../synthesizer/tests/test_grid")
+stellar_mass = 10**11 * Msun
+sfh = SFH.Constant(max_age=100 * Myr)
+zh = ZDist.DeltaConstant(metallicity=0.01)
+stars = Stars(
+    grid.log10age,
+    grid.metallicity,
+    sf_hist=sfh,
+    metal_dist=zh,
+    initial_mass=stellar_mass,
+)
+emission_model = IntrinsicEmission(grid, fesc=0)
+spectra0 = stars.get_spectra(emission_model)
+
+emission_model = IntrinsicEmission(grid, fesc=1)
+spectra1 = stars.get_spectra(emission_model)
+
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+ax.loglog(spectra0.lam, spectra0.lnu, label='fesc=0', alpha=0.5, color='r')
+ax.loglog(spectra1.lam, spectra1.lnu, label='fesc=1', alpha=0.5, color='b')
+ax.legend()
+plt.show()
+# stars.plot_spectra(show=True)
+
+quit()
+
+from unyt import Myr
 import harmonizer
 
+import matplotlib.pyplot as plt
+plt.figure()
+
 params = harmonizer.Params()
-params['redshift'] = harmonizer.priors.Uniform(0, 10)
+params['redshift'] = 1 #harmonizer.priors.Uniform(0, 10)
 stars = params.add_stars()
+stars['grid'] = 'test_grid'
 stars['logZ'] = 0
 stars['logMstar'] = 10
-sfh = stars.add_sfh('continuity', n_bins=5, z_max=20, bin_edges=[0, 10, 30])
+# sfh = stars.add_sfh('continuity', n_bins=5, z_max=20, bin_edges=[0, 10, 30])
+sfh = stars.add_sfh('constant', min_age=0*Myr, max_age=100*Myr)
 
-
-print(params.all_params)
-print(params.free_params)
-
+# stars.add_dust_attenuation(Av=3, dust_curve='Calzetti')
+stars.add_nebular()
+stars['nebular']['fesc'] = 0.0
 params.print_tree()
+mod = harmonizer.Model(params)
 
+plt.loglog(mod.sed.lam, mod.sed.fnu)
 
-# print(params.all_params)
+params = harmonizer.Params()
+params['redshift'] = 1 #harmonizer.priors.Uniform(0, 10)
+stars = params.add_stars()
+stars['grid'] = 'test_grid'
+stars['logZ'] = 0
+stars['logMstar'] = 10
+# sfh = stars.add_sfh('continuity', n_bins=5, z_max=20, bin_edges=[0, 10, 30])
+sfh = stars.add_sfh('constant', min_age=0*Myr, max_age=100*Myr)
 
+# stars.add_dust_attenuation(Av=3, dust_curve='Calzetti')
+stars.add_nebular()
+stars['nebular']['fesc'] = 1.0
+params.print_tree()
+mod = harmonizer.Model(params)
+
+plt.loglog(mod.sed.lam, mod.sed.fnu, alpha=0.5)
+
+plt.show()
 
 quit()
 

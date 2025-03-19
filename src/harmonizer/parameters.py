@@ -32,10 +32,18 @@ from .console import console, setup_logger, PathHighlighter, LimitsHighlighter
 # }
 
 
+# sfh_defaults = {
+#     'continuity': sfh.Continuity,
+# }
+
+
+reserved_children = ['stars', 'agn', 'nebular', 'dust_attenuation', 'dust_emission', 'igm']
+# reserved_children.extend(sfh_defaults.keys())
 
 
 
-class Params:
+
+class Params(MutableMapping):
     '''
     The Params class is used to store and manage model parameters.
     
@@ -48,6 +56,7 @@ class Params:
             Whether to print log messages (default: False).
     
     '''
+
     def __init__(self, template=None, file=None, verbose=False, name=None, parent=None): #*args, **kwargs):
 
         if verbose:
@@ -58,6 +67,7 @@ class Params:
         self.name = name
         self.parent = parent
         self.children = {}
+        self.sfh_name = None
 
         # if file is not None:
         #     try:
@@ -104,6 +114,8 @@ class Params:
         self._data[key] = value
 
     def _add_child(self, child_name):
+        if child_name in self.children:
+            raise Exception(f'{child_name} already exists in Params object')
         child = Params(name=child_name, parent=self)
         self.children[child_name] = child
         return child
@@ -113,13 +125,36 @@ class Params:
         
     def add_agn(self):
         return self._add_child('agn')
+    
+    def add_nebular(self, **kwargs):
+        child = self._add_child('nebular')
+        child._data.update(kwargs)
+        return child
 
-    def add_igm(self):
-        return self._add_child('igm')
+    def add_dust_attenuation(self, **kwargs):
+        child = self._add_child('dust_attenuation')
+        child._data.update(kwargs)
+        return child
+    
+    def add_dust_emission(self, **kwargs):
+        child = self._add_child('dust_emission')
+        child._data.update(kwargs)
+        return child
+
+    def add_igm(self, **kwargs):
+        child = self._add_child('igm')
+        child._data.update(kwargs)
+        return child
 
     def add_sfh(self, name, **kwargs):
         if self.name != 'stars':
             raise Exception('SFH can only be added to the stars component')
+        
+        if hasattr(self, name):
+            raise Exception(f'SFH with name {name} already exists in stars component')
+        
+        if self.has_sfh:
+            raise Exception('Only one SFH can be added.')
 
         sfh = self._add_child(name)
         if name in ['continuity', 'bursty_continuity']:
@@ -139,7 +174,18 @@ class Params:
             for i in range(sfh['n_bins']):
                 sfh[f'dsfr{i}'] = priors.StudentsT(low=-10, high=10, loc=0, scale=scale, df=df)
 
+        if name == 'constant':
+            sfh['min_age'] = kwargs['min_age']
+            sfh['max_age'] = kwargs['max_age'] # TODO assign default units? 
+
+
+
+        self.sfh_name = name
         return sfh
+
+    @property
+    def has_sfh(self):
+        return self.sfh_name is not None
 
     def __setitem__(self, key, value):
         if isinstance(value, Params):
@@ -161,6 +207,12 @@ class Params:
     def __contains__(self, key):
         return dict.__contains__(self.all_params, key) or dict.__contains__(self.children, key)
     
+    def get(self, key, default=None):
+        if key in self:
+            return self.__getitem__(key)
+        else:
+            return default
+
     # def add_igm(self):
     #     self.include_igm = True
     #     self._data['agn'] = {}
@@ -171,6 +223,20 @@ class Params:
     # def __dict__(self):
 
     #     return dict(_flattener(self))        
+
+    def __iter__(self):
+        return self.to_dict().__iter__()
+    
+    def __len__(self):
+        return len(self.to_dict())
+
+    def __delitem__(self, key):
+        if key in self.children:
+            del self.children[key]
+        elif key in self._data:
+            del self._data[key]
+        else:
+            raise Exception(f"No key {key} found in {self}")
 
 
     def to_dict(self) -> dict:
@@ -293,51 +359,6 @@ class Params:
                     subsource.add('[bold #FFE4B5 not italic]' + name_ii + '[white]: [italic not bold #c9b89b]' + params_ii.all_params[name_ii].__repr__())
         console.print(tree)
 
-    
-    # def validate(self):
-    #     '''This method checks that all required parameters are defined, 
-    #        warns you if the code is using defaults, and define several 
-    #        internally-used variables. 
-    #        Runs automatically run when printing a Params object or when
-    #        Params is passed to ModelGalaxy or Fitter.
-    #     '''
-
-    #     # if not isinstance(self, Group): # first check if this is a Group object -- groups cannot have their own sources (TODO is this necessary? do we run validate on groups)
-        
-    #     for comp_name, comp in self.components.items():
-    #         if comp.model_type == 'source':
-    #             comp.model = comp.model(params=comp) # initialize model 
-    #             self.component_types.append('source')
-    #             self.component_orders.append(comp.model.order)
-    #             self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
-    #             self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
-
-    #             for subcomp_name, subcomp in comp.components.items():
-    #                 subcomp.model = subcomp.model(params=subcomp)
-    #                 comp.component_types.append(subcomp.model_type)
-    #                 comp.component_orders.append(subcomp.model.order)
-    #                 self.all_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
-    #                 self.free_params.update({comp_name+'/'+subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
-    #                 # subcomp.all_params.update({subcomp_name+'/'+k:v for k,v in subcomp.all_params.items()})
-    #                 # subcomp.free_params.update({subcomp_name+'/'+k:v for k,v in subcomp.free_params.items()})
-    #         else:
-    #             comp.model = comp.model(params=comp) # initialize model 
-    #             self.component_types.append(comp.model_type)
-    #             self.component_orders.append(comp.model.order)
-    #             self.all_params.update({comp_name+'/'+k:v for k,v in comp.all_params.items()})
-    #             self.free_params.update({comp_name+'/'+k:v for k,v in comp.free_params.items()})
-
-    #     # initialize self.sources[source].model with params=self.sources[source]
-    #     self.all_param_names = list(self.all_params.keys())
-    #     self.all_param_values = list(self.all_params.values())
-
-    #     self.free_param_names = list(self.free_params.keys()) # Flattened list of parameter names for free params  
-    #     self.free_param_priors = [param.prior for param in self.free_params.values()] 
-
-    #     # self.linked_params
-
-    #     self.validated = True
-
     def update(self, new_params):
         """Updates the Params object with new_params."""
         assert set(new_params._components.keys()) == set(self._components.keys()), 'Cannot update Params object with different components'
@@ -365,111 +386,22 @@ class Params:
 
 
 
-# class FreeParam(MutableMapping):
-#     def __init__(self, low, high, prior='uniform', **hyperparams):
-#         self.low = low
-#         self.high = high
-#         self.limits = (low, high)
-#         # self.hyperparams = hyperparams
-#         self.prior = priors.Prior((low, high), prior, **hyperparams)
+    def validate(self, confirm=True):
+        """This method checks that all required parameters are defined, 
+           warns you if the code is using defaults, and define several 
+           internally-used variables. 
+           Runs automatically when Params is passed to Model or Fitter.
+        """
+      
+        # Check for required parameters
+        for key in self.required_params:
+            if key not in self.all_params:
+                raise ValueError(f"Required parameter {key} not found in Params object")
 
-#     def __getitem__(self, key):
-#         return getattr(self, key)
+        # Check for default values
+        for key in self.default_params:
+            if key not in self.all_params:
+                self.logger.warning(f"Using default value for parameter {key}")
 
-#     def __setitem__(self, key, value):
-#         setattr(self, key, value)
-
-#     def __delitem__(self, key):
-#         delattr(self, key)
-
-#     def __iter__(self):
-#         return iter(self.__dict__)
-
-#     def __len__(self):
-#         return len(self.__dict__)
-
-#     def __repr__(self):
-#         return f'FreeParam({self.low}, {self.high}, {self.prior})'
-
-# class FixedParam:
-#     def __init__(self, value):
-#         self.value = value
-
-#     def __repr__(self):
-#         return f'{self.value}'
-
-#     def __str__(self):
-#         return str(self.value)
-
-#     def __float__(self):
-#         return float(self.value)
-    
-#     def __int__(self):
-#         return int(self.value)
-
-
-# #         pass
-
-# #     def add_galaxy(self, template=None, **kwargs):
-# #         if template is not None: 
-# #             pass
-# #         self._parse_parameters(kwargs)
-# #         self.galaxy = Galaxy(**kwargs)
-
-# #     def _parse_parameters(self, kwargs):
-# #         param_names = list(kwargs.keys())
-# #         param_values = [kwargs[k] for k in kwargs.keys()]
-# #         nparam = len(param_names)
-    
-# #         # Find parameters to be fitted and extract their priors.
-# #         for i in range(len(nparam)):
-# #             self.all_param_names.append(param_names[i])
-# #             self.all_param_values.append(param_values[i])
-
-# #             if isfree:
-# #                 self.free_param_names.append(param_names[i])
-# #                 self.free_param_limits.append(param_values[i].limits)
-# #                 self.free_param_pdfs.append(param_values[i].prior)
-# #                 self.free_param_hypers.append(param_values[i].hypers)
-
-# #             if ismirror:
-# #                 pass
-
-            
-# #             if istransform: 
-# #                 pass
-
-# #                 # # Prior probability densities between these limits.
-# #                 # prior_key = all_keys[i] + "_prior"
-# #                 # if prior_key in list(all_keys):
-# #                 #     self.pdfs.append(all_vals[all_keys.index(prior_key)])
-
-# #                 # else:
-# #                 #     self.pdfs.append("uniform")
-
-# #                 # # Any hyper-parameters of these prior distributions.
-# #                 # self.hyper_params.append({})
-# #                 # for i in range(len(all_keys)):
-# #                 #     if all_keys[i].startswith(prior_key + "_"):
-# #                 #         hyp_key = all_keys[i][len(prior_key)+1:]
-# #                 #         self.hyper_params[-1][hyp_key] = all_vals[i]
-
-# #             # Find any parameters which mirror the value of a fit param.
-# #             # if all_vals[i] in all_keys:
-# #             #     self.mirror_pars[all_keys[i]] = all_vals[i]
-
-# #             # if all_vals[i] == "dirichlet":
-# #             #     n = all_vals[all_keys.index(all_keys[i][:-6])]
-# #             #     comp = all_keys[i].split(":")[0]
-# #             #     for j in range(1, n):
-# #             #         self.params.append(comp + ":dirichletr" + str(j))
-# #             #         self.pdfs.append("uniform")
-# #             #         self.limits.append((0., 1.))
-# #             #         self.hyper_params.append({})
-
-# #         # Find the dimensionality of the fit
-# #         self.ndim = len(self.params)
-
-# #     def update(self, kwargs):
-# #         for k in list(kwargs.keys()):
-# #             setattr(self, k, kwargs[k])
+        self.validated = True
+        
