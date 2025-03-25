@@ -1,2 +1,5 @@
-harmonizer.egg-info
-__pycache__
+*.egg-info/
+src/*.egg-info
+__pycache__/
+*.py[cod]
+*.egg
