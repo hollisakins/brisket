@@ -1,3 +1,77 @@
+import numpy as np
+import harmonizer
+from harmonizer.models.sfzh import SFZHModel, BaseZHModel, BurstSFH
+
+params = harmonizer.Params()
+# params['redshift'] = np.random.normal(1, 0.1, size=100)
+params['redshift'] = 1 #harmonizer.priors.Uniform(0, 10)
+stars = params.add_stars()
+stars['grid'] = 'test_grid'
+stars['logZ'] = 0
+stars['logMstar'] = 10
+sfh_params = stars.add_sfh('burst')
+sfh_params['age'] = 0.5
+ages = np.random.normal(1, 0.1, size=50)
+log10age = np.linspace(6, 10.5, 50)
+sfh = BurstSFH(log10age, sfh_params)
+
+def compute_weights1():
+    weights1 = np.zeros((len(ages), len(log10age)))
+    for i,age in enumerate(ages):
+        sfh_params['age'] = age
+        weights1[i] = sfh.get_weights(sfh_params)
+    return weights1
+
+def compute_weights2():
+    sfh_params['age'] = ages
+    weights2 = sfh.get_weights(sfh_params)
+    return weights2
+
+assert np.allclose(weights1, weights2)
+
+
+
+from scipy.interpolate import RegularGridInterpolator
+import numpy as np
+def f(x, y, z):
+    return 2 * x**3 + 3 * y**2 - z
+x = np.linspace(1, 4, 11)
+y = np.linspace(4, 7, 22)
+z = np.linspace(7, 9, 33)
+xg, yg ,zg = np.meshgrid(x, y, z, indexing='ij', sparse=True)
+data = f(xg, yg, zg)
+interp = RegularGridInterpolator((x, y, z), data)
+
+pts = np.array([np.random.uniform(1, 4, 1000), 
+                np.random.uniform(4, 7, 1000), 
+                np.random.uniform(7, 9, 1000)]).T
+
+def test1():
+    result = np.zeros(len(pts))
+    for i in range(len(pts)):
+        result[i] = interp(pts[i])[0]
+    return result
+
+def test2():
+    return interp(pts)
+
+
+
+
+
+# metallicity = np.linspace(0, 2.5, 7)
+# zh = BaseZHModel(metallicity)
+# print(zh.get_weights(zh_params))
+
+# sfzh = SFZHModel(sfh, zh, grid_live_frac = np.ones((len(log10age),len(metallicity))))
+
+# print(sfzh.get_weights(stars))
+# print(np.shape(sfzh.get_weights(stars)))
+
+
+
+quit()
+
 
 from synthesizer.emission_models import IntrinsicEmission
 from synthesizer.parametric import SFH, Stars, ZDist

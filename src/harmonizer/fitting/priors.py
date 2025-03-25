@@ -51,6 +51,11 @@ class Common:
         params = ', '.join([f'{k}={v}' for k, v in self.parameters.items()])
         return f"{self.name}({params})"
 
+    def __add__(self, other):
+        if isinstance(other, PriorVolume):
+            return PriorVolume([self] + other.priors)
+        else:
+            return PriorVolume([self, other])
 
 
 class Uniform(Common):
@@ -125,3 +130,47 @@ class StudentsT(Common):
         umax = t.cdf(self.high, df=self.df, scale=self.scale, loc=self.loc)
         return t.ppf((umax-umin)*prob + umin, df=self.df, scale=self.scale, loc=self.loc)
         
+
+
+
+
+class PriorVolume(object):
+    """ A class which allows for samples to be drawn from a joint prior
+    distribution in several parameters and for transformations from the
+    unit cube to the prior volume.
+
+    Parameters
+    ----------
+    priors : list of priors (instances of harmonizer.fitting.priors.Common)
+    """
+
+    def __init__(self, priors):
+        self.priors = priors
+        self.ndim = len(priors)
+    
+    def __add__(self, other):
+        if isinstance(other, PriorVolume):
+            return PriorVolume(self.priors + other.priors)
+        else:
+            return PriorVolume(self.priors + [other])
+
+    def sample(self):
+        """ Sample from the prior distribution. """
+        cube = np.random.rand(self.ndim)
+        return self.transform(cube)
+
+    def transform(self, cube, ndim=0, nparam=0):
+        """ Transform numbers on the unit cube to the prior volume. """
+        if type(cube)==np.ndarray: # ultranest fails when the output overwrites the input
+            params = cube.copy()
+        else:
+            params = cube
+            
+        # Call the relevant prior functions to draw random values.
+        for i in range(self.ndim):
+            params[i] = self.priors[i](params[i])
+
+        return params
+
+    def __repr__(self):
+        return f"PriorVolume({self.priors})"

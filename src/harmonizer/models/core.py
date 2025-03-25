@@ -57,8 +57,8 @@ class Model(object):
         
         # Calculate optimal wavelength sampling for the model
         self.logger.info('Calculating optimal wavelength sampling for the model')
-        # self.wavelengths, self.R = self.get_wavelength_sampling()
-        self.wavelengths = None
+        self.wavelengths, self.R = self.get_wavelength_sampling()
+        # self.wavelengths = None
         
         # Initialize the various models and resample to the internal, optimized wavelength grid
         self.logger.info('Initializing the emitters/grids')
@@ -89,6 +89,19 @@ class Model(object):
         # self.compute_observables()
 
 
+    def update(self, params):
+        """ Update the model outputs (spectra, photometry) to reflect 
+        new parameter values in the parameters dictionary. Note that 
+        only the changing of numerical values is supported."""
+        self.params.update(params)
+
+        # Compute the internal full SED 
+        self.compute_sed()
+
+        # Compute observables
+        self.compute_observables()
+
+
     def compute_sed(self):
 
         redshift = self.params['redshift']
@@ -99,10 +112,7 @@ class Model(object):
             
             if 'logZ' in star_params:
                 # If `logZ` is given, assume the user wants a delta function metallicity history
-                # zh = sfzh.DeltaConstant(log10metallicity = star_params['logZ'] + np.log10(0.0181))
-                # zh = sfzh .DeltaConstant(log10metallicity = star_params['logZ'] + np.log10(0.0181))
                 zh = sfzh.Normal(mean=0.01, sigma=0.05)
-            
             else:
                 # look for a metallicity function in the parameters
                 pass
@@ -191,29 +201,24 @@ class Model(object):
                 pass
 
             emission_models.append(model)
-        else:
-            stars = None
                 
         if 'agn' in self.params:
             pass
 
-        else: 
-            blackholes = None
 
+        # # now that we've assigned all the emission models, we can combine them
+        # galaxy = Galaxy(
+        #     stars = stars,
+        #     black_holes = blackholes,
+        #     redshift = redshift,
+        # )
 
-        # now that we've assigned all the emission models, we can combine them
-        galaxy = Galaxy(
-            stars = stars,
-            black_holes = blackholes,
-            redshift = redshift,
-        )
-
-        total_emission_model = EmissionModel(
-            label="total",
-            combine=emission_models,
-            emitter="galaxy",
-        )
-        total_emission_model.save_spectra("total")#, "dust_emission", "total_attenuated", "total_intrinsic")
+        # total_emission_model = EmissionModel(
+        #     label="total",
+        #     combine=emission_models,
+        #     emitter="galaxy",
+        # )
+        # total_emission_model.save_spectra("total")#, "dust_emission", "total_attenuated", "total_intrinsic")
 
         if 'igm' in self.params:
             # do something to figure out which IGM model the user wants to use
@@ -221,7 +226,7 @@ class Model(object):
         else:
             igm_model = None
 
-        galaxy.get_spectra(total_emission_model)
-        galaxy.get_observed_spectra(cosmo, igm=igm_model)
-        self.sed = galaxy.spectra['total']
+        # galaxy.get_spectra(total_emission_model)
+        # galaxy.get_observed_spectra(cosmo, igm=igm_model)
+        # self.sed = galaxy.spectra['total']
 

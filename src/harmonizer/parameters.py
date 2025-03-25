@@ -31,14 +31,20 @@ from .console import console, setup_logger, PathHighlighter, LimitsHighlighter
 #     'agn': ParametricBlackHole
 # }
 
-
-# sfh_defaults = {
-#     'continuity': sfh.Continuity,
-# }
+from .models.sfzh import BurstSFH
+sfh_models = {
+    'burst': BurstSFH,
+    # 'continuity': ContinuitySFH,
+}
+from .models.sfzh import BaseZHModel
+zh_models = {
+    'delta': BaseZHModel,
+}
 
 
 reserved_children = ['stars', 'agn', 'nebular', 'dust_attenuation', 'dust_emission', 'igm']
-# reserved_children.extend(sfh_defaults.keys())
+reserved_children.extend(sfh_models.keys())
+reserved_children.extend(zh_models.keys())
 
 
 
@@ -68,6 +74,7 @@ class Params(MutableMapping):
         self.parent = parent
         self.children = {}
         self.sfh_name = None
+        self.zh_name = None
 
         # if file is not None:
         #     try:
@@ -175,17 +182,60 @@ class Params(MutableMapping):
                 sfh[f'dsfr{i}'] = priors.StudentsT(low=-10, high=10, loc=0, scale=scale, df=df)
 
         if name == 'constant':
-            sfh['min_age'] = kwargs['min_age']
-            sfh['max_age'] = kwargs['max_age'] # TODO assign default units? 
+            if 'min_age' in kwargs:
+                sfh['min_age'] = kwargs['min_age']
+            if 'max_age' in kwargs:
+                sfh['max_age'] = kwargs['max_age'] # TODO assign default units? 
 
-
-
+        if name in sfh_models:
+            self.sfh_model = sfh_models[name]
+        else:
+            raise Exception(f'SFH model {name} not recognized')
         self.sfh_name = name
         return sfh
+
+    def add_zh(self, name, **kwargs):
+        if self.name != 'stars':
+            raise Exception('ZH can only be added to the stars component')
+        
+        if hasattr(self, name):
+            raise Exception(f'ZH with name {name} already exists in stars component')
+        
+        if self.has_zh:
+            raise Exception('Only one ZH can be added.')
+
+        zh = self._add_child(name)
+        if name == 'delta':
+            if 'zmet' in kwargs:
+                zh['zmet'] = kwargs['zmet']
+        else:
+            raise Exception(f'ZH model {name} not recognized')
+
+        if name in zh_models:
+            self.zh_model = zh_models[name]
+        else:
+            raise Exception(f'SFH model {name} not recognized')
+
+        self.zh_name = name
+        return zh
 
     @property
     def has_sfh(self):
         return self.sfh_name is not None
+
+    @property
+    def has_zh(self):
+        return self.zh_name is not None
+
+    def get_sfh(self):
+        if not self.has_sfh:
+            raise Exception('No SFH defined')
+        return self[self.sfh_name]
+    
+    def get_zh(self):
+        if not self.has_zh:
+            raise Exception('No ZH defined')
+        return self[self.zh_name]
 
     def __setitem__(self, key, value):
         if isinstance(value, Params):
@@ -286,7 +336,7 @@ class Params(MutableMapping):
         return len(self.all_param_names)
     
     @property
-    def ndim(self):
+    def nfree(self):
         return len(self.free_param_names)
 
     # def __delitem__(self, key):
@@ -302,14 +352,14 @@ class Params(MutableMapping):
     #         raise Exception(f"No key {key} found in {self}")
 
     def __repr__(self):
-        return f"Params(nparam={self.nparam}, ndim={self.ndim})"
+        return f"Params(nparam={self.nparam}, nfree={self.nfree})"
         
     def print_table(self):
         """Prints a summary of the model parameters, in table form."""
         h = PathHighlighter()
         l = LimitsHighlighter()
-        if (self.ndim == 0) or (self.nparam != self.ndim):
-            if self.ndim == 0:
+        if (self.nfree == 0) or (self.nparam != self.nfree):
+            if self.nfree == 0:
                 table = Table(title="")
             else:
                 table = Table(title="Fixed Parameters")
@@ -324,13 +374,13 @@ class Params(MutableMapping):
 
             console.print(table)
                      
-        if self.ndim > 0:
+        if self.nfree > 0:
             table = Table(title="Free Parameters")
             table.add_column("Parameter name", justify="left", style="cyan", no_wrap=True)
             table.add_column("Limits", style=None, justify='left', no_wrap=True)
             table.add_column("Prior", style=None, no_wrap=True)
         
-            for i in range(self.ndim): 
+            for i in range(self.nfree): 
                 n = self.free_param_names[i]
                 p = self.free_params[n]
                 table.add_row(h(n), str(p))
@@ -339,7 +389,7 @@ class Params(MutableMapping):
 
     def print_tree(self):
         """Prints a summary of the model parameters, in tree form."""
-        tree = Tree(f"[bold italic white]Params[/bold italic white](nparam={self.nparam}, ndim={self.ndim})")
+        tree = Tree(f"[bold italic white]Params[/bold italic white](nparam={self.nparam}, nfree={self.nfree})")
         children = list(self.children)
         names = [n for n in self.all_param_names if '/' not in n]
         for name in names:
@@ -370,9 +420,8 @@ class Params(MutableMapping):
             self._components[component].update(new_params._components[component])
 
     def update_from_vector(self, names, x):
-        # """Updates the free params from a flattened list of parameter values x."""
-
-        # assert len(x) == self.ndim, 'Number of parameters in x must match number of free parameters in Params object'
+        # Vectorization note: x can be a 1D array of size nfree, or a 2D array of size (?, nfree).
+        # names is a 1D array of size nfree
         for i, name in enumerate(names):
             if name in self.free_params:
                 del self.free_params[name]

@@ -55,7 +55,7 @@ class Fitter:
         self.n_posterior = n_posterior
 
         # Set up the output directory # TODO add rank==0 logic        
-        self.outpath = f'brisket_results/{run}/'
+        self.outpath = f'harmonized/{run}/'
         if outdir is not None:
             assert os.path.exists(outdir), "outdir doesn't exist"
             self.outpath = os.path.join(outdir, self.outpath) # append outdir to beginning of path
@@ -80,6 +80,9 @@ class Fitter:
         self.mod = Model(self.params, self.obs, verbose=verbose)
 
     def _update_model(self, x):
+        '''
+        Vectorization note: x can be a 1D array of size ndim, or a 2D array of size (?, ndim).
+        '''
         self.params.update_from_vector(self.param_names, x)
         self.mod.update(self.params) 
 
@@ -118,90 +121,18 @@ class Fitter:
 
         return lnlike
 
-    # def _lnlike_spec(self):
-    #     """ Calculates the log-likelihood for spectroscopic data. This
-    #     includes options for fitting flexible spectral calibration and
-    #     covariant noise models. """
-
-    #     model = self.model_galaxy.spectrum
-    #     if any(np.isnan(model)):
-    #         print(self.parameters.data)
-    #         quit()
-
-    #     # Calculate differences between model and observed spectrum
-    #     diff = (self.galaxy.spectrum[:, 1] - model)
-    #     # print(any(np.isnan(diff)))
-
-    #     # if "noise" in list(self.fit_instructions):
-    #     #     if self.galaxy.spec_cov is not None:
-    #     #         raise ValueError("Noise modelling is not currently supported "
-    #     #                          "with manually specified covariance matrix.")
-
-    #     #     self.noise = noise_model(self.model_components["noise"],
-    #     #                              self.galaxy, model)
-    #     # else:
-    #     self.noise = noise_model({}, self.galaxy, model)
-
-
-    #     if self.noise.corellated:
-    #         lnlike_spec = self.noise.gp.lnlikelihood(self.noise.diff)
-
-    #         return lnlike_spec
-
-    #     else:
-    #         # Allow for calculation of chi-squared with direct input
-    #         # covariance matrix - experimental!
-    #         # if self.galaxy.spec_cov is not None:
-    #         #     diff_cov = np.dot(diff.T, self.galaxy.spec_cov_inv)
-    #         #     self.chisq_spec = np.dot(diff_cov, diff)
-
-    #         #     return -0.5*self.chisq_spec
-
-    #         self.chisq_spec = np.sum(self.noise.inv_var*diff**2)
-
-    #         # if "noise" in list(self.fit_instructions):
-    #         #     c_spec = -np.log(self.model_components["noise"]["scaling"])
-    #         #     K_spec = self.galaxy.spectrum.shape[0]*c_spec
-
-    #         # else:
-    #         K_spec = 0.
-
-    #         return K_spec - 0.5*self.chisq_spec
-
 
     def fit(self, 
-            sampler: str = "multinest", 
+            sampler: str = "ultranest", 
             verbose: bool = False, 
             overwrite: bool = False,
             **kwargs):
         """ Fit the specified model to the input galaxy data.
-
-
         Args:
             sampler (str, optional)
-                Which sampler to use. Options are "multinest", "nautilus", and "ultranest". 
-                Defaults to "multinest".
-
-            verbose (bool, optional)
-                Whether to print progress updates. Default: False.
-            
-            **kwargs (optional)
-                Additional keyword arguments to pass to the sampler.
-                For multinest, these are:
-                    n_live (int, optional)
-                        Number of live points: reducing speeds up the code but may lead to unreliable results. Default: 400
-                    use_MPI (bool, default: False)
-                For nautilus, these are:
-                    n_eff (int, optional)
-                        Target minimum effective sample size. Default: 0
-                    discard_exploration (bool, optional)
-                        Whether to discard the exploration phase to get more accurate results. Default: False
-                    n_networks (int, optinal)
-                        Number of neural networks. Default: 4
-                    pool (int, optional)
-                        Pool size used for parallelization. Default: 1
-                For ultranest, these are:
-                    nsteps (int, default: 4)
+                Which sampler to use. Options are "ultranest". Default is "ultranest".
+            For ultranest, these are:
+                nsteps (int, default: 4)
 
         """
         self.overwrite = overwrite
@@ -217,7 +148,7 @@ class Fitter:
         # Figure out which sampling algorithm to use
         sampler = sampler.lower()
 
-        if sampler not in ["multinest", "nautilus", "ultranest"]:
+        if sampler not in ["ultranest"]:
             e = ValueError(f"Sampler {sampler} not supported.")
             self.logger.error(e)
             raise e
@@ -310,30 +241,6 @@ class Fitter:
 
             return self.results
 
-
-    def _run_multinest(self, n_live=400, use_MPI=False, **kwargs):
-        self.pymultinest.run(
-            self.lnlike,
-            self.prior.transform,
-            self.ndim, n_live_points=n_live,
-            importance_nested_sampling=False, verbose=self.verbose,
-            sampling_efficiency='model',
-            outputfiles_basename=os.path.join(self.outpath, f'{self.obs.ID}_'), 
-            use_MPI=use_MPI
-        )
-
-    def _run_nautilus(self):
-        n_sampler = self.nautilus_sampler(
-                self.fitted_model.prior.transform,
-                self.fitted_model.lnlike, n_live=n_live,
-                n_networks=n_networks, pool=pool,
-                n_dim=self.fitted_model.ndim,
-                filepath=self.fname + '.h5'
-            )
-
-        n_sampler.run(verbose=verbose, n_eff=n_eff,
-                        discard_exploration=discard_exploration)
-
     def _run_ultranest(self, nsteps_per_param=4, n_live=100):
         try:
             from ultranest import ReactiveNestedSampler
@@ -363,34 +270,4 @@ class Fitter:
             # max_num_improvement_loops=3, # how many times to go back and improve
         )
         return u_sampler
-
-
-
-    # def _check_install(self):
-    #     from contextlib import redirect_stdout
-    #     try:
-    #         with open(os.devnull, "w") as f, redirect_stdout(f):
-    #             import pymultinest
-    #         self.pymultinest = pymultinest
-    #         self.pymultinest_available = True
-    #     except (ImportError, RuntimeError, SystemExit):
-    #         self.logger.warning('PyMultiNest import failed, fitting will use the Ultranest sampler instead.')
-    #         self.pymultinest_available = False
-
-    #     try:
-    #         from nautilus import Sampler
-    #         self.nautilus_sampler = Sampler
-    #         self.nautilus_available = True
-    #     except (ImportError, RuntimeError, SystemExit):
-    #         self.logger.warning('Nautilus import failed, fitting will use the Ultranest sampler instead.')
-    #         self.nautilus_available = False
-
-    #     try:
-    #         from ultranest import ReactiveNestedSampler
-    #         from ultranest.stepsampler import SliceSampler, generate_mixture_random_direction
-    #         self.ultranest_available = True
-    #     except (ImportError, RuntimeError, SystemExit):
-    #         self.logger.warning('Ultranest import failed, fitting will use the Nautilus sampler instead.')
-    #         self.ultranest_available = False
-
 
