@@ -437,10 +437,14 @@ class Params(MutableMapping):
 
     def validate(self, confirm=True):
         """This method checks that all required parameters are defined, 
-           warns you if the code is using defaults, and define several 
+           warns you if the code is using defaults, and defines several 
            internally-used variables. 
            Runs automatically when Params is passed to Model or Fitter.
         """
+
+        # If already validated, quietly return
+        if self.validated:
+            return
       
         # Check for required parameters
         for key in self.required_params:
@@ -453,4 +457,12 @@ class Params(MutableMapping):
                 self.logger.warning(f"Using default value for parameter {key}")
 
         self.validated = True
+
+        # assert 'redshift' in self.params, "Redshift must be specified for any model"
+
+        # self.redshift = float(self.params['redshift'])
+        # if self.redshift > config.max_redshift:
+        #     raise ValueError("""Attempted to create a model with too high redshift. 
+        #                     Please increase max_redshift in brisket/config.py 
+        #                     before making this model.""")
         

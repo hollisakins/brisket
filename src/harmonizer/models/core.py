@@ -28,13 +28,13 @@ class Model(object):
             Whether to print log messages (default: True).
     """
 
-
     def __init__(self, 
                  params, 
                  instrument = None,
                  verbose: bool = False):
 
         self.params = params
+        self.params.validate()
         self.logger = setup_logger(__name__, verbose)
 
         if self.params.ndim > 0:
@@ -42,26 +42,15 @@ class Model(object):
             self.logger.error(e)
             raise e
 
-        assert 'redshift' in self.params, "Redshift must be specified for any model"
-        # self.redshift = float(self.params['redshift'])
-        # if self.redshift > config.max_redshift:
-        #     raise ValueError("""Attempted to create a model with too high redshift. 
-        #                     Please increase max_redshift in brisket/config.py 
-        #                     before making this model.""")
-
-        #### Do some brunt work to prepare the instrument models 
-        # # Create a spectral calibration object to handle spectroscopic calibration and resolution.
-        # self.calib = False
-        # if self.spec_output and 'calib' in self.components: 
-        #     self.calib = SpectralCalibrationModel(self._spec_wavs, self.params, logger=logger)
-        
         # Calculate optimal wavelength sampling for the model
         self.logger.info('Calculating optimal wavelength sampling for the model')
         self.wavelengths, self.R = self.get_wavelength_sampling()
-        # self.wavelengths = None
+
+        # Initialize the observables
+        self._prepare_observables()
         
         # Initialize the various models and resample to the internal, optimized wavelength grid
-        self.logger.info('Initializing the emitters/grids')
+        self.logger.info('Initializing the models')
         
         if 'stars' in self.params:
             # Load the stellar grid and resample to the internal wavelength grid
@@ -70,9 +59,15 @@ class Model(object):
                 file += '.hdf5'
             self.stellar_grid = Grid(file, grid_dir=grid_dir, new_lam=self.wavelengths)
 
-
             if not self.params['stars'].has_sfh:
                 raise ValueError('Must specify an SFH for the stellar component')
+
+            if 'nebular' in self.params['stars']:
+                pass
+            if 'dust_atten' in self.params['stars']:
+                pass
+            if 'dust_emission' in self.params['stars']:
+                pass
         
         if 'agn' in self.params:
             # Load the agn grid and resample to the internal wavelength grid
@@ -81,12 +76,27 @@ class Model(object):
                 file += '.hdf5'
             self.agn_grid = Grid(file, grid_dir=grid_dir, new_lam=self.wavelengths)
 
-        self.logger.info('Computing the SED')
-        # Compute the main SED 
-        self.compute_sed() 
+            if 'nebular' in self.params['agn']:
+                pass
+            if 'dust_atten' in self.params['agn']:
+                pass
+            if 'dust_emission' in self.params['agn']:
+                pass
 
-        # # Compute observables
-        # self.compute_observables()
+        self.logger.info('Computing the SED')
+        self._compute_sed() 
+
+        # Compute observables
+        self.compute_observables()
+
+    def _prepare_observables(self):
+
+        #### Do some brunt work to prepare the instrument models 
+        # # Create a spectral calibration object to handle spectroscopic calibration and resolution.
+        # self.calib = False
+        # if self.spec_output and 'calib' in self.components: 
+        #     self.calib = SpectralCalibrationModel(self._spec_wavs, self.params, logger=logger)
+        pass
 
 
     def update(self, params):

@@ -1,5 +1,5 @@
 '''
-Stellar models. Combined SFH and CEH models from sfzh.py to create a stellar model.
+Stellar models. Combines SFH and CEH models from sfzh.py to create a stellar model.
 '''
 from __future__ import annotations
 
@@ -12,12 +12,13 @@ import astropy.units as u
 from .. import config
 from ..utils import utils
 from ..utils.sed import SED
-# from ..data.grid_manager import GridManager
 from ..grids.grids import Grid
 from .base import *
 from ..console import setup_logger
 
 class BaseStellarModel:
+
+    expected_params = ['grid', 'logMstar', 'zmet']
 
     def __init__(self, params, verbose=False):
         self.params = params
@@ -27,47 +28,76 @@ class BaseStellarModel:
             self.logger = setup_logger(__name__, 'INFO')
         else:
             self.logger = setup_logger(__name__, 'WARNING')
-
-        self.validate_params(params)
     
-    def validate_params(self, params):
-        expected_params = ['grid', 'logMstar', 'zmet', 't_bc']
+    @staticmethod
+    def validate_params(params):
+        """
+        Validate parameters for the stellar model.
+        
+        This static method should be called before initializing the model, 
+        i.e., from within the Params validation method. 
+        """
+        
+        # Validate each component of the model parameters inline
+        params = BaseStellarModel._validate_grid(params)
+        params = BaseStellarModel._validate_mstar(params)
+        params = BaseStellarModel._validate_zmet(params)
+        params = BaseStellarModel._validate_sfh(params)
+        return params
+
+
+    @staticmethod
+    def _validate_grid(params):
+        # Check if grid is specified
         if 'grid' not in params:
             if 'grids' in params:
-                self.logger.info("Parameter 'grids', should be 'grid', fixing.")
-                params['grid'] = params['grids']; del params['grids']
+                raise exceptions.MisspelledParameter("Parameter 'grids' not understood. Did you mean 'grid'?")
             else:
-                raise exceptions.InconsistentParameter('No stellar grid specified.')
-        elif str(params['grid']).endswith('.hdf5') or '/' in str(params['grid']):
+                raise exceptions.MissingParameter("Parameter 'grid' not specified, cannot create stellar model.")
+        
+        # Make sure the grid is provided as a file name only
+        elif params['grid'].endswith('.hdf5') or params['grid'].endswith('h5'):
+            raise exceptions.InconsistentParameter("Parameter 'grid' expects the grid name, without any extension.")
+        elif '/' in params['grid']:
             raise exceptions.InconsistentParameter("Parameter 'grid' expects the grid name, not the full path.")
-        assert Grid.check_if_exists(params['grid']), f"Grid '{params['grid']}' not found."
 
+        # Check if the grid exists, for this we have a handy static method in Grid
+        Grid.assert_exists(params['grid'])
+        return params
+
+    @staticmethod
+    def _validate_mstar(params):
         if 'logMstar' not in params:
             alt_mass_keys = ['mass', 'massformed', 'logmass', 'stellar_mass', 'mstar', 'Mstar']
             if any(key in params for key in alt_mass_keys):
                 k = next(key for key in alt_mass_keys if key in params)
-                self.logger.info(f"Parameter '{k}', should be 'logMstar', fixing.")
-                params['logMstar'] = params[k]; del params[k]
+                raise exceptions.MisspelledParameter(f"Parameter '{k}' not understood. Did you mean 'logMstar'?")
             else:
-                raise BrisketError("Parameter 'logMstar' not specified, cannot create stellar model.")
-        
+                raise exceptions.MissingParameter("Parameter 'logMstar' not specified, cannot create stellar model.")
+        return params
+
+    @staticmethod
+    def _validate_zmet(params):
         if 'zmet' not in params:
             alt_zmet_keys = ['metallicity', 'Z', 'Zmet']
             if any(key in params for key in alt_zmet_keys):
                 k = next(key for key in alt_zmet_keys if key in params)
-                self.logger.info(f"Parameter '{k}', should be 'zmet', fixing.")
-                params['zmet'] = params[k]; del params[k]
+                raise exceptions.MisspelledParameter(f"Parameter '{k}' not understood. Did you mean 'zmet'?")
             else:
-                raise BrisketError("Parameter 'zmet' not specified, cannot create stellar model.")
+                raise exceptions.MissingParameter("Parameter 'zmet' not specified, cannot create stellar model.")
+        return params
         
-        if 't_bc' not in params:
-            self.logger.info("Parameter 't_bc' not specified, setting to 10 Myr.")
-            params['t_bc'] = 0.01
-        
+    @staticmethod
+    def _validate_sfh(params):
+        pass
+
+
         for key in params.all_param_names:
             if '/' not in key and key not in expected_params:
                 self.logger.warning(f"Ignoring unexpected parameter '{key}'.")
                 del params[key]
+
+        return params
 
     def validate_components(self, params):
         '''Validate that the SFH components were added correctly.'''
@@ -110,7 +140,7 @@ class BaseStellarModel:
 
 # class BimodalCompositeStellarPopModel(BaseStellarModel):
 
-class CompositeStellarPopModel(BaseStellarModel):
+class CompositeStellarPopulationModel(BaseStellarModel):
     '''
     Args:
         params (brisket.parameters.Params)
@@ -147,17 +177,17 @@ class CompositeStellarPopModel(BaseStellarModel):
         
         return self.grid.data
 
-class SimpleStellarPopModel(BaseGriddedModel, BaseSourceModel):
+class SimpleStellarPopulationModel(BaseStellarModel):
     '''
-    A simple stellar population model, which interpolates from 
-    a given stellar grid to the specified age and metallicity (zmet).
+    A simple stellar population model. 
+    
+    Interpolates over a given stellar grid to the 
+    specified age and metallicity.
 
     Args:
         params (brisket.parameters.Params)
             Model parameters.
     '''
-    type = 'source'
-    order = 0
 
     def __init__(self, params):
         self.params = params
@@ -182,18 +212,22 @@ class SimpleStellarPopModel(BaseGriddedModel, BaseSourceModel):
 
 
 class BC03StellarModel(CompositeStellarPopModel):
-    def validate_params(self, params):
+
+    grid_file: str = 'bc03_miles_{imf}.hdf5'
+
+
+    @staticmethod
+    def validate_params(params):
+        """
+        Validate parameters for the BC03 model.
+        """
         if 'grids' in params:
-            raise BrisketError(f'Cant specify grids with {self.__name__}.')
+            raise exceptions.InconsistentParameter(f'Cant specify grids with {self.__name__}.')
         else:
             params['grids'] = 'bc03_miles_chabrier'
-        super().validate_params(params)
+        
 
+        if not 'imf' in params:
+            params['imf'] = 'chabrier'
 
-class Starburst25StellarModel(CompositeStellarPopModel):
-    def validate_params(self, params):
-        if 'grids' in params:
-            raise BrisketError(f'Cant specify grids with {self.__name__}.')
-        else:
-            params['grids'] = 'starburst25'
-        super().validate_params(params)
+        
