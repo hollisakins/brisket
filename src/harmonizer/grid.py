@@ -1,3 +1,11 @@
+'''
+Provides access to the Grid object, which allows manipulation of 
+SED grids. 
+
+Much of this code is adapted from synthesizer.grid.Grid. 
+https://synthesizer-project.github.io/synthesizer/
+'''
+
 from __future__ import annotations
 import os, h5py
 import numpy as np
@@ -5,7 +13,6 @@ from copy import deepcopy
 from typing import Tuple
 
 from .. import config
-from ..utils.sed import SED
 from spectres import spectres
 
 from scipy.interpolate import RegularGridInterpolator
@@ -19,6 +26,7 @@ class Grid:
         spectra_to_read=None,
     ):
         """
+        Initialize the Grid object.
 
         Largely adapted from synthesizer.grid.Grid, but with some modifications
         to improve speed and allow for vectorized operations. 
@@ -54,12 +62,28 @@ class Grid:
         self.line_conts = {}
 
         # Get the axes of the grid from the HDF5 file
-        self.axes = []  # axes names
+        self.axes = [] # list of axes names
         self._axes_values = {}
         self._axes_units = {}
         self._extract_axes = []
         self._extract_axes_values = {}
         self._get_axes()
+
+        # Read in the metadata
+        self._weight_var = None
+        self._model_metadata = {}
+        self._get_grid_metadata()
+
+        # Get the ionising luminosity (if available)
+        self._get_ionising_luminosity()
+
+        # We always read spectra, but can read a subset if requested
+        self.lam = None
+        self.available_spectra = None
+        self._get_spectra_grid(spectra_to_read)
+
+
+
 
 
     def _parse_grid_path(self, grid_dir, grid_name):
@@ -91,48 +115,97 @@ class Grid:
         )
 
 
+    def _get_axes(self):
+        """Get the grid axes from the HDF5 file."""
+        # Get basic info of the grid
+        with h5py.File(self.grid_filename, "r") as hf:
+            # Get list of axes
+            axes = list(hf.attrs["axes"])
+
+            # Save the values of each axis to _axes_values
+            for axis in axes:
+                # What are the units of this axis?
+                axis_units = hf["axes"][axis].attrs.get("Units")
+                log_axis = hf["axes"][axis].attrs.get("log_on_read")
+
+                if "log10" in axis:
+                    raise exceptions.GridError(
+                        "Logged axes are no longer supported because "
+                        "of ambiguous units. Please update your grid file."
+                    )
+
+                # Get the values
+                values = hf["axes"][axis][:]
+
+                # Set all the axis attributes 
+                self.axes.append(axis)
+                self._axes_values[axis] = values
+                self._axes_units[axis] = axis_units
+
+                # Now we handle the extractions
+                if log_axis:
+                    self._extract_axes.append(f"log10{axis}")
+                    self._extract_axes_values[f"log10{axis}"] = np.log10(values)
+                else:
+                    self._extract_axes.append(axis)
+                    self._extract_axes_values[axis] = values
+
+            # Number of axes
+            self.naxes = len(self.axes)
+
+    def _get_grid_metadata(self):
+        """Unpack the grids metadata into the Grid."""
+        # Open the file
+        with h5py.File(self.grid_filename, "r") as hf:
+            # What component variable do we need to weight by for the
+            # emission in the grid?
+            self._weight_var = hf.attrs.get("WeightVariable")
+
+            # Loop over the Model metadata stored in the Model group
+            # and store it in the Grid object
+            if "Model" in hf:
+                for key, value in hf["Model"].attrs.items():
+                    self._model_metadata[key] = value
+
+            # Attach all the root level attribtues to the grid object
+            for k, v in hf.attrs.items():
+                # Skip the axes attribute as we've already read that
+                if k == "axes" or k == "WeightVariable":
+                    continue
+                setattr(self, k, v)
 
 
-    def _load_from_hdf5(self, path):
-        with h5py.File(path, 'r') as f:
-            axes = list(f['axes'].asstr(encoding='utf-8'))
-            assert axes[-1] == 'wavs'
-            self.wavs = f['wavs'][:]
-            self.data = f['grid'][:]
-            self.axes = axes[:-1]
-            self.array_axes = axes
-            for axis in self.axes:
-                setattr(self, axis, f[axis][:])
-            for key in f.keys():
-                if key not in axes + ['grid', 'wavs', 'axes']:
-                    setattr(self, key, f[key][:])
+    def _get_ionising_luminosity(self):
+        """Get the ionising luminosity from the HDF5 file."""
+        # Get basic info of the grid
+        with h5py.File(self.grid_filename, "r") as hf:
+            # Extract any ionising luminosities
+            if "log10_specific_ionising_luminosity" in hf.keys():
+                self.log10_specific_ionising_lum = {}
+                for ion in hf["log10_specific_ionising_luminosity"].keys():
+                    self.log10_specific_ionising_lum[ion] = hf[
+                        "log10_specific_ionising_luminosity"
+                    ][ion][:]
 
-    @property 
-    def shape(self):
-        return self.data.shape[:-1] # remove the last axis, which is the SED
-    
-    @property
-    def ndim(self):
-        return len(self.shape) # remove the last axis, which is the SED
+    def _get_spectra_ids_from_file(self):
+        """
+        Get a list of the spectra available in a grid file.
 
-    @property 
-    def wavelengths(self):
-        return self.wavs
+        Returns:
+            list:
+                List of available spectra
+        """
+        with h5py.File(self.grid_filename, "r") as hf:
+            spectra_keys = list(hf["spectra"].keys())
 
-    def __getitem__(self, indices):
-        newgrid = deepcopy(self)
-        newgrid.data = newgrid.data[indices]
-        return newgrid
-    
-    def __setitem__(self, indices, values):
-        self.data[indices] = values
+        # Clean up the available spectra list
+        spectra_keys.remove("wavelength")
 
-    def __array__(self, dtype=None, copy=None):
-        return self.data
+        # Remove normalisation dataset
+        if "normalisation" in spectra_keys:
+            spectra_keys.remove("normalisation")
 
-    def __repr__(self):
-        return f'Grid({self.name}, shape={self.shape})'
-
+        return spectra_keys
 
     def _get_spectra_grid(self, spectra_to_read):
         """
@@ -193,7 +266,22 @@ class Grid:
                 self.spectra["nebular"] - self.spectra["linecont"]
             )
             self.available_spectra.append("nebular_continuum")
-            
+
+    # def __getitem__(self, indices):
+    #     newgrid = deepcopy(self)
+    #     newgrid.data = newgrid.data[indices]
+    #     return newgrid
+    
+    # def __setitem__(self, indices, values):
+    #     self.data[indices] = values
+
+    # def __array__(self, dtype=None, copy=None):
+    #     return self.data
+
+    def __repr__(self):
+        return f'Grid({self.name}, shape={self.shape})'
+
+
     @property
     def reprocessed(self):
         """
@@ -389,5 +477,4 @@ class Grid:
         else:
             return np.sum(self.data * weights, axis=tuple(axis_indices))
         
-
 
