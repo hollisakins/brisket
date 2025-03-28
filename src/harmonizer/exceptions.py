@@ -36,7 +36,7 @@ class MisspelledParameter(Exception):
         return "Parameter misspelled"
 
 
-class MisspelledParameter(Exception):
+class MissingParameter(Exception):
     """
     Generic exception class for inconsistent parameters.
     """
