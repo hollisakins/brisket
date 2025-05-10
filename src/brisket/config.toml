@@ -1,0 +1,20 @@
+#####
+# To override harmonizer configuration, please use environment variables 
+# TBI
+
+
+# Where grids are stored. By default, this should be at the root of the module, but can be changed, e.g. to reference grids stored in a cloud-synced repository. 
+grid_dir = 'data/grids/'
+
+
+# Cosmology to use for cosmological calculations. Should be a cosmology realization included in astropy.cosmology. 
+cosmology = 'Planck18'
+
+# Maximum redshift the code is set up to evaluate models for. Only relevant for setting up the IGM grids.
+max_redshift = 20.0
+
+# Default wavelength unit for the code. 
+default_wavelength_unit = 'angstrom'
+
+# Sampling for the ages of stars in the SFH (log space)
+sfh_age_log_sampling = 0.0025

@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "harmonizer"
-version = "0.1.0"
-description = 'SED fitting with synthesizer engine'
+name = "brisket"
+version = "0.0.1"
+description = 'SED fitting'
 authors = [
     {name = "Hollis Akins", email = "hollis.akins@gmail.com"},
 ]

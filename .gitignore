@@ -5,3 +5,5 @@ __pycache__/
 *.egg
 src/brisket/data/grids/*
 src/brisket/data/raw/*
+*.DS_Store
+.vscode/
