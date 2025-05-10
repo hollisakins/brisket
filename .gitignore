@@ -3,3 +3,5 @@ src/*.egg-info
 __pycache__/
 *.py[cod]
 *.egg
+src/brisket/data/grids/*
+src/brisket/data/raw/*
