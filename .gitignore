@@ -3,7 +3,11 @@ src/*.egg-info
 __pycache__/
 *.py[cod]
 *.egg
-src/brisket/data/grids/*
-src/brisket/data/raw/*
+src/brisket/data/grids/*.txt
+src/brisket/data/grids/*.fits
+src/brisket/data/grids/*.hdf5
+src/brisket/data/raw/*.txt
+src/brisket/data/raw/*.fits
+src/brisket/data/raw/*.hdf5
 *.DS_Store
 .vscode/
