@@ -59,6 +59,22 @@ class MissingParameter(Exception):
         return "Missing required parameter"
 
 
+class GridParseError(Exception):
+    """
+    Generic exception class for issues parsing grid files.
+    """
+
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return "{0} ".format(self.message)
+        return "Gridf parse error"
+
 
 class UnimplementedFunctionality(Exception):
     """

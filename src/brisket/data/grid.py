@@ -4,7 +4,7 @@ from botocore.client import Config
 
 import sys, os, h5py
 import numpy as np
-from . import config
+from .. import config
 
 from spectres import spectres
 
@@ -13,58 +13,96 @@ from scipy.interpolate import RegularGridInterpolator
 from rich import print
 from rich.prompt import Confirm
 
+from ..utils import exceptions
+from .downloader import Downloader
+
+downloader = Downloader(box='brisket-data')
+
 class Grid:
 
-    def __init__(self, name, bucket='brisket-data'):
+    def __init__(self, name):
         self.name = name
-        if not name.endswith('.hdf5'):
-            name += '.hdf5'
+        if not self.name.endswith('.hdf5'):
+            self.name += '.hdf5'
 
-        gm = GridManager(bucket=bucket)
-        gm.check_grid(name)
-        self.path = os.path.join(config.grid_dir, name)
-        
+        self.path = self.check_exists(os.path.join(config.grid_dir, name))
         self._load_from_hdf5(self.path)
+    
+    def check_exists(self, path):
+        
+        if os.path.exists(path):
+            return path
+
+        print(f"Grid file [blue]{grid_file_name}[/blue] not found locally at [blue]{config.grid_dir}[/blue].")
+        remote_available = downloader.check_exists(self.name)
+
+        if not remote_available:
+            print(f"Grid file [blue]{grid_file_name}[/blue] not found on remote bucket [blue]s3://{downloader.bucket}[/blue].")
+            print("[red italic]Perhaps the file name is incorrect?")
+            sys.exit(1)
+
+        downloader.download_file(grid_file_name, path, prompt=True)
+
+        return path
 
     def _load_from_hdf5(self, path):
-        with h5py.File(path, 'r') as f:
-            axes = list(f['axes'].asstr(encoding='utf-8'))
-            assert axes[-1] == 'wavs'
-            self.wavs = f['wavs'][:]
-            self.data = f['grid'][:]
-            self.axes = axes[:-1]
-            self.array_axes = axes
-            for axis in self.axes:
-                setattr(self, axis, f[axis][:])
-            for key in f.keys():
-                if key not in axes + ['grid', 'wavs', 'axes']:
-                    setattr(self, key, f[key][:])
 
-    @property 
-    def shape(self):
-        return self.data.shape[:-1] # remove the last axis, which is the SED
+        with h5py.File(path, 'r') as f:
+            groups = list(f.keys())
+
+            if not 'axes' in groups:
+                raise exceptions.GridParseError(f'Grid file {self.path} does not contain an `axes` group. Please check the file.')
+            if not 'continuum' in groups:
+                raise exceptions.GridParseError(f'Grid file {self.path} does not contain a `continuum` group. Please check the file.')
+
+            axes = list(f['axes'])
+
+            continuum_datasets = list(f['continuum'].keys())
+            if 'lines' in groups and 'transmitted' in continuum_datasets and 'nebular' in transmitted_datasets:
+                self.photoionized = True
+            else:
+                self.photoionized = False
+            
+            self.axes = {n: np.array(f['axes'][n][:]) for n in axes}
+
+            self.continuum = {
+                'wavelengths': np.array(f['continuum']['wavelengths'][:]),
+                'incident': np.array(f['continuum']['incident'][:]),
+            }
+            if self.photoionized:
+                self.continuum['transmitted'] = np.array(f['continuum']['transmitted'][:])
+                self.continuum['nebular'] = np.array(f['continuum']['nebular'][:])
+                self.lines = {
+                    'ids': np.array(f['lines']['id'][:]), 
+                    'wavelengths': np.array(f['lines']['wavelengths'][:]), 
+                    'luminosity': np.array(f['lines']['nebular'][:])
+                }
+
+            for axis in list(self.axes):
+                setattr(self, axis, self.axes[axis])
+
+    # @property 
+    # def shape(self):
+    #     return self.data.shape[:-1] 
     
     @property
     def ndim(self):
-        return len(self.shape) # remove the last axis, which is the SED
+        return len(self.shape)
 
     @property 
     def wavelengths(self):
         return self.wavs
 
-    def __getitem__(self, indices):
-        newgrid = deepcopy(self)
-        newgrid.data = newgrid.data[indices]
-        return newgrid
+    # def __getitem__(self, indices):
+    #     newgrid = deepcopy(self)
+    #     newgrid.data = newgrid.data[indices]
+    #     return newgrid
     
-    def __setitem__(self, indices, values):
-        self.data[indices] = values
-
-    def __array__(self, dtype=None, copy=None):
-        return self.data
+    # def __setitem__(self, indices, values):
+    #     self.data[indices] = values
 
     def __repr__(self):
-        return f'Grid({self.name}, shape={self.shape})'
+        return f'Grid({self.name}, photoionized={self.photoionized}, shape={self.shape})'
 
 
     def resample(self, new_wavs, fill=0, inplace=True):

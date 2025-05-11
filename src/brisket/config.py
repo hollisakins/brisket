@@ -1,3 +1,10 @@
+'''
+Package-level configuration for BRISKET. 
+
+This module handles the loading and validation of configuration parameters for the BRISKET package.
+It reads the default configuration from a TOML file and performs consistency checks on the parameters.
+It also provides a mechanism for users to override default parameters through environment variables (TODO). 
+'''
 
 import toml
 import os
@@ -5,12 +12,16 @@ from .utils import exceptions
 root_dir = os.path.dirname(os.path.abspath(__file__))
 print(root_dir)
 
-
 config = toml.load(os.path.join(root_dir, 'config.toml'))
+'''
+Default configuration parameters for BRISKET.
+'''
 
 grid_dir = config['grid_dir']
+'''
+Directory containing the grid files for BRISKET. Overrides can be set through environment variables (TODO).
+'''
 # TODO check if user overwrites grid_dir from environment variables
-# TODO check if grid_dir exists
 
 # Check if grid_dir is provided as an absolute path or relative
 if not os.path.isabs(grid_dir):

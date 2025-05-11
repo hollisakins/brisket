@@ -10,7 +10,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..parameters import Params
-    from .observation import Observation
+    from ..observation import Observation
 
 from ..utils.console import setup_logger
 from ..models.core import Model

@@ -1,3 +1,64 @@
+with h5py.File('/Users/hba423/codes/brisket/src/brisket/data/grids/bagpipes_bpass.hdf5', 'w') as f:
+    f.attrs['creator'] = 'Hollis Akins'
+    f.attrs['creation_date'] = '2025-05-11'
+    f.attrs['description'] = 'BPASS stellar grids + cloudy photoionization output, adapted from BAGPIPES'
+    f.attrs['version'] = 1.0
+
+    # Create axes group and datasets
+    axes_group = f.create_group('axes', track_order=True)
+    axes_group.attrs['description'] = 'Model grid axes'
+    
+    log10age_dset = axes_group.create_dataset('log10age', data=log10age)
+    log10age_dset.attrs['units'] = 'log10(years)'
+    log10age_dset.attrs['description'] = 'log10 of stellar population age'
+    
+    metallicity_dset = axes_group.create_dataset('metallicity', data=metallicity)
+    metallicity_dset.attrs['units'] = 'Zsun'
+    metallicity_dset.attrs['description'] = 'Stellar metallicity relative to solar'
+    
+    logU_dset = axes_group.create_dataset('logU', data=logU)
+    logU_dset.attrs['units'] = 'dimensionless'
+    logU_dset.attrs['description'] = 'Log of the ionization parameter'
+    
+    # Create continuum group and datasets
+    cont_group = f.create_group('continuum')
+    cont_group.attrs['description'] = 'Continuum spectra'
+    
+    wave_dset = cont_group.create_dataset('wavelengths', data=wavelengths)
+    wave_dset.attrs['units'] = 'angstrom'
+    wave_dset.attrs['description'] = 'Wavelength array for continuum spectra'
+    
+    incident_dset = cont_group.create_dataset('incident', data=incident_grid)
+    incident_dset.attrs['units'] = 'Lsun/angstrom'
+    incident_dset.attrs['description'] = 'Incident continuum'
+    
+    transmitted_dset = cont_group.create_dataset('transmitted', data=transmitted_grid)
+    transmitted_dset.attrs['units'] = 'Lsun/angstrom'
+    transmitted_dset.attrs['description'] = 'Transmitted continuum'
+    
+    neb_dset = cont_group.create_dataset('nebular', data=neb_cont_grid)
+    neb_dset.attrs['units'] = 'Lsun/angstrom'
+    neb_dset.attrs['description'] = 'Nebular continuum emission'
+    
+    # Create lines group and datasets
+    lines_group = f.create_group('lines')
+    lines_group.attrs['description'] = 'Emission lines'
+    
+    id_dset = lines_group.create_dataset('id', data=lines, dtype=h5py.string_dtype())
+    id_dset.attrs['description'] = 'Unique identifier for emission lines'
+    
+    linewave_dset = lines_group.create_dataset('wavelengths', data=line_wavelengths)
+    linewave_dset.attrs['units'] = 'Angstrom'
+    linewave_dset.attrs['description'] = 'Emission line wavelengths'
+    
+    lineneb_dset = lines_group.create_dataset('nebular', data=neb_line_grid)
+    lineneb_dset.attrs['units'] = 'Lsun'
+    lineneb_dset.attrs['description'] = 'Nebular emission line fluxes'
+
+
+
+
+
 from brisket.models.sfzh import BurstSFH, BaseZHModel
 from brisket.models.stellar import BaseStellarModel
 
