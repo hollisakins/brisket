@@ -37,3 +37,6 @@ if cosmology not in astropy.cosmology.available:
     else:
         raise exceptions.InconsistentParameter(f'Configured cosmology "{cosmology}" not recognized by astropy.cosmology. Did you mean "{alternative}"?')
 cosmo = getattr(astropy.cosmology, cosmology)
+
+
+sfh_age_log_sampling = config['sfh_age_log_sampling']
