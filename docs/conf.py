@@ -20,11 +20,15 @@ extensions = [
     "sphinx_copybutton",  # Add a copy button to code blocks
 ]
 
-
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 autodoc_member_order = 'bysource'
+# html_show_sourcelink = False  # Remove 'view source code' from top of page (for html, not python)
+# autodoc_inherit_docstrings = True  # If no docstring, inherit from base class
+# set_type_checking_flag = True  # Enable 'expensive' imports for sphinx_autodoc_typehints
+nbsphinx_allow_errors = True  # Continue through Jupyter errors
 
 templates_path = ["_templates"]
+
 
 master_doc = "index"
 

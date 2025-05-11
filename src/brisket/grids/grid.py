@@ -13,10 +13,6 @@ from scipy.interpolate import RegularGridInterpolator
 from rich import print
 from rich.prompt import Confirm
 
-from spectres import spectres
-
-from scipy.interpolate import RegularGridInterpolator
-
 class Grid:
 
     def __init__(self, name, bucket='brisket-data'):

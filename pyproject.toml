@@ -26,15 +26,24 @@ dependencies = [
     "scipy",
     "tqdm",
     "spectres",
+    "rich",
+    "h5py",
+    "toml",
+    "boto3",
+    "botocore",
 ]
 
-# [project.optional-dependencies]
-# # Documentation building
-# docs = [
-#     "sphinx",
-#     "furo",
-#     "nbsphinx",
-# ]
+[project.optional-dependencies]
+# Documentation building
+docs = [
+    "sphinx",
+    "furo",
+    "nbsphinx",
+    "sphinx_autodoc_typehints",
+    "sphinx_copybutton",
+    "ipython",
+    "sphinx_toolbox",
+]
 
 
 # [project.scripts]

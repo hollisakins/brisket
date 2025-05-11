@@ -1,4 +1,5 @@
-from synthesizer import exceptions
+# from synthesizer import exceptions
+from ..utils import exceptions
 from scipy.stats import beta, t, skewnorm
 
 __all__ = ["Uniform", "LogUniform"]
