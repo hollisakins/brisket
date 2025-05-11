@@ -1,2 +1,0 @@
-include brisket/config.toml
-recursive-include brisket/data *
