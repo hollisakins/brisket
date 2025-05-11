@@ -3,6 +3,7 @@ import toml
 import os
 from .utils import exceptions
 root_dir = os.path.dirname(os.path.abspath(__file__))
+print(root_dir)
 
 
 config = toml.load(os.path.join(root_dir, 'config.toml'))
