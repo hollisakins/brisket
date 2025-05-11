@@ -4,22 +4,18 @@ This module defines the Fitter class, which is the primary interface to fitting 
 from __future__ import annotations 
 
 import numpy as np
-import os
-import time
-import warnings
-import sys
+import os, sys, time, warnings
 from copy import deepcopy
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    # from ..utils.sed import SED
     from ..parameters import Params
     from .observation import Observation
 
-from ..console import setup_logger
-from .priors import PriorVolume
-from .results import Results
+from ..utils.console import setup_logger
 from ..models.core import Model
+from .priors import PriorVolume
+# from .results import Results
 
 
 # detect if run through mpiexec/mpirun
