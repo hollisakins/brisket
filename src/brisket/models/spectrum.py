@@ -1,9 +1,9 @@
 import jax.numpy as jnp
 import astropy.units as u
 from typing import Optional, Union, List
-from .base import Model, Parameter
+from .base import Model
+from ..parameters import Parameter, Uniform, Normal
 from ..data.emission_lines import get_line_wavelength, get_line_info
-from ..parameters import Uniform, Normal
 from ..utils.units import sanitize_wavelength, sanitize_velocity
 
 

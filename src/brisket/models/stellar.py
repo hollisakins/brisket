@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 from typing import Optional, Union
-from .base import Model, Parameter
+from .base import Model
+from ..parameters import Parameter
 
 
 class StellarModel(Model):
@@ -24,11 +25,7 @@ class StellarModel(Model):
         """Validate input parameters"""
 
         # Check that log_stellar_mass is provided in any form
-        has_log_mass = (
-            'log_stellar_mass' in self.parameters or 
-            'log_stellar_mass' in self.registry.parameters or
-            hasattr(self, 'log_stellar_mass')
-        )
+        has_log_mass = 'log_stellar_mass' in self.parameters
         if not has_log_mass:
             raise ValueError("log_stellar_mass parameter is required")
         
@@ -77,6 +74,7 @@ class StellarModel(Model):
         """
         Generate stellar spectrum. 
         """
+        # Get parameters from param_values (should contain both free and fixed)
         log_stellar_mass = param_values['log_stellar_mass']
         age = param_values['age']
         metallicity = param_values['metallicity']

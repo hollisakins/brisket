@@ -16,7 +16,7 @@ import warnings
 from abc import ABC, abstractmethod
 
 from ..models.base import Model, CompositeModel
-from ..results import FitResults
+from .results import FitResults
 
 
 class BaseSampler(ABC):
@@ -220,7 +220,7 @@ class Fitter:
         
         # Validate that model has free parameters
         if hasattr(self.model, 'parameter_manager'):
-            n_free_params = len(self.model.parameter_manager._unique_parameters)
+            n_free_params = len(self.model.parameter_manager._free_parameters)
         else:
             # Legacy fallback
             n_free_params = len(getattr(self.model, 'registry', {}))
@@ -268,7 +268,7 @@ class Fitter:
         """
         # Get number of free parameters
         if hasattr(self.model, 'parameter_manager'):
-            n_free_params = len(self.model.parameter_manager._unique_parameters)
+            n_free_params = len(self.model.parameter_manager._free_parameters)
         else:
             n_free_params = 'unknown'
         

@@ -58,8 +58,7 @@ class Model(ABC):
         # Use ParameterManager for all models
         self.parameter_manager = ParameterManager()
         
-        # Store parameters in manager and keep dict for backward compatibility
-        self.parameters = kwargs
+        # Store parameters in manager (single source of truth)
         for key, value in kwargs.items():
             self.parameter_manager.add_parameter(self, key, value)
             
@@ -80,6 +79,14 @@ class Model(ABC):
 
         # Do expensive preprocessing
         self._preprocess(self.wavelengths)
+
+    @property
+    def parameters(self) -> Dict[str, Any]:
+        """
+        Get all parameters for this model (both free and fixed).
+        Returns Parameter objects for free parameters and values for fixed parameters.
+        """
+        return self.parameter_manager.get_all_model_parameters(self)
 
     @abstractmethod
     def _validate(self):
@@ -325,14 +332,7 @@ class CompositeModel(Model):
             if 'redshift' in model.parameters:
                 redshift_found = True
         
-        # Set empty parameters for CompositeModel itself before registering
-        self.parameters = {}
-        
-        # Register the composite model itself (with no parameters of its own)
-        self.parameter_manager.register_model(self)
-        
-        # Create flattened parameters dict for backward compatibility
-        self.parameters = self.parameter_manager.get_global_parameter_dict()
+        # CompositeModel doesn't register itself - it's just a container for sub-models
         
         # Set redshift requirement based on sub-models
         self._requires_redshift = redshift_found
@@ -349,9 +349,14 @@ class CompositeModel(Model):
             for model in self.models:
                 if not hasattr(model, 'redshift') or model.redshift is None:
                     model.redshift = inherited_redshift
-                    model.parameters['redshift'] = inherited_redshift
                     # Add redshift to parameter manager if it's a Parameter
                     if isinstance(inherited_redshift, Parameter):
+                        # Remove any existing fixed redshift value first
+                        model_id = str(id(model))
+                        if (model_id in self.parameter_manager._model_fixed_values and 
+                            'redshift' in self.parameter_manager._model_fixed_values[model_id]):
+                            del self.parameter_manager._model_fixed_values[model_id]['redshift']
+                        
                         self.parameter_manager.add_parameter(model, 'redshift', inherited_redshift)
         
         # Set the inherited redshift on the composite model
@@ -376,6 +381,34 @@ class CompositeModel(Model):
     def registry(self):
         """Backward compatibility - return the parameter manager"""
         return self.parameter_manager
+    
+    @property
+    def parameters(self) -> Dict[str, Any]:
+        """
+        Get all parameters from all sub-models in the composite.
+        Uses namespaced names to avoid conflicts between models.
+        """
+        all_params = {}
+        
+        # Get parameters using namespaced names from the parameter manager
+        for model in self.models:
+            model_id = str(id(model))
+            if model_id in self.parameter_manager._namespaces:
+                namespace = self.parameter_manager._namespaces[model_id]
+                
+                # Add free parameters with namespaced names
+                if model_id in self.parameter_manager._model_parameters:
+                    for param_name, global_name in self.parameter_manager._model_parameters[model_id].items():
+                        if global_name in self.parameter_manager._free_parameters:
+                            all_params[global_name] = self.parameter_manager._free_parameters[global_name]
+                
+                # Add fixed parameters with namespaced names
+                if model_id in self.parameter_manager._model_fixed_values:
+                    for param_name, value in self.parameter_manager._model_fixed_values[model_id].items():
+                        namespaced_name = f"{namespace}_{param_name}"
+                        all_params[namespaced_name] = value
+                        
+        return all_params
     
     def evaluate(self, input_spectrum: Optional[jnp.ndarray] = None) -> jnp.ndarray:
         """

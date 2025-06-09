@@ -20,7 +20,7 @@ flux_err = flux_err[(wav > 4)&(wav<5.31)]
 flux = flux[(wav > 4)&(wav<5.31)]
 wav = wav[(wav > 4)&(wav<5.31)]
 
-import time
+
 def compute_ymod(x, redshift, flux_broad, flux_narrow, fwhm_broad, fwhm_narrow, continuum=0.0):
     ymod = jnp.zeros_like(x)
 
@@ -42,8 +42,10 @@ def compute_ymod(x, redshift, flux_broad, flux_narrow, fwhm_broad, fwhm_narrow, 
         # Combine the two components
         ymod += y_broad + y_narrow
     
-    ymod2 = jnp.convolve(ymod, jnp.ones(300)/300, mode='same')  # Smooth the model
-    # time.sleep(0.1)
+    # for i in range(4000):
+    #     ymod = ymod **2 
+    #     ymod = jnp.sqrt(ymod)
+    # ymod2 = jnp.convolve(ymod, jnp.ones(3)/3, mode='same')  # Smooth the model
     return ymod
 
 import matplotlib.pyplot as plt

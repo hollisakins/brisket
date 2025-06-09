@@ -5,8 +5,8 @@ import jax.numpy as jnp
 import numpy as np
 import toml, sys, os
 from .. import config
-from .. import utils
 
+from .resample import make_bins
 
 class Filters:
     """Class for loading and manipulating sets of filter curves. 
@@ -63,7 +63,7 @@ class Filters:
 
         for i in range(self.__len__()):
             filt = self.names[i]
-            dlambda = utils.make_bins(self.filt_dict[filt][:, 0])[1]
+            dlambda = make_bins(self.filt_dict[filt][:, 0])[1]
             filt_weights = dlambda*self.filt_dict[filt][:, 1]
             self.wav[i] = np.sqrt(np.sum(filt_weights*self.filt_dict[filt][:, 0])
                                        / np.sum(filt_weights
@@ -81,7 +81,7 @@ class Filters:
         self.filt_array = np.zeros((wavelengths.shape[0], len(self.names)))
 
         # Array containing the width in wavelength space for each point
-        self.widths = np.diff(utils.make_bins(wavelengths))
+        self.widths = np.diff(make_bins(wavelengths))
 
         for i in range(len(self.names)):
             filt = self.names[i]

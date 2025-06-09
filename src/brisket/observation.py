@@ -137,7 +137,9 @@ class Observation(ABC):
         # Smooth the resolution curve to avoid weird edge effects
         R = np.convolve(R, np.ones(smoothing_kernel_size)/smoothing_kernel_size, mode='same')
         
-        nwav = int(np.log10(max_wav) * R * 4.5)
+        # Use mean resolution to determine number of wavelength points
+        mean_R = np.mean(R)
+        nwav = int(np.log10(max_wav) * mean_R * 4.5)
         wavelengths = np.logspace(0, np.log10(max_wav), nwav)
         self.R_array = np.interp(wavelengths, R_wav, R)
 
