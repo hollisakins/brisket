@@ -15,8 +15,8 @@ from typing import Dict, Any, Optional, Union, Callable
 import warnings
 from abc import ABC, abstractmethod
 
-from .models.base import Model, CompositeModel
-from .results import FitResults
+from ..models.base import Model, CompositeModel
+from ..results import FitResults
 
 
 class BaseSampler(ABC):

@@ -275,3 +275,158 @@ class ParameterRegistry:
     def __repr__(self):
         """String representation of the registry"""
         return f"ParameterRegistry({self.parameters})"
+
+
+class ParameterManager:
+    """
+    Advanced parameter management system for composite models.
+    
+    Handles parameter registration, namespace management, and sampling
+    for complex model hierarchies. Ensures each unique parameter is only
+    sampled once while allowing parameter sharing between models.
+    """
+    
+    def __init__(self):
+        self._unique_parameters: Dict[str, Parameter] = {}
+        self._model_parameters: Dict[str, Dict[str, str]] = {}
+        self._namespaces: Dict[str, str] = {}
+        self._sampled_values: Dict[str, Any] = {}
+        
+    def register_model(self, model, namespace: str = None) -> str:
+        """
+        Register a model and its parameters with optional namespace.
+        
+        Parameters
+        ----------
+        model : Model
+            Model instance to register
+        namespace : str, optional
+            Namespace prefix for parameters. If None, uses class name.
+            
+        Returns
+        -------
+        str
+            The namespace used for this model
+        """
+        if namespace is None:
+            namespace = model.__class__.__name__
+            
+        # Make namespace unique if needed
+        original_namespace = namespace
+        counter = 1
+        while namespace in self._namespaces.values():
+            namespace = f"{original_namespace}_{counter}"
+            counter += 1
+            
+        model_id = str(id(model))
+        self._namespaces[model_id] = namespace
+        self._model_parameters[model_id] = {}
+        
+        # Register the model's parameters
+        if hasattr(model, 'parameters'):
+            for param_name, param in model.parameters.items():
+                if isinstance(param, Parameter):
+                    self.add_parameter(model, param_name, param)
+                    
+        return namespace
+        
+    def add_parameter(self, model, param_name: str, parameter: Parameter):
+        """
+        Add a parameter for a specific model.
+        
+        Parameters
+        ----------
+        model : Model
+            Model that owns this parameter
+        param_name : str
+            Name of the parameter within the model
+        parameter : Parameter
+            Parameter object
+        """
+        model_id = str(id(model))
+        
+        if model_id not in self._model_parameters:
+            # Auto-register the model if not already registered
+            self.register_model(model)
+            
+        namespace = self._namespaces[model_id]
+        global_name = f"{namespace}_{param_name}"
+        
+        # Check if this exact parameter already exists globally
+        existing_global_param = None
+        for existing_name, existing_param in self._unique_parameters.items():
+            if (existing_param.name == parameter.name and 
+                existing_param.prior == parameter.prior):
+                existing_global_param = existing_name
+                break
+                
+        if existing_global_param is not None:
+            # Reuse existing parameter
+            self._model_parameters[model_id][param_name] = existing_global_param
+        else:
+            # Create new global parameter
+            self._unique_parameters[global_name] = parameter
+            self._model_parameters[model_id][param_name] = global_name
+            
+    def get_model_parameters(self, model) -> Dict[str, Any]:
+        """
+        Get parameter values for a specific model.
+        
+        Parameters
+        ----------
+        model : Model
+            Model to get parameters for
+            
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary mapping parameter names to values for this model
+        """
+        model_id = str(id(model))
+        if model_id not in self._model_parameters:
+            return {}
+            
+        model_params = {}
+        for param_name, global_name in self._model_parameters[model_id].items():
+            if global_name in self._sampled_values:
+                model_params[param_name] = self._sampled_values[global_name]
+                
+        return model_params
+        
+    def sample_all_parameters(self):
+        """Sample all unique parameters within NumPyro context."""
+        self._sampled_values = {}
+        for global_name, parameter in self._unique_parameters.items():
+            # Use the global name for NumPyro sampling
+            sampled_value = numpyro.sample(global_name, parameter.prior)
+            if parameter.transform is not None:
+                sampled_value = parameter.transform(sampled_value)
+            self._sampled_values[global_name] = sampled_value
+            
+    def get_global_parameter_dict(self) -> Dict[str, Parameter]:
+        """
+        Get a flattened dictionary of all parameters.
+        
+        Returns
+        -------
+        Dict[str, Parameter]
+            All parameters with their global names
+        """
+        return dict(self._unique_parameters)
+        
+    def clear(self):
+        """Clear all registered parameters and sampled values."""
+        self._unique_parameters.clear()
+        self._model_parameters.clear()
+        self._namespaces.clear()
+        self._sampled_values.clear()
+        
+    def __len__(self) -> int:
+        """Number of unique parameters."""
+        return len(self._unique_parameters)
+        
+    def __repr__(self) -> str:
+        """String representation of the parameter manager."""
+        n_models = len(self._model_parameters)
+        n_params = len(self._unique_parameters)
+        return f"ParameterManager(models={n_models}, unique_params={n_params})"

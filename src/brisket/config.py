@@ -107,3 +107,8 @@ Maximum wavelength for model evaluation (in Angstroms). Can be overridden with B
 '''
 if max_wavelength <= 0:
     raise exceptions.InconsistentParameter(f'Max wavelength must be positive, got {max_wavelength}.')
+
+default_wavelength_unit = _get_config_value('default_wavelength_unit', config.get('default_wavelength_unit', 'angstrom'))
+'''
+Default wavelength unit for the code. Can be overridden with BRISKET_DEFAULT_WAVELENGTH_UNIT environment variable.
+'''

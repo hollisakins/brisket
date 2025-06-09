@@ -17,8 +17,14 @@ default_resolution = 100 # Default resolution. Models will be generated at this 
 # Maximum redshift the code is set up to evaluate models for. Relevant for setting up the IGM grids.
 max_redshift = 20.0
 
-# # Default wavelength unit for the code. 
-# default_wavelength_unit = 'angstrom'
+# Default wavelength unit for the code. 
+default_wavelength_unit = 'angstrom'
+
+# Oversampling factor for model wavelength grids
+oversample_wavelengths = 4
+
+# Smoothing kernel size for resolution curve
+resolution_smoothing_kernel_size = 5
 
 # Sampling for the ages of stars in the SFH (log space)
 sfh_age_log_sampling = 0.0025
