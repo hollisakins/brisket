@@ -1,0 +1,24 @@
+#####
+# Change configuration values here, or set environment variables (TBD)
+
+# Where grids are stored. By default, this should be at the root of the module, but can be changed, e.g. to reference grids stored in a cloud-synced repository. 
+grid_dir = 'data/grids/'
+
+# Where filters are stored.
+filter_dir = 'data/filters/'
+
+# Cosmology to use for cosmological calculations. Should be a cosmology realization included in astropy.cosmology. 
+cosmology = 'Planck18'
+
+max_wavelength = 1e8 # Max wavelength (in Angstroms) the code is set up to evaluate models for. Default: 1cm
+
+default_resolution = 100 # Default resolution. Models will be generated at this spectral resolution if no observation is being predicted. 
+
+# Maximum redshift the code is set up to evaluate models for. Relevant for setting up the IGM grids.
+max_redshift = 20.0
+
+# # Default wavelength unit for the code. 
+# default_wavelength_unit = 'angstrom'
+
+# Sampling for the ages of stars in the SFH (log space)
+sfh_age_log_sampling = 0.0025

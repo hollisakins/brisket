@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=60", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brisket"
+version = "0.0.1"
+description = 'SED fitting'
+authors = [
+    {name = "Hollis Akins", email = "hollis.akins@gmail.com"},
+]
+license = {text = 'MIT'}
+
+# Minimum Python version
+requires-python = ">=3.11"
+
+# entry-points
+
+
+# packages=find_packages(include=['brisket','brisket.*']),
+dependencies = [
+    "astropy>=6.1.2",
+    "numpy>2",
+    "matplotlib>3.8",
+    "scipy",
+    "tqdm",
+    "spectres",
+    "rich",
+    "h5py",
+    "toml",
+    "numpyro"
+]
+
+[project.optional-dependencies]
+# Documentation building
+docs = [
+    "sphinx",
+    "furo",
+    "nbsphinx",
+    "sphinx_autodoc_typehints",
+    "sphinx_copybutton",
+    "ipython",
+    "sphinx_toolbox",
+]
+
+
+# [project.scripts]
+# brisket = "brisket.cli:main_cli"
